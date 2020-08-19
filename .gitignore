@@ -1,0 +1,6 @@
+*.pb.o
+*.o
+*.pb.h
+*.pb.cc
+
+ssl-Client/include/google/*
