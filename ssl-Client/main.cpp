@@ -55,10 +55,10 @@ int main(int argc, char *argv[]){
                     printf("-Robot(B) (%2d/%2d): ",i+1, robots_blue_n);
                     printRobotInfo(robot);
 
-                    if(robot.x() <= 0){
-                        grSim_client.sendCommand(10, i);
+                    if(robot.x() <= 0.0){
+                        grSim_client.sendCommand(100.0, 100.0, i);
                     }else{
-                        grSim_client.sendCommand(-10, i);
+                        grSim_client.sendCommand(-100, -100.0, i);
                     }
                 }
 

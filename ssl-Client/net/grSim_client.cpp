@@ -7,30 +7,32 @@ GrSim_Client::GrSim_Client(QObject *parent) :
     // create a QUDP socket
     socket = new QUdpSocket(this);
 
-    this->_addr.setAddress("224.0.0.0");
+    this->_addr.setAddress("127.0.0.1");
     this->_port = quint16(20011);
 
     socket->bind(this->_addr, this->_port);
     connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
 }
 
-void GrSim_Client::sendCommand(double velX, int id){
+void GrSim_Client::sendCommand(double velL, double velR, int id){
     double zero = 0.0;
     fira_message::sim_to_ref::Packet packet;
     bool yellow = false;
 
     fira_message::sim_to_ref::Command* command = packet.mutable_cmd()->add_robot_commands();
     command->set_id(id);
-
-    command->set_wheel_left(velX);
-    command->set_wheel_right(velX);
-
+    command->set_yellowteam(yellow);
+    command->set_wheel_left(velL);
+    command->set_wheel_right(velR);
 
     QByteArray dgram;
     dgram.resize(packet.ByteSize());
     packet.SerializeToArray(dgram.data(), dgram.size());
     if(socket->writeDatagram(dgram, this->_addr, this->_port) > -1){
-        printf("send data\n");
+        printf("SEND DATA\n");
+    }
+    else {
+        printf("PROBLEM SENDING DATA\n");
     }
 }
 
