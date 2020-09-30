@@ -51,6 +51,7 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = main.cpp \
+		control.cpp \
 		pb/messages_robocup_ssl_wrapper.pb.cc \
 		pb/messages_robocup_ssl_detection.pb.cc \
 		pb/messages_robocup_ssl_geometry.pb.cc \
@@ -62,6 +63,7 @@ SOURCES       = main.cpp \
 		net/netraw.cpp \
 		net/grSim_client.cpp moc_grSim_client.cpp
 OBJECTS       = main.o \
+		control.o \
 		messages_robocup_ssl_wrapper.pb.o \
 		messages_robocup_ssl_detection.pb.o \
 		messages_robocup_ssl_geometry.pb.o \
@@ -133,6 +135,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf \
@@ -152,6 +155,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		ssl-Client.pro pb/messages_robocup_ssl_wrapper.pb.h \
+		control.h \
 		pb/messages_robocup_ssl_detection.pb.h \
 		pb/messages_robocup_ssl_geometry.pb.h \
 		pb/command.pb.h \
@@ -163,6 +167,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		util/timer.h \
 		util/util.h \
 		net/grSim_client.h main.cpp \
+		control.cpp \
 		pb/messages_robocup_ssl_wrapper.pb.cc \
 		pb/messages_robocup_ssl_detection.pb.cc \
 		pb/messages_robocup_ssl_geometry.pb.cc \
@@ -244,6 +249,7 @@ Makefile: ssl-Client.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf \
@@ -327,6 +333,7 @@ Makefile: ssl-Client.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf:
+.qmake.stash:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf:
@@ -364,8 +371,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents pb/messages_robocup_ssl_wrapper.pb.h pb/messages_robocup_ssl_detection.pb.h pb/messages_robocup_ssl_geometry.pb.h pb/command.pb.h pb/common.pb.h pb/packet.pb.h pb/replacement.pb.h net/robocup_ssl_client.h net/netraw.h util/timer.h util/util.h net/grSim_client.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp pb/messages_robocup_ssl_wrapper.pb.cc pb/messages_robocup_ssl_detection.pb.cc pb/messages_robocup_ssl_geometry.pb.cc pb/command.pb.cc pb/common.pb.cc pb/packet.pb.cc pb/replacement.pb.cc net/robocup_ssl_client.cpp net/netraw.cpp net/grSim_client.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents pb/messages_robocup_ssl_wrapper.pb.h control.h pb/messages_robocup_ssl_detection.pb.h pb/messages_robocup_ssl_geometry.pb.h pb/command.pb.h pb/common.pb.h pb/packet.pb.h pb/replacement.pb.h net/robocup_ssl_client.h net/netraw.h util/timer.h util/util.h net/grSim_client.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp control.cpp pb/messages_robocup_ssl_wrapper.pb.cc pb/messages_robocup_ssl_detection.pb.cc pb/messages_robocup_ssl_geometry.pb.cc pb/command.pb.cc pb/common.pb.cc pb/packet.pb.cc pb/replacement.pb.cc net/robocup_ssl_client.cpp net/netraw.cpp net/grSim_client.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -510,6 +517,53 @@ main.o: main.cpp net/robocup_ssl_client.h \
 		net/grSim_client.h \
 		util/timer.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
+
+control.o: control.cpp control.h \
+		pb/command.pb.h \
+		include/google/protobuf/port_def.inc \
+		include/google/protobuf/port_undef.inc \
+		include/google/protobuf/io/coded_stream.h \
+		include/google/protobuf/stubs/common.h \
+		include/google/protobuf/stubs/port.h \
+		include/google/protobuf/stubs/platform_macros.h \
+		include/google/protobuf/stubs/macros.h \
+		include/google/protobuf/port.h \
+		include/google/protobuf/arena.h \
+		include/google/protobuf/arena_impl.h \
+		include/google/protobuf/stubs/logging.h \
+		include/google/protobuf/arenastring.h \
+		include/google/protobuf/stubs/fastmem.h \
+		include/google/protobuf/generated_message_table_driven.h \
+		include/google/protobuf/map.h \
+		include/google/protobuf/generated_enum_util.h \
+		include/google/protobuf/map_type_handler.h \
+		include/google/protobuf/wire_format_lite_inl.h \
+		include/google/protobuf/message_lite.h \
+		include/google/protobuf/stubs/once.h \
+		include/google/protobuf/stubs/strutil.h \
+		include/google/protobuf/stubs/stringpiece.h \
+		include/google/protobuf/stubs/hash.h \
+		include/google/protobuf/repeated_field.h \
+		include/google/protobuf/implicit_weak_message.h \
+		include/google/protobuf/stubs/casts.h \
+		include/google/protobuf/wire_format_lite.h \
+		include/google/protobuf/map_entry_lite.h \
+		include/google/protobuf/parse_context.h \
+		include/google/protobuf/map_field_lite.h \
+		include/google/protobuf/generated_message_util.h \
+		include/google/protobuf/has_bits.h \
+		include/google/protobuf/inlined_string_field.h \
+		include/google/protobuf/metadata.h \
+		include/google/protobuf/metadata_lite.h \
+		include/google/protobuf/unknown_field_set.h \
+		include/google/protobuf/message.h \
+		include/google/protobuf/descriptor.h \
+		include/google/protobuf/stubs/mutex.h \
+		include/google/protobuf/extension_set.h \
+		pb/common.pb.h \
+		pb/packet.pb.h \
+		pb/replacement.pb.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o control.o control.cpp
 
 messages_robocup_ssl_wrapper.pb.o: pb/messages_robocup_ssl_wrapper.pb.cc pb/messages_robocup_ssl_wrapper.pb.h \
 		include/google/protobuf/port_def.inc \

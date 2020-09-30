@@ -14,14 +14,13 @@ GrSim_Client::GrSim_Client(QObject *parent) :
     connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
 }
 
-void GrSim_Client::sendCommand(double velL, double velR, int id){
+void GrSim_Client::sendCommand(double velL, double velR, int id, bool isYellow){
     double zero = 0.0;
     fira_message::sim_to_ref::Packet packet;
-    bool yellow = false;
 
     fira_message::sim_to_ref::Command* command = packet.mutable_cmd()->add_robot_commands();
     command->set_id(id);
-    command->set_yellowteam(yellow);
+    command->set_yellowteam(isYellow);
     command->set_wheel_left(velL);
     command->set_wheel_right(velR);
 

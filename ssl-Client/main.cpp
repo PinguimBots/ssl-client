@@ -31,6 +31,8 @@ int main(int argc, char *argv[]){
 
     GrSim_Client grSim_client;
 
+    bool isYellow = false;
+
     while(true) {
         if (client.receive(packet)) {
             printf("-----Received Wrapper Packet---------------------------------------------\n");
@@ -56,9 +58,9 @@ int main(int argc, char *argv[]){
                     printRobotInfo(robot);
 
                     if(robot.x() <= 0.0){
-                        grSim_client.sendCommand(100.0, 100.0, i);
+                        grSim_client.sendCommand(5.0, 5.0, i, isYellow);
                     }else{
-                        grSim_client.sendCommand(-100, -100.0, i);
+                        grSim_client.sendCommand(-5.0, -5.0, i, isYellow);
                     }
                 }
 
