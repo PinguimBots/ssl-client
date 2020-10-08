@@ -1,16 +1,16 @@
-#ifndef STRATEGY_H
-#define STRATEGY_H
+#pragma once
 
 #include "pb/command.pb.h"
 #include "pb/common.pb.h"
 #include "pb/packet.pb.h"
 #include "pb/replacement.pb.h"
 
-
 class Strategy
 {
 public:
-    Strategy(fira_message::);
-};
+    Strategy(bool isYellow);
+    int pertoBola();
 
-#endif // STRATEGY_H
+private:
+    const bool _isYellow;
+};

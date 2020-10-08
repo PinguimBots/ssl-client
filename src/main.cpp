@@ -10,6 +10,7 @@
 #include "pb/packet.pb.h"
 #include "pb/replacement.pb.h"
 
+#include "pbts/control.h"
 
 void printRobotInfo(const fira_message::Robot & robot) {
 
@@ -22,14 +23,14 @@ void printRobotInfo(const fira_message::Robot & robot) {
     printf("ANGLE VEL=%6.3f \n",robot.vorientation());
 }
 
-int main(int argc, char *argv[]){
-    (void)argc;
-    (void)argv;
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]){
     RoboCupSSLClient client;
     client.open(false);
     fira_message::sim_to_ref::Environment packet;
 
     GrSim_Client grSim_client;
+
+    Control controle = Control();
 
     bool isYellow = false;
 
@@ -56,12 +57,11 @@ int main(int argc, char *argv[]){
                     fira_message::Robot robot = detection.robots_blue(i);
                     printf("-Robot(B) (%2d/%2d): ",i+1, robots_blue_n);
                     printRobotInfo(robot);
+                    double left, right;
 
-                    if(robot.x() <= 0.0){
-                        grSim_client.sendCommand(5.0, 5.0, i, isYellow);
-                    }else{
-                        grSim_client.sendCommand(-5.0, -5.0, i, isYellow);
-                    }
+                    tie(left, right) = controle.generateVels(robot, ball);
+
+                    grSim_client.sendCommand(left, right, i, isYellow);
                 }
 
                 //Yellow robot info:

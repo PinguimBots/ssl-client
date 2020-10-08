@@ -1,6 +1,16 @@
-*.pb.o
-*.o
-*.pb.h
-*.pb.cc
+include/google
+*.pb.*
 
-ssl-Client/include/google/*
+.DS_Store
+
+*.user*
+
+*.autosave*
+*~
+
+.qmake.stash
+build
+bin
+Makefile
+
+.vscode

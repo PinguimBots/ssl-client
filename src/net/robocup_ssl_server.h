@@ -23,11 +23,11 @@
 #include "netraw.h"
 #include <string>
 #include <QMutex>
-#include "messages_robocup_ssl_detection.pb.h"
-#include "messages_robocup_ssl_geometry.pb.h"
-#include "messages_robocup_ssl_geometry_legacy.pb.h"
-#include "messages_robocup_ssl_wrapper.pb.h"
-#include "messages_robocup_ssl_wrapper_legacy.pb.h"
+#include "pb/messages_robocup_ssl_detection.pb.h"
+#include "pb/messages_robocup_ssl_geometry.pb.h"
+#include "pb/messages_robocup_ssl_geometry_legacy.pb.h"
+#include "pb/messages_robocup_ssl_wrapper.pb.h"
+#include "pb/messages_robocup_ssl_wrapper_legacy.pb.h"
 using namespace std;
 /**
 	@author Stefan Zickler

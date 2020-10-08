@@ -19,7 +19,7 @@
 */
 //========================================================================
 #include "robocup_ssl_server.h"
-#include "timer.h"
+#include "util/timer.h"
 
 RoboCupSSLServer::RoboCupSSLServer(int port,
                      string net_address,

@@ -51,18 +51,18 @@ sh compile.sh
 1. Turn off all robots.
 1. Put them all out of bounds.
 1. Get one of the blue team robots, put it inside the field and turn on.
-![](prints/exampleSimulation.png)
+![](docs/exampleSimulation.png)
 
 1. Get the Vision multicast adress, Vision multicast port and Command listen port on grSim.
-![](prints/ips.png)
+![](docs/ips.png)
 
 1. In Qt Creator IDE open the project thru the `ssl-Clienty.pro` file. In Projects (left options) un-check the `Shadow build`!
 
 1. Go to `/ssl-client/ssl-Client/net/robocup_ssl_client.h` and paste the Vision Multicast adress and the Vision Multicast port on `string net_ref_address `and `int port`, respectively.
-![](prints/clientH.png)
+![](docs/clientH.png)
 
 1. Go to `/ssl-client/ssl-Client/net/grSim_client.cpp` and paste the Vision Multicast adress and the Command listen port on `this->_addr.setAddress()`and `this->_port = quint16()`, respectively. 
-![](prints/myudpCPP.png)
+![](docs/myudpCPP.png)
 
 1. Run the Qt Project!
 
