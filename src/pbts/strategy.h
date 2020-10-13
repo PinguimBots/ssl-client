@@ -1,16 +1,15 @@
 #pragma once
 
-#include "pb/command.pb.h"
-#include "pb/common.pb.h"
-#include "pb/packet.pb.h"
-#include "pb/replacement.pb.h"
+namespace pbts {
 
-class Strategy
-{
-public:
-    Strategy(bool isYellow);
-    int pertoBola();
+    class Strategy
+    {
+    public:
+        Strategy(bool isYellow);
+        int pertoBola();
 
-private:
-    const bool _isYellow;
-};
+    private:
+        const bool _isYellow;
+    };
+
+}

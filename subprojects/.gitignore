@@ -1,0 +1,7 @@
+packagecache
+
+docopt*
+!docopt.wrap
+
+fmt*
+!fmt.wrap

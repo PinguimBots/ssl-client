@@ -7,10 +7,12 @@
 #include "pb/packet.pb.h"
 #include "pb/replacement.pb.h"
 
-class Control
-{
-public:
-    Control();
+namespace pbts {
 
-    std::tuple<double,double> generateVels(const fira_message::Robot &robot, const fira_message::Ball &ball);
-};
+    class Control
+    {
+    public:
+        std::tuple<double,double> generateVels(const fira_message::Robot &robot, const fira_message::Ball &ball);
+    };
+
+}

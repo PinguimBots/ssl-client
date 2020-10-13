@@ -1,7 +1,7 @@
 #include "pbts/strategy.h"
 
-Strategy::Strategy(bool isYellow): _isYellow(isYellow) {}
+pbts::Strategy::Strategy(bool isYellow): _isYellow(isYellow) {}
 
-int Strategy::pertoBola() {
+int pbts::Strategy::pertoBola() {
     return 0;
 }

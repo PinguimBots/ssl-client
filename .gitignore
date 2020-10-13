@@ -9,7 +9,7 @@ include/google
 *~
 
 .qmake.stash
-build
+build*
 bin
 Makefile
 

@@ -22,8 +22,8 @@
 #include "util/timer.h"
 
 RoboCupSSLServer::RoboCupSSLServer(int port,
-                     string net_address,
-                     string net_interface)
+                     std::string net_address,
+                     std::string net_interface)
 {
   _port=port;
   _net_address=net_address;

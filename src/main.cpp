@@ -1,9 +1,12 @@
-//author  Renato Sousa, 2018
-#include <QtNetwork>
-#include <stdio.h>
+#include <complex>
+#include <cstdint>
+
+#include <fmt/core.h>
+
+#include <docopt.h>
+
 #include "net/robocup_ssl_client.h"
 #include "net/grSim_client.h"
-#include "util/timer.h"
 
 #include "pb/command.pb.h"
 #include "pb/common.pb.h"
@@ -11,84 +14,105 @@
 #include "pb/replacement.pb.h"
 
 #include "pbts/control.h"
+#include "pbts/qol.hpp"
 
-void printRobotInfo(const fira_message::Robot & robot) {
+static const constexpr char usage[] = R"(pbssl ver 0.0.
 
-    printf("ID=%3d \n",robot.robot_id());
+    Usage:
+        pbssl [(--team=TEAM | -t=TEAM)] [--in-port=INPORT] [--in-address=INADDR] [--out-port=OUTPORT] [--out-address=OUTADDR]
 
-    printf(" POS=<%9.2f,%9.2f> \n",robot.x(),robot.y());
-    printf(" VEL=<%9.2f,%9.2f> \n",robot.vx(),robot.vy());
+    Options:
+        -h --help              Show this screen.
+        --version              Show version.
+        --team TEAM, -t TEAM   asdf [default: blue].
+        --in-port INPORT       asdf [default: 10020].
+        --in-address INADDR    asdf [default: 224.0.0.0].
+        --out-port OUTPORT     asdf [default: 20011].
+        --out-address OUTADDR  asdf [default: 127.0.0.1].
+)"; 
 
-    printf("ANGLE=%6.3f \n",robot.orientation());
-    printf("ANGLE VEL=%6.3f \n",robot.vorientation());
-}
+int main(int argc, char* argv[]){
+    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]){
-    RoboCupSSLClient client;
+    auto args = docopt::docopt(
+        usage,
+        {argv + 1, argv + argc},
+        true,            // show help if requested
+        "pbssl ver 0.0"  // version string
+    );
+    /// TODO: validate.
+
+    fmt::print("using args:\n");
+    for(const auto& [flag, value] : args) {
+        fmt::print("\t{} = {}\n", flag, value.asString());
+    }
+
+    auto client = RoboCupSSLClient{
+        static_cast<std::uint16_t>( args["--in-port"].asLong() ),
+        args["--in-address"].asString()
+    };
     client.open(false);
+
+    auto grSim_client = GrSim_Client{
+        static_cast<std::uint16_t>(args["--out-port"].asLong() ),
+        args["--out-address"].asString()
+    };
+
+    auto controle = pbts::Control{};
+
+    auto isYellow = args["--team"].asString() == "yellow";
+
     fira_message::sim_to_ref::Environment packet;
-
-    GrSim_Client grSim_client;
-
-    Control controle = Control();
-
-    bool isYellow = false;
-
     while(true) {
         if (client.receive(packet)) {
-            printf("-----Received Wrapper Packet---------------------------------------------\n");
-            //see if the packet contains a robot detection frame:
+            /// TODO: Make sure it's necessary to verify has_frame() and has_field().
             if (packet.has_frame()) {
-                fira_message::Frame detection = packet.frame();
+                auto [blue_robots, yellow_robots, ball] = packet.frame();
+                auto [ball_x, ball_y, ball_z, ball_vx, ball_vy, ball_vz] = ball;
 
+                for(const auto& robot : blue_robots) {
+                    auto [left, right] = controle.generateVels(robot, ball);
 
-                int robots_blue_n =  detection.robots_blue_size();
-                int robots_yellow_n =  detection.robots_yellow_size();
-
-                //Ball info:
-
-                fira_message::Ball ball = detection.ball();
-                printf("-Ball:  POS=<%9.2f,%9.2f> \n",ball.x(),ball.y());
-
-
-
-                //Blue robot info:
-                for (int i = 0; i < robots_blue_n; i++) {
-                    fira_message::Robot robot = detection.robots_blue(i);
-                    printf("-Robot(B) (%2d/%2d): ",i+1, robots_blue_n);
-                    printRobotInfo(robot);
-                    double left, right;
-
-                    tie(left, right) = controle.generateVels(robot, ball);
-
-                    grSim_client.sendCommand(left, right, i, isYellow);
+                    grSim_client.sendCommand(left, right, robot.robot_id() + 1, isYellow);
                 }
 
-                //Yellow robot info:
-                for (int i = 0; i < robots_yellow_n; i++) {
-                    fira_message::Robot robot = detection.robots_yellow(i);
-                    printf("-Robot(Y) (%2d/%2d): ",i+1, robots_yellow_n);
-                    printRobotInfo(robot);
+                for(const auto& robot : yellow_robots) {
                 }
-
             }
 
             //see if packet contains geometry data:
             if (packet.has_field()){
-                printf("-[Geometry Data]-------\n");
+                using namespace std::complex_literals;
 
-                const fira_message::Field & field = packet.field();
-                printf("Field Dimensions:\n");
-                printf("  -field_length=%f (mm)\n",field.length());
-                printf("  -field_width=%f (mm)\n",field.width());
-                printf("  -goal_width=%f (mm)\n",field.goal_width());
-                printf("  -goal_depth=%f (mm)\n",field.goal_depth());
+                const auto [len, width, goal_width, goal_depth] = packet.field();
 
+                auto goal_a = std::complex(-len/2 - goal_depth, goal_width/2);
+                auto goal_b = std::complex(-len/2, goal_width/2);
+                auto goal_c = goal_a * -1i;
+                auto goal_d = goal_b * -1i;
+                auto left_goal_bounds = std::array{
+                    goal_a, goal_b,
+                    goal_c, goal_d
+                };
+                // Mirror of the left_goal_bounds, thats why it's out of order.
+                auto right_goal_bounds = std::array{
+                    left_goal_bounds[1] * -1., left_goal_bounds[0] * -1.,
+                    left_goal_bounds[3] * -1., left_goal_bounds[2] * -1.,
+                };
 
-
+                auto field_a = std::complex(-len/2, width/2);
+                auto field_b = std::complex(len/2, width/2);
+                auto field_c = field_a * -1i;
+                auto field_d = field_b * -1i;
+                auto field_bounds = std::array{
+                    field_a, field_b,
+                    field_c, field_d
+                };
             }
         }
     }
+
+    google::protobuf::ShutdownProtobufLibrary();
 
     return 0;
 }

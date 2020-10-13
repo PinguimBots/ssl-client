@@ -28,7 +28,6 @@
 #include "pb/packet.pb.h"
 #include "pb/replacement.pb.h"
 
-using namespace std;
 /**
     @author Author Name
 */
@@ -39,12 +38,12 @@ protected:
   char * in_buffer;
   Net::UDP mc; // multicast client
   int _port;
-  string _net_address;
-  string _net_interface;
+  std::string _net_address;
+  std::string _net_interface;
 public:
-    RoboCupSSLClient(int port = 10020,
-                     string net_ref_address="224.0.0.0",
-                     string net_ref_interface="");
+    RoboCupSSLClient(int port,
+                     std::string net_ref_address,
+                     std::string net_ref_interface="");
 
     ~RoboCupSSLClient();
     bool open(bool blocking=false);

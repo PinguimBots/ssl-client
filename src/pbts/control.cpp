@@ -2,9 +2,7 @@
 #include <math.h>
 
 
-Control::Control() {}
-
-std::tuple<double,double> Control::generateVels(const fira_message::Robot &robot, const fira_message::Ball &ball) {
+std::tuple<double,double> pbts::Control::generateVels(const fira_message::Robot &robot, const fira_message::Ball &ball) {
 
     double x, y, orientation, vx, vy, vorientation;
     double ball_x, ball_y, ball_vx, ball_vy;

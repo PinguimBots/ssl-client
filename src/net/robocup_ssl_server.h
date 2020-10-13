@@ -28,7 +28,7 @@
 #include "pb/messages_robocup_ssl_geometry_legacy.pb.h"
 #include "pb/messages_robocup_ssl_wrapper.pb.h"
 #include "pb/messages_robocup_ssl_wrapper_legacy.pb.h"
-using namespace std;
+
 /**
 	@author Stefan Zickler
 */
@@ -38,20 +38,20 @@ protected:
   Net::UDP mc; // multicast server
   QMutex mutex;
   int _port;
-  string _net_address;
-  string _net_interface;
+  std::string _net_address;
+  std::string _net_interface;
 
 public:
     RoboCupSSLServer(int port,
-                     string net_ref_address,
-                     string net_ref_interface="");
+                     std::string net_ref_address,
+                     std::string net_ref_interface="");
 
     ~RoboCupSSLServer();
     bool open();
     void close();
     template <typename T>
     bool sendWrapperPacket(const T & packet) {
-      string buffer;
+      std::string buffer;
       packet.SerializeToString(&buffer);
       Net::Address multiaddr;
       multiaddr.setHost(_net_address.c_str(),_port);
