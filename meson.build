@@ -75,4 +75,8 @@ pbssl_exe = executable(
     dependencies: deps,
     link_args: warnings,
     cpp_pch: 'src/pch.h',
+    cpp_args: [
+        '-DUSE_ARRAY_IN_FRAME_STRUCTURED_BINDINGS',
+        '-DARRAY_SIZE_IN_FRAME_STRUCTURED_BINDINGS=3',
+    ]
 )
