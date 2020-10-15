@@ -46,10 +46,10 @@ protobuf_generator = generator(protoc,
     output: ['@BASENAME@.pb.cc', '@BASENAME@.pb.h'],
     arguments: ['--proto_path=@CURRENT_SOURCE_DIR@/src', '--cpp_out=@BUILD_DIR@', '@INPUT@'],
 )
-# preserve_path_from is important because since we ser proto_path to be the source tree root
-# it will generate the .pb.cc and pb.h files mirroring the original structure.
-# If we dont preserve_path_from '/src' meson won't find these files (will look in the build directory
-# instead of trying to mirror the tree).
+# preserve_path_from is important because since we set proto_path to be the source tree root
+# it will generate the .pb.cc and pb.h files mirroring the original folder structure.
+# If we dont preserve_path_from '/src' meson won't find these files since it will look in the
+# build directory instead of trying to mirror the tree.
 protobuf_generated = protobuf_generator.process(
     files(
         'src/pb/command.proto',
@@ -100,6 +100,8 @@ pbssl_exe = executable(
     link_args: warnings,
     cpp_pch: 'src/pch.h',
     cpp_args: [
+        # Return the robots as an array when destructuring
+        # fira_messa::Frame instead of using a vector.
         '-DUSE_ARRAY_IN_FRAME_STRUCTURED_BINDINGS',
         '-DARRAY_SIZE_IN_FRAME_STRUCTURED_BINDINGS=3',
     ]
