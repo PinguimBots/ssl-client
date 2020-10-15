@@ -58,56 +58,58 @@ int main(int argc, char* argv[]){
         args["--out-address"].asString()
     };
 
-    auto controle = pbts::Control{};
+    //auto strategy = pbts::Strategy{};
 
-    auto isYellow = args["--team"].asString() == "yellow";
+    auto is_yellow = args["--team"].asString() == "yellow";
 
-    fira_message::sim_to_ref::Environment packet;
+    fira_message::sim_to_ref::Environment environment;
     while(true) {
-        if (client.receive(packet)) {
+        if (client.receive(environment)) {
             /// TODO: Make sure it's necessary to verify has_frame() and has_field().
-            if (packet.has_frame()) {
-                auto [blue_robots, yellow_robots, ball] = packet.frame();
-                auto [ball_x, ball_y, ball_z, ball_vx, ball_vy, ball_vz] = ball;
+            //see if environment contains geometry data:
+            if (environment.has_field()){
+                const auto [len, width, goal_width, goal_depth] = environment.field();
 
-                for(const auto& robot : blue_robots) {
-                    auto [left, right] = controle.generateVels(robot, ball);
-
-                    grSim_client.sendCommand(left, right, robot.robot_id() + 1, isYellow);
-                }
-
-                for(const auto& robot : yellow_robots) {
-                }
-            }
-
-            //see if packet contains geometry data:
-            if (packet.has_field()){
-                using namespace std::complex_literals;
-
-                const auto [len, width, goal_width, goal_depth] = packet.field();
-
-                auto goal_a = std::complex(-len/2 - goal_depth, goal_width/2);
-                auto goal_b = std::complex(-len/2, goal_width/2);
-                auto goal_c = goal_a * -1i;
-                auto goal_d = goal_b * -1i;
-                auto left_goal_bounds = std::array{
-                    goal_a, goal_b,
-                    goal_c, goal_d
-                };
+                auto left_goal_bounds = std::array< std::complex<double>, 4>{{
+                    {-len/2 - goal_depth, goal_width/2}, {-len/2, goal_width/2},
+                    {-len/2 - goal_depth, -goal_width/2}, {-len/2, -goal_width/2},
+                }};
                 // Mirror of the left_goal_bounds, thats why it's out of order.
                 auto right_goal_bounds = std::array{
-                    left_goal_bounds[1] * -1., left_goal_bounds[0] * -1.,
-                    left_goal_bounds[3] * -1., left_goal_bounds[2] * -1.,
+                    left_goal_bounds[1] * -1.0, left_goal_bounds[0] * -1.0,
+                    left_goal_bounds[3] * -1.0, left_goal_bounds[2] * -1.0,
                 };
 
-                auto field_a = std::complex(-len/2, width/2);
-                auto field_b = std::complex(len/2, width/2);
-                auto field_c = field_a * -1i;
-                auto field_d = field_b * -1i;
-                auto field_bounds = std::array{
-                    field_a, field_b,
-                    field_c, field_d
-                };
+                auto field_bounds = std::array< std::complex<double>, 4>{{
+                    {-len/2, width/2}, {len/2, width/2},
+                    {-len/2, -width/2}, {len/2, -width/2},
+                }};
+                /*
+                strategy.set_bounds(
+                    left_goal_bounds,
+                    right_goal_bounds,
+                    field_bounds
+                );*/
+            }
+    
+            if (environment.has_frame()) {
+                auto [blue_robots, yellow_robots, ball] = environment.frame();
+                auto [ball_x, ball_y, ball_z, ball_vx, ball_vy, ball_vz] = ball;
+
+                auto& allied_team = is_yellow ? yellow_robots : blue_robots;
+                auto target_goal  = is_yellow
+                    ? pbts::Strategy::goal_bound_type::left
+                    : pbts::Strategy::goal_bound_type::right;
+                auto& enemy_team  = is_yellow ? blue_robots   : yellow_robots;
+
+                //strategy.tick(allied_team, enemy_team);
+
+                for(const auto& robot : blue_robots) {
+                    /*auto [left, right] = controle.generateVels(robot, ball);
+
+                    grSim_client.sendCommand(left, right, robot.robot_id() + 1, is_yellow);
+                    */
+                }
             }
         }
     }
