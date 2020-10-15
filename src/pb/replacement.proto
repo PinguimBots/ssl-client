@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package fira_message.sim_to_ref;
 
-import "common.proto";
+import "pb/common.proto";
 
 message RobotReplacement {
 	Robot  position   = 1;
