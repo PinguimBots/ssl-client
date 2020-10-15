@@ -23,7 +23,7 @@ else
 endif
 deps += protobuf_dep
 
-includes = include_directories('include', 'src')
+includes = include_directories('src')
 
 sources = files(
     'src/main.cpp',
