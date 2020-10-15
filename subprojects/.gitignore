@@ -6,5 +6,5 @@ docopt*
 fmt*
 !fmt.wrap
 
-protobuf
+protobuf*
 !protobuf.wrap
