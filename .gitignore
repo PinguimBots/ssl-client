@@ -1,6 +1,3 @@
-include/google
-*.pb.*
-
 .DS_Store
 
 *.user*
@@ -8,9 +5,7 @@ include/google
 *.autosave*
 *~
 
-.qmake.stash
 build*
 bin
-Makefile
 
 .vscode

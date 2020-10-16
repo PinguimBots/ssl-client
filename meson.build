@@ -102,7 +102,7 @@ pbssl_exe = executable(
     cpp_args: [
         # Return the robots as an array when destructuring
         # fira_messa::Frame instead of using a vector.
-        '-DUSE_ARRAY_IN_FRAME_STRUCTURED_BINDINGS',
+        #'-DUSE_ARRAY_IN_FRAME_STRUCTURED_BINDINGS',
         '-DARRAY_SIZE_IN_FRAME_STRUCTURED_BINDINGS=3',
     ]
 )
