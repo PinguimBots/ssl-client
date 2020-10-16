@@ -4,8 +4,11 @@ project('pbssl', 'cpp',
         'cpp_std=c++17',
         'buildtype=debug',
     ],
+    meson_version: '>= 0.55', # Needed by meson.override_find_program()
     # TODO: add license
 )
+
+includes = include_directories('src')
 
 deps = [
     dependency('qt5', modules: ['Core', 'Network']),
@@ -14,16 +17,12 @@ deps = [
 ]
 # protobuf is special since we need protoc to compile .proto files
 protobuf_dep = dependency('protobuf', required: false)
-if protobuf_dep.found()
-    protoc = find_program('protoc', required: true)
-else
-    protobuf_proj = subproject('protobuf')
-    protobuf_dep = protobuf_proj.get_variable('protobuf_dep')
-    protoc = protobuf_proj.get_variable('protoc')
+if not protobuf_dep.found()
+    protobuf_subproj = subproject('protobuf')
+    protobuf_dep     = protobuf_subproj.get_variable('protobuf_dep')
+    meson.override_find_program('protoc', protobuf_subproj.get_variable('protoc'))
 endif
 deps += protobuf_dep
-
-includes = include_directories('src')
 
 sources = files(
     'src/main.cpp',
@@ -37,12 +36,15 @@ sources = files(
     'src/pbts/strategy.cpp',
 )
 sources += import('qt5').preprocess(
-    moc_headers: files('src/net/grSim_client.h'),
+    moc_headers: files(
+        'src/net/grSim_client.h',
+    ),
     include_directories: includes,
     dependencies: deps
 )
 
-protobuf_generator = generator(protoc,
+protobuf_generator = generator(
+    find_program('protoc'),
     output: ['@BASENAME@.pb.cc', '@BASENAME@.pb.h'],
     arguments: ['--proto_path=@CURRENT_SOURCE_DIR@/src', '--cpp_out=@BUILD_DIR@', '@INPUT@'],
 )
@@ -66,8 +68,6 @@ protobuf_generated = protobuf_generator.process(
     preserve_path_from : meson.current_source_dir() / 'src',
 )
 
-# I'm looking at you MSVC, stop it with that /flag nonsense.
-# TODO: add MSVC flags.
 cxx = meson.get_compiler('cpp')
 warnings = cxx.get_supported_arguments([
     '-Wall', # reasonable and standard
@@ -89,6 +89,8 @@ warnings = cxx.get_supported_arguments([
     '-Wuseless-cast', # (only in GCC >= 4.8) warn if you perform a cast to the same type
     '-Wdouble-promotion', # (GCC >= 4.6, Clang >= 3.8) warn if float is implicit promoted to double
     '-Wformat=2', # warn on security issues around functions that format output (ie printf)
+
+    '/W4', # Covers most of our needs.
 ])
 
 pbssl_exe = executable(
@@ -102,7 +104,7 @@ pbssl_exe = executable(
     cpp_args: [
         # Return the robots as an array when destructuring
         # fira_messa::Frame instead of using a vector.
-        #'-DUSE_ARRAY_IN_FRAME_STRUCTURED_BINDINGS',
+        '-DUSE_ARRAY_IN_FRAME_STRUCTURED_BINDINGS',
         '-DARRAY_SIZE_IN_FRAME_STRUCTURED_BINDINGS=3',
     ]
 )
