@@ -6,12 +6,13 @@
 #include <regex>
 
 namespace pbts::parse {
-    auto port(std::string_view input) -> std::optional<unsigned> {
+    auto port(std::string_view input) -> std::optional<unsigned>
+    {
         unsigned result = 0;
         auto [ptr, error] = std::from_chars(input.begin(), input.end(), result);
 
         // error == std::errc() means all is ok. 
-        if(error != std::errc() || result < 1 || result > 65535)
+        if(error != std::errc() || ptr != input.end() || result < 1 || result > 65535)
             {return std::nullopt;}
         return result;
     }
