@@ -1,64 +1,49 @@
 
-# ssl-client
-> Client base code #ssl #robocup #ssl-vision #grSim 
+# pbssl
+> PinguimBots client for the 2020 online #robocub competition 
 
-## Description
-This repository was created for the purpose of helping beginner teams.
-This project is capable of:
-- receive field and robot information from ssl-vision
-- receive field and robot information from grSim
-- Send commands to robots on grSim
+## Hard Dependencies
+Needed to run the project:
+- [Qt](https://www.qt.io/) >= 5.10
+- [meson](https://github.com/mesonbuild/meson) >= 0.55
 
-Almost every material present here can be found at:
+## Soft Dependencies
+Downloaded automatically:
+- [{fmt}](https://fmt.dev) >= 7.0.0
+- [docopt.cpp](https://github.com/docopt/docopt.cpp) >= 0.6.0
+- [protobuf](https://developers.google.com/protocol-buffers) >= 3.0.0
 
- [RoboCup/ssl-vision](https://github.com/RoboCup-SSL/ssl-vision)
+## Running the project
 
- [RoboCup/grSim](https://github.com/RoboCup-SSL/grSim)
+Firstly you are going to need to install the dependencies.
 
- [WarBots-RoboCup-SSL](https://github.com/findcongwang/WarBots-RoboCup-SSL)
-
-Feel free to ask and contribute too :)
-
-## Dependencies
-- Qmake
-- [protobuf](https://github.com/google/protobuf)
-
-*Tested with: Qt 5.8.0, protoc 2.5.0, protoc 2.6.1, protoc 3.x, Ubuntu 14.04.5 LTS.*
-
-## First Steps
-1. If you have protobuf installed, check which version you use with the command:
-
-```sh
-protoc --version
+To install meson you need a backend such as ninja or whatever MSVC uses
+and also python3, then you __SHOULD__ (on most distributions) do
+```
+$ python3 -m pip install meson
+```
+But you __CAN__ do
+```
+$ sudo apt install meson
 ```
 
-2. If you do not , follow the instructions in [C++ Installation - Unix](https://github.com/google/protobuf/tree/master/src).
+Qt is a whole can of worms i won't get into but just go to the [official
+site](https://qt.io) and follow the instructions.
 
-3. Go to folder `/src/pb/proto/` and run:
-
-```sh
-sh compile.sh
+Then, setup the build system with
+```
+$ meson builddir
 ```
 
-## Usage example
-1. Open the grSim.
-1. Turn off all robots.
-1. Put them all out of bounds.
-1. Get one of the blue team robots, put it inside the field and turn on.
-![](docs/exampleSimulation.png)
+> *With MSVC you might need to do*
+> ```
+> $ meson builddir -Ddefault_library=static
+> ```
+> *To avoid link errors later on.*
 
-1. Get the Vision multicast adress, Vision multicast port and Command listen port on grSim.
-![](docs/ips.png)
+Then, compile and run the project with
+```
+$ meson compile -C builddir && ./builddir/pbssl
+```
 
-1. In Qt Creator IDE open the project thru the `ssl-Clienty.pro` file. In Projects (left options) un-check the `Shadow build`!
-
-1. Go to `/ssl-client/ssl-Client/net/robocup_ssl_client.h` and paste the Vision Multicast adress and the Vision Multicast port on `string net_ref_address `and `int port`, respectively.
-![](docs/clientH.png)
-
-1. Go to `/ssl-client/ssl-Client/net/grSim_client.cpp` and paste the Vision Multicast adress and the Command listen port on `this->_addr.setAddress()`and `this->_port = quint16()`, respectively. 
-![](docs/myudpCPP.png)
-
-1. Run the Qt Project!
-
-#### Author: [Renato Sousa](https://github.com/renatoosousa) 
-
+And you're done! :tada: :tada: :tada:

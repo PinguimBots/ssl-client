@@ -11,12 +11,12 @@ project('pbssl', 'cpp',
 includes = include_directories('src')
 
 deps = [
-    dependency('qt5', modules: ['Core', 'Network']),
-    dependency('fmt', fallback: ['fmt', 'fmt_dep']),
-    dependency('docopt', fallback: ['docopt', 'docopt_dep'])
+    dependency('qt5', version: '>= 5.10', modules: ['Core', 'Network']),
+    dependency('fmt', version: '>= 7.0.0', fallback: ['fmt', 'fmt_dep']),
+    dependency('docopt', version: '>= 0.6.0', fallback: ['docopt', 'docopt_dep'])
 ]
 # protobuf is special since we need protoc to compile .proto files
-protobuf_dep = dependency('protobuf', required: false)
+protobuf_dep = dependency('protobuf', version: '>= 3.0.0', required: false)
 if not protobuf_dep.found()
     protobuf_subproj = subproject('protobuf')
     protobuf_dep     = protobuf_subproj.get_variable('protobuf_dep')
@@ -49,7 +49,7 @@ protobuf_generator = generator(
     arguments: ['--proto_path=@CURRENT_SOURCE_DIR@/src', '--cpp_out=@BUILD_DIR@', '@INPUT@'],
 )
 # preserve_path_from is important because since we set proto_path to be the source tree root
-# it will generate the .pb.cc and pb.h files mirroring the original folder structure.
+# it will generate the .pb.cc and .pb.h files mirroring the original folder structure.
 # If we dont preserve_path_from '/src' meson won't find these files since it will look in the
 # build directory instead of trying to mirror the tree.
 protobuf_generated = protobuf_generator.process(
