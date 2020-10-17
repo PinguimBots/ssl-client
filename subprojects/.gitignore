@@ -8,3 +8,6 @@ packagecache
 
 /protobuf*
 !protobuf.wrap
+
+/glm*
+!glm.wrap

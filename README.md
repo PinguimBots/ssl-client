@@ -8,9 +8,10 @@ Needed to run the project:
 - [meson](https://github.com/mesonbuild/meson) >= 0.55
 
 ## Soft Dependencies
-Downloaded automatically:
+Downloaded automatically if needed:
 - [{fmt}](https://fmt.dev) >= 7.0.0
 - [docopt.cpp](https://github.com/docopt/docopt.cpp) >= 0.6.0
+- [glm](http://glm.g-truc.net/) >= 0.9.8
 - [protobuf](https://developers.google.com/protocol-buffers) >= 3.0.0
 
 ## Running the project
