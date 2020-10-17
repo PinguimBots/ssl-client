@@ -1,10 +1,10 @@
 packagecache
 
-docopt*
+/docopt*
 !docopt.wrap
 
-fmt*
+/fmt*
 !fmt.wrap
 
-protobuf*
+/protobuf*
 !protobuf.wrap
