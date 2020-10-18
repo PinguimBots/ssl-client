@@ -3,7 +3,6 @@
 #include <QCoreApplication>
 
 #include <fmt/core.h>
-#include <fmt/chrono.h>
 
 #include <complex>
 #include <csignal>

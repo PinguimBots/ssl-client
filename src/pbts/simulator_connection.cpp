@@ -1,5 +1,4 @@
 #include "pbts/simulator_connection.hpp"
-#include "simulator_connection.hpp"
 
 #include <QObject> // QObject::connect.
 
