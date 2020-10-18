@@ -28,20 +28,9 @@ deps += protobuf_dep
 sources = files(
     'src/main.cpp',
 
-    'src/net/grSim_client.cpp',
-    'src/net/netraw.cpp',
-    'src/net/robocup_ssl_client.cpp',
-    'src/net/robocup_ssl_server.cpp',
-
     'src/pbts/control.cpp',
     'src/pbts/strategy.cpp',
-)
-sources += import('qt5').preprocess(
-    moc_headers: files(
-        'src/net/grSim_client.h',
-    ),
-    include_directories: includes,
-    dependencies: deps
+    'src/pbts/simulator_connection.cpp',
 )
 
 protobuf_generator = generator(
@@ -57,12 +46,6 @@ protobuf_generated = protobuf_generator.process(
     files(
         'src/pb/command.proto',
         'src/pb/common.proto',
-        'src/pb/messages_robocup_ssl_detection.proto',
-        'src/pb/messages_robocup_ssl_geometry.proto',
-        'src/pb/messages_robocup_ssl_geometry_legacy.proto',
-        'src/pb/messages_robocup_ssl_refbox_log.proto',
-        'src/pb/messages_robocup_ssl_wrapper.proto',
-        'src/pb/messages_robocup_ssl_wrapper_legacy.proto',
         'src/pb/packet.proto',
         'src/pb/replacement.proto',
     ),
@@ -104,7 +87,7 @@ pbssl_exe = executable(
     cpp_pch: 'src/pch.h',
     cpp_args: [
         # Return the robots as an array when destructuring
-        # fira_messa::Frame instead of using a vector.
+        # fira_message::Frame instead of using a vector.
         '-DUSE_ARRAY_IN_FRAME_STRUCTURED_BINDINGS',
         '-DARRAY_SIZE_IN_FRAME_STRUCTURED_BINDINGS=3',
     ]

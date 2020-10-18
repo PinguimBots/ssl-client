@@ -6,11 +6,13 @@ import "pb/common.proto";
 
 package fira_message.sim_to_ref;
 
+// Data sent to the simulator.
 message Packet {
 	Commands    cmd     = 1;
 	Replacement replace = 2;
 }
 
+// Data received from the simulator.
 message Environment {
 	uint32 step = 1;
 	Frame frame = 2;
