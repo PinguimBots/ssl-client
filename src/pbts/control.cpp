@@ -1,9 +1,13 @@
 #include "control.h"
 #include <math.h>
 
+#include <glm/gtc/constants.hpp>
+
 #include <fmt/core.h>
 
 #include <algorithm>
+
+const constexpr auto pi = glm::pi<double>();
 
 std::tuple<double,double> pbts::Control::generateVels(const fira_message::Robot &robot, const fira_message::Ball &ball) {
 
@@ -36,23 +40,23 @@ std::tuple<double,double> pbts::Control::generateVels(const fira_message::Robot 
     if (x < ball_x) {
         target_angle = ballAngle;
     } else {
-        target_angle = M_PI + ballAngle;
+        target_angle = pi + ballAngle;
     }
 
     angleError = target_angle - orientation;
 
     fmt::print("Angle Error: {} \n\n", angleError);
 
-    if (angleError > (2 * M_PI)) {
-        angleError = fmod(angleError, (2 * M_PI));
+    if (angleError > (2 * pi)) {
+        angleError = fmod(angleError, (2 * pi));
     }
-    if (angleError < (-2 * M_PI)) {
-        angleError = fmod(angleError, (-2 * M_PI));
+    if (angleError < (-2 * pi)) {
+        angleError = fmod(angleError, (-2 * pi));
     }
-    if (angleError > M_PI) {
-        angleError = -(2 * M_PI - angleError);
-    } else if (angleError < (-M_PI)) {
-        angleError = +(angleError + 2 * M_PI);
+    if (angleError > pi) {
+        angleError = -(2 * pi - angleError);
+    } else if (angleError < (-pi)) {
+        angleError = +(angleError + 2 * pi);
     }
 
     double robot_angle_error = 0.0, linvel_left = 0.0, linvel_right = 0.0;
