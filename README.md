@@ -19,14 +19,16 @@ Downloaded automatically if needed:
 Firstly you are going to need to install the dependencies.
 
 To install meson you need a backend such as ninja or whatever MSVC uses
-and also python3, then you __SHOULD__ (on most distributions) do
+and also python3, then you run
 ```
 $ python3 -m pip install meson
 ```
-But you __CAN__ do
-```
-$ sudo apt install meson
-```
+
+> *On most distros you __CAN__ also do*
+> ```
+> $ sudo apt install meson
+> ```
+> *But you really should install it using pip if you want to avoid problems.*
 
 Qt is a whole can of worms i won't get into but just go to the [official
 site](https://qt.io) and follow the instructions.
