@@ -9,10 +9,10 @@ namespace pbts::parse {
     auto port(std::string_view input) -> std::optional<unsigned>
     {
         unsigned result = 0;
-        auto [ptr, error] = std::from_chars(input.begin(), input.end(), result);
+        auto [ptr, error] = std::from_chars(input.data(), input.data() + input.size(), result);
 
         // error == std::errc() means all is ok. 
-        if(error != std::errc() || ptr != input.end() || result < 1 || result > 65535)
+        if(error != std::errc() || ptr != input.data() + input.size() || result < 1 || result > 65535)
             {return std::nullopt;}
         return result;
     }
