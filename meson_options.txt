@@ -1,0 +1,3 @@
+option('fixed-team-size-of', type: 'integer', min: 0, value: 3,
+        description: 'When fixed-team-size-of > 0 destructuring of fira_message::Frame will return the' +
+                     'robots as an array of size fixed-team-size-of else will return using a vector')

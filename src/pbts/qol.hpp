@@ -71,14 +71,10 @@ namespace fira_message {
                 else return f.robots_yellow(i);
             };
 
-            #ifdef USE_ARRAY_IN_FRAME_STRUCTURED_BINDINGS
+            #ifdef PBTS_FIXED_TEAM_SIZE_OF
 
                 auto robots = std::array<Robot, 
-                    #ifdef ARRAY_SIZE_IN_FRAME_STRUCTURED_BINDINGS
-                        ARRAY_SIZE_IN_FRAME_STRUCTURED_BINDINGS 
-                    #else
-                        3
-                    #endif
+                    PBTS_FIXED_TEAM_SIZE_OF
                 >{};
 
                 for(std::size_t i = 0; i < robots.size(); ++i) {

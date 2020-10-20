@@ -35,16 +35,17 @@ site](https://qt.io) and follow the instructions.
 
 Then, setup the build system with
 ```
-$ meson builddir
+$ meson builddir [-Dfixed-team-size-of=SIZE]
 ```
 
+Where optional arguments are wrapped in brackets.
 > *With MSVC you might need to do*
 > ```
-> $ meson builddir -Ddefault_library=static
+> $ meson builddir -Ddefault_library=static [-Dfixed-team-size-of=SIZE]
 > ```
 > *To avoid link errors later on.*
 
-Then, compile and run the project with
+And lastly, compile and run the project with
 ```
 $ meson compile -C builddir && ./builddir/pbssl
 ```

@@ -8,8 +8,15 @@ project('pbssl', 'cpp',
     # TODO: add license
 )
 
-includes = include_directories('src')
+cpp_defines = []
 
+if get_option('fixed-team-size-of') > 0
+    cpp_defines += '-DPBTS_FIXED_TEAM_SIZE_OF=' + get_option('fixed-team-size-of').to_string()
+endif
+
+endif
+
+# -- Dependencies --
 deps = [
     dependency('qt5', version: '>= 5.10', modules: ['Core', 'Network']),
     dependency('fmt', version: '>= 7.0.0', fallback: ['fmt', 'fmt_dep']),
@@ -25,6 +32,7 @@ if not protobuf_dep.found()
 endif
 deps += protobuf_dep
 
+# -- Source files and source generation --
 sources = files(
     'src/main.cpp',
 
@@ -52,6 +60,7 @@ protobuf_generated = protobuf_generator.process(
     preserve_path_from : meson.current_source_dir() / 'src',
 )
 
+# -- Compile options --
 cxx = meson.get_compiler('cpp')
 warnings = cxx.get_supported_arguments([
     '-Wall', # reasonable and standard
@@ -81,14 +90,9 @@ pbssl_exe = executable(
     'pbssl',
     sources,
     protobuf_generated,
-    include_directories: includes,
+    include_directories: include_directories('src'),
     dependencies: deps,
     link_args: warnings,
     cpp_pch: 'src/pch.h',
-    cpp_args: [
-        # Return the robots as an array when destructuring
-        # fira_message::Frame instead of using a vector.
-        '-DUSE_ARRAY_IN_FRAME_STRUCTURED_BINDINGS',
-        '-DARRAY_SIZE_IN_FRAME_STRUCTURED_BINDINGS=3',
-    ]
+    cpp_args: cpp_defines
 )
