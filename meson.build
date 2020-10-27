@@ -14,11 +14,9 @@ if get_option('fixed-team-size-of') > 0
     cpp_defines += '-DPBTS_FIXED_TEAM_SIZE_OF=' + get_option('fixed-team-size-of').to_string()
 endif
 
-endif
-
 # -- Dependencies --
 deps = [
-    dependency('qt5', version: '>= 5.10', modules: ['Core', 'Network']),
+    dependency('qt5', version: '>= 5.9', modules: ['Core', 'Network']),
     dependency('fmt', version: '>= 7.0.0', fallback: ['fmt', 'fmt_dep']),
     dependency('docopt', version: '>= 0.6.0', fallback: ['docopt', 'docopt_dep']),
     dependency('glm', version: '>= 0.9.8', fallback: ['glm', 'glm_dep']),
@@ -56,6 +54,9 @@ protobuf_generated = protobuf_generator.process(
         'src/pb/common.proto',
         'src/pb/packet.proto',
         'src/pb/replacement.proto',
+        'src/pb/vssref_command.proto',
+        'src/pb/vssref_common.proto',
+        'src/pb/vssref_placement.proto',
     ),
     preserve_path_from : meson.current_source_dir() / 'src',
 )
@@ -83,7 +84,7 @@ warnings = cxx.get_supported_arguments([
     '-Wdouble-promotion', # (GCC >= 4.6, Clang >= 3.8) warn if float is implicit promoted to double
     '-Wformat=2', # warn on security issues around functions that format output (ie printf)
 
-    '/W4', # Covers most of our needs.
+    '/W4', # Covers most of our needs for MSVC.
 ])
 
 pbssl_exe = executable(

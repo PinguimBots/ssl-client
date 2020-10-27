@@ -16,15 +16,17 @@ std::tuple<double,double> pbts::Control::generateVels(const fira_message::Robot 
 
     x = robot.x();
     y = robot.y();
+    fmt::print("Robot_id: {}\nX: {} || Y: {}\n", robot.robot_id(), x, y);
+    
     orientation = robot.orientation();
-    vx = robot.vx();
-    vy = robot.vy();
-    vorientation = robot.vorientation();
+    //vx = robot.vx();
+    //vy = robot.vy();
+    //vorientation = robot.vorientation();
 
     ball_x = ball.x();
     ball_y = ball.y();
-    ball_vx = ball.vx();
-    ball_vy = ball.vy();
+    //ball_vx = ball.vx();
+    //ball_vy = ball.vy();
 
     double xDif, yDif, ballAngle;
 
@@ -33,19 +35,17 @@ std::tuple<double,double> pbts::Control::generateVels(const fira_message::Robot 
 
     ballAngle = atan2(yDif, xDif); // Angulo robô -> bola
 
-    auto hypotenuse = std::sqrt(xDif + yDif); //Distancia linha reta robo -> bola
+    double positionError = std::sqrt(pow(xDif, 2) + pow(yDif, 2)); //Distancia linha reta robo -> bola
 
     double angleError = 0.0, target_angle = 0.0;
 
-    if (x < ball_x) {
-        target_angle = ballAngle;
+    if(x < ball_x){
+        target_angle = atan((ball_y - y)/(ball_x - x));
     } else {
-        target_angle = pi + ballAngle;
+        target_angle = pi + atan((ball_y - y)/(ball_x - x));
     }
 
     angleError = target_angle - orientation;
-
-    fmt::print("Angle Error: {} \n\n", angleError);
 
     if (angleError > (2 * pi)) {
         angleError = fmod(angleError, (2 * pi));
@@ -60,12 +60,10 @@ std::tuple<double,double> pbts::Control::generateVels(const fira_message::Robot 
     }
 
     double robot_angle_error = 0.0, linvel_left = 0.0, linvel_right = 0.0;
-    const double kap = 1.0, kad = 0.2, velmax = 5.0, velmin = -5.0, vel = 5.0;
+    const double kap = 1.0, kad = 0.2, velmax = 20.0, velmin = -20.0;
 
-    double positionError = vel; // sqrt(pow(ball_x - x,2) + pow(ball_y - y,2));
-
-    double vel_front = std::clamp(1.0 * positionError * cos(angleError), velmin, velmax);
-    double vel_side  = std::clamp(0.5 * sin(angleError),                velmin, velmax);
+    double vel_front = std::clamp(100.0 * positionError * cos(angleError), velmin, velmax);
+    double vel_side  = std::clamp(10.0 * sin(angleError),                velmin, velmax);
 
     if(vel_front > 0) {
         linvel_left = vel_front - vel_side;
@@ -89,21 +87,13 @@ std::tuple<double,double> pbts::Control::generateVels(const fira_message::Robot 
         linvel_right = velmin;
     }
 
-/*     linvel_left = +kap * angleError - kad * robot_angle_error + vel;
-
-    if (linvel_left > velmax) {
-        linvel_left = velmax;
-    } else if (linvel_left < velmin) {
-        linvel_left = velmin;
-    }
-
-    linvel_right = -kap * angleError + kad * robot_angle_error + vel;
-
-    if (linvel_right > velmax) {
-        linvel_right = velmax;
-    } else if (linvel_right < velmin) {
-        linvel_right = velmin;
-    } */
+    fmt::print("Position Error: {}\n \
+                Angle Error: {}\n \
+                Vel Front: {}\n \
+                Vel Side: {}\n \
+                Linvel Left: {}\n \
+                Linvel Right: {}\n\n", \
+                positionError, (angleError*180)/pi, vel_front, vel_side, linvel_left, linvel_right);
     
     return {linvel_left, linvel_right};
 }

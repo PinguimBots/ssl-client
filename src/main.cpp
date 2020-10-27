@@ -69,7 +69,7 @@ int main(int argc, char* argv[]){
     const auto is_yellow = args["--team"].asString() == "yellow";
 
     auto controle = pbts::Control{};
-    //auto strategy = pbts::Strategy{};
+    auto strategy = pbts::Strategy{};
 
     pbts::simulator_connection simulator{
         {in_addr, in_port},
@@ -86,30 +86,28 @@ int main(int argc, char* argv[]){
                 return;
             }
 
-            const auto [len, width, goal_width, goal_depth] = environment.field();
+            if (!strategy.bounds_set()) {
+                const auto [len, width, goal_width, goal_depth] = environment.field();
 
-            auto left_goal_bounds = std::array< std::complex<double>, 4>{{
-                {-len/2 - goal_depth, goal_width/2}, {-len/2, goal_width/2},
-                {-len/2 - goal_depth, -goal_width/2}, {-len/2, -goal_width/2},
-            }};
-            // Mirror of the left_goal_bounds, thats why it's out of order.
-            auto right_goal_bounds = std::array{
-                left_goal_bounds[1] * -1.0, left_goal_bounds[0] * -1.0,
-                left_goal_bounds[3] * -1.0, left_goal_bounds[2] * -1.0,
-            };
-    
-            auto field_bounds = std::array< std::complex<double>, 4>{{
-                {-len/2, width/2}, {len/2, width/2},
-                {-len/2, -width/2}, {len/2, -width/2},
-            }};
+                auto left_goal_bounds = std::array< std::complex<double>, 4>{{
+                    {-len/2 - goal_depth, goal_width/2}, {-len/2, goal_width/2},
+                    {-len/2 - goal_depth, -goal_width/2}, {-len/2, -goal_width/2},
+                }};
+                // Mirror of the left_goal_bounds, thats why it's out of order.
+                auto right_goal_bounds = std::array{
+                    left_goal_bounds[1] * -1.0, left_goal_bounds[0] * -1.0,
+                    left_goal_bounds[3] * -1.0, left_goal_bounds[2] * -1.0,
+                };
 
-            /*
-            strategy.set_bounds(
-                left_goal_bounds,
-                right_goal_bounds,
-                field_bounds
-            );
-            */
+                auto field_bounds = std::array< std::complex<double>, 4>{{
+                    {-len/2, width/2}, {len/2, width/2},
+                    {-len/2, -width/2}, {len/2, -width/2},
+                }};
+
+                strategy.set_bounds(
+                    {std::move(left_goal_bounds), std::move(right_goal_bounds), std::move(field_bounds)}
+                );
+            }
 
             auto [blue_robots, yellow_robots, ball] = environment.frame();
             auto [ball_x, ball_y, ball_z, ball_vx, ball_vy, ball_vz] = ball;

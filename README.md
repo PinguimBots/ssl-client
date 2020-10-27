@@ -1,4 +1,3 @@
-
 # pbssl
 > PinguimBots client for the 2020 online #robocub competition 
 
