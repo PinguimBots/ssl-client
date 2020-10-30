@@ -1,48 +1,39 @@
-#include "control.h"
-#include <math.h>
+#include "pbts/control.hpp"
 
+#include <cmath>
+#include <algorithm>
+
+#include <glm/geometric.hpp>
 #include <glm/gtc/constants.hpp>
 
 #include <fmt/core.h>
 
-#include <algorithm>
+auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos) -> pbts::point
+{
+    // NOTE: atan  returns the angle value between -pi/2 (-90deg) and pi/2 (90deg)
+    // while atan2 returns the angle value between -pi (-180deg) and pi (180deg).
 
-const constexpr auto pi = glm::pi<double>();
+    static const constexpr auto pi = glm::pi<double>();
 
-std::tuple<double,double> pbts::Control::generateVels(const fira_message::Robot &robot, const fira_message::Ball &ball) {
-
-    double x, y, orientation, vx, vy, vorientation;
-    double ball_x, ball_y, ball_vx, ball_vy;
-
-    x = robot.x();
-    y = robot.y();
-    fmt::print("Robot_id: {}\nX: {} || Y: {}\n", robot.robot_id(), x, y);
+    auto [x, y] = pbts::to_pair(robot.position);
     
-    orientation = robot.orientation();
-    //vx = robot.vx();
-    //vy = robot.vy();
-    //vorientation = robot.vorientation();
+    auto orientation = robot.orientation;
 
-    ball_x = ball.x();
-    ball_y = ball.y();
-    //ball_vx = ball.vx();
-    //ball_vy = ball.vy();
 
-    double xDif, yDif, ballAngle;
+    auto [target_x, target_y] = pbts::to_pair(target_pos);
+    auto [xDif, yDif] = pbts::to_pair(target_pos - robot.position);
 
-    xDif = ball_x - x;
-    yDif = ball_y - y;
+    double ballAngle = atan2(yDif, xDif); // Angulo robô -> bola
 
-    ballAngle = atan2(yDif, xDif); // Angulo robô -> bola
-
-    double positionError = std::sqrt(pow(xDif, 2) + pow(yDif, 2)); //Distancia linha reta robo -> bola
+    double positionError = glm::length(glm::vec2{xDif, yDif}); //Distancia linha reta robo -> bola
 
     double angleError = 0.0, target_angle = 0.0;
 
-    if(x < ball_x){
-        target_angle = atan((ball_y - y)/(ball_x - x));
+    
+    if(x < target_x){
+        target_angle = atan((target_y - y)/(target_x - x));
     } else {
-        target_angle = pi + atan((ball_y - y)/(ball_x - x));
+        target_angle = pi + atan((target_y - y)/(target_x - x));
     }
 
     angleError = target_angle - orientation;

@@ -8,8 +8,8 @@
 #include <csignal>
 
 #include "pbts/simulator_connection.hpp"
-#include "pbts/strategy.h"
-#include "pbts/control.h"
+#include "pbts/strategy.hpp"
+#include "pbts/control.hpp"
 #include "pbts/parse.hpp"
 #include "pbts/qol.hpp"
 
@@ -68,8 +68,7 @@ int main(int argc, char* argv[]){
 
     const auto is_yellow = args["--team"].asString() == "yellow";
 
-    auto controle = pbts::Control{};
-    auto strategy = pbts::Strategy{};
+    auto bounds = std::optional<pbts::field_geometry>{};
 
     pbts::simulator_connection simulator{
         {in_addr, in_port},
@@ -86,7 +85,7 @@ int main(int argc, char* argv[]){
                 return;
             }
 
-            if (!strategy.bounds_set()) {
+            if (!bounds.has_value()) {
                 const auto [len, width, goal_width, goal_depth] = environment.field();
 
                 auto left_goal_bounds = std::array< std::complex<double>, 4>{{
@@ -104,9 +103,11 @@ int main(int argc, char* argv[]){
                     {-len/2, -width/2}, {len/2, -width/2},
                 }};
 
-                strategy.set_bounds(
-                    {std::move(left_goal_bounds), std::move(right_goal_bounds), std::move(field_bounds)}
-                );
+                bounds = {
+                    left_goal_bounds,
+                    right_goal_bounds,
+                    field_bounds,
+                };
             }
 
             auto [blue_robots, yellow_robots, ball] = environment.frame();
@@ -123,8 +124,16 @@ int main(int argc, char* argv[]){
 
             fira_message::sim_to_ref::Packet packet;
 
+            /* 
+            vector<points> vetor = generate_robot_positions();
+
+            for (unsigned i = 0; i < allied_team.size(); ++i)
+            point ponto = create_path(vetor[i], allied_team[i]);
+            auto [left, right] = pbts::control::generate_vels(allied_team[i], ponto);
+            */
+
             for(const auto& robot : blue_robots) {
-                auto [left, right] = controle.generateVels(robot, ball);
+                //auto [left, right] = pbts::control::generate_vels(robot, ball);
 
                 /*fmt::print(
                     "Robo: {}\n"
@@ -135,8 +144,8 @@ int main(int argc, char* argv[]){
                 auto command = packet.mutable_cmd()->add_robot_commands();
                 command->set_id(robot.robot_id());
                 command->set_yellowteam(is_yellow);
-                command->set_wheel_left(left);
-                command->set_wheel_right(right);
+                //command->set_wheel_left(left);
+                //command->set_wheel_right(right);
             }
 
             simulator.send(packet);

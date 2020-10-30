@@ -37,6 +37,7 @@ sources = files(
     'src/pbts/control.cpp',
     'src/pbts/strategy.cpp',
     'src/pbts/simulator_connection.cpp',
+    'src/pbts/common.cpp',
 )
 
 protobuf_generator = generator(
@@ -94,6 +95,6 @@ pbssl_exe = executable(
     include_directories: include_directories('src'),
     dependencies: deps,
     link_args: warnings,
-    cpp_pch: 'src/pch.h',
+    cpp_pch: 'src/pch.hpp',
     cpp_args: cpp_defines
 )
