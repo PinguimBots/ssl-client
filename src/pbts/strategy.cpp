@@ -31,17 +31,22 @@ int pbts::Strategy::pertoBola(const fira_message::Robot &ally_robots, const fira
 }
 #endif
 
-auto pbts::Strategy::createPath() -> std::vector<std::tuple<double,double,double>>
+auto pbts::Strategy::createPath() -> std::tuple<double,double>
+{
+
+}
+
+auto pbts::Strategy::wavePlanner() -> void
 {
 
 }
 
 auto pbts::Strategy::bounds_set() -> bool
 {
-    return bounds.has_value();
+    //return bounds.has_value();
 }
 
 auto pbts::Strategy::set_bounds(pbts::field_geometry newbounds) -> void
 {
-    bounds = newbounds;
+    //bounds = newbounds;
 }

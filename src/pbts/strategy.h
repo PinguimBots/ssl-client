@@ -30,7 +30,7 @@ namespace pbts {
 
     private:
         std::optional<pbts::field_geometry> bounds;
-        int pbts::Strategy::pertoBola(const fira_message::Robot &ally_robots, const fira_message::Robot &enemy_robots, const fira_message::Ball &ball);
+        //int pbts::Strategy::pertoBola(const fira_message::Robot &ally_robots, const fira_message::Robot &enemy_robots, const fira_message::Ball &ball);
     };
 
 }
