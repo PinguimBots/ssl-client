@@ -33,6 +33,7 @@ namespace pbts
         auto create_path() -> pbts::point;
         auto pbts::Strategy::fourNeighborhood(int x, int y) -> std::vector<std::tuple<int,int>>;
 
-        //int pertoBola(const fira_message::Robot &ally_robots, const fira_message::Robot &enemy_robots, const fira_message::Ball &ball);
+        int pbts::strategy::pertoBola(std::vector<pbts::robot>& allied_robots, const std::vector<pbts::robot> &enemy_robots,  const pbts::ball& ball) {
+}
     };
 } // namespace pbts
