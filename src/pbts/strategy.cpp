@@ -20,25 +20,51 @@ auto pbts::Strategy::generate_robot_positions(
     return {};
 }
 
-#if 0
-int pbts::Strategy::pertoBola(const fira_message::Robot &ally_robots, const fira_message::Robot &enemy_robots, const fira_message::Ball &ball) {
+int pbts::Strategy::pertoBola(std::vector<pbts::robot> &allied_robots, const std::vector<pbts::robot> &enemy_robots, const pbts::ball &ball)
+{
     /*
         Verifica quem está mais perto da bola considerando se tem marcação ou não
         Caso houver marcação, definir critério de desempate 
-     */
-    double x,y,by,bx;
-    /*robot1*/
-    
-    x = Robot.x(); y = Robot.y();
-    by = Ball.y(); bx = Ball.x();
-    
-    dist_robot_bola =  sqrt(pow((x-bx),2) + pow((y-by),2));
-    dist_robota_robote = sqrt(pow((x-),2) + pow((y-),2));
 
-    
-    return Robot.robot_id();
+     */
+    /*
+        Log de problemas:
+
+        - Nas chamadas de to_pair ta dando um erro que não estou conseguindo resolver.
+
+    */
+    double dist_robot_bola1, dist_r1_enemy1, dist_r1_enemy2, dist_r2_enemy1, dist_robot_bola2, dist_r2_enemy2;
+
+    auto [ bx, by ] = pbts::to_pair(ball.position);
+    auto [ x1, y1 ] = pbts::to_pair(allied_robots[1].position);
+    auto [ x2, y2 ] = pbts::to_pair(allied_robots[2].position);
+    auto [ xe1, ye1 ] = pbts::to_pair(enemy_robots[1].position);
+    auto [ xe2, ye2 ] = pbts::to_pair(enemy_robots[2].position);
+
+    dist_robot_bola1 = sqrt(pow((x1 - bx), 2) + pow((y1 - by), 2));
+    dist_r1_enemy1 = sqrt(pow((x1 - xe1), 2) + pow((y1 - ye1), 2));
+    dist_r1_enemy2 = sqrt(pow((x1 - xe2), 2) + pow((y1 - ye2), 2));
+
+    dist_robot_bola2 = sqrt(pow((x2 - bx), 2) + pow((y2 - by), 2));
+    dist_r2_enemy1 = sqrt(pow((x2 - xe1), 2) + pow((y2 - ye1), 2));
+    dist_r2_enemy2 = sqrt(pow((x2 - xe2), 2) + pow((y2 - ye2), 2));
+
+    if (dist_robot_bola1 > dist_robot_bola2)
+        if ((dist_r1_enemy1 > dist_r2_enemy1) && (dist_r1_enemy2 > dist_r2_enemy2))
+        {
+            return 2;
+        }
+        else if ((dist_r1_enemy1 < dist_r2_enemy1 && dist_r1_enemy1 > dist_r2_enemy2) || (dist_r1_enemy1 < dist_r2_enemy1 && dist_r1_enemy1 > dist_r2_enemy2))
+        {
+            return 2;
+        }
+        else if (dist_r1_enemy1 < dist_r2_enemy1 && dist_r1_enemy2 < dist_r2_enemy2)
+        {
+            return 1;
+        }
+        else
+            return 1;
 }
-#endif
 
 auto pbts::Strategy::wave_planner(
     const pbts::wpoint goal_position,
@@ -56,7 +82,7 @@ auto pbts::Strategy::wave_planner(
 
     std::vector<pbts::wpoint> neighboors = valid_neighboors(goal_position);
 
-    recursive_wave((int**)discreet_field, neighboors, 1); 
+    recursive_wave((int **)discreet_field, neighboors, 1);
 
     return {};
 }
@@ -64,18 +90,18 @@ auto pbts::Strategy::wave_planner(
 auto pbts::Strategy::recursive_wave(int **field, const std::vector<pbts::wpoint> points, int prev_cost) -> void
 {
 
-    for (const auto point : points) {
+    for (const auto point : points)
+    {
         auto [x, y] = pbts::to_pair(point);
 
-        if(field[y][x] == -1) {
+        if (field[y][x] == -1)
+        {
             std::vector<pbts::wpoint> neighboors = valid_neighboors(point);
             field[y][x] = prev_cost + 1;
 
-            recursive_wave((int**)field, neighboors, field[y][x]);
+            recursive_wave((int **)field, neighboors, field[y][x]);
         }
     }
-
-    
 }
 
 auto pbts::Strategy::generate_obstacle(int **field, const std::vector<pbts::wpoint> &enemy_robots) -> void
@@ -168,14 +194,12 @@ auto pbts::Strategy::set_bounds(pbts::field_geometry newbounds) -> void
 auto pbts::Strategy::create_path(
     const pbts::point goal_position,
     const pbts::robot &allied_robot,
-    const std::vector<pbts::robot> &enemy_robots) 
+    const std::vector<pbts::robot> &enemy_robots)
     -> pbts::point
 {
     pbts::wpoint wgoal_position;
     pbts::wpoint wallied_robot;
-    std::vector<pbts::wpoint> wenemy_robots ;
-
-
+    std::vector<pbts::wpoint> wenemy_robots;
 
     return {};
 }

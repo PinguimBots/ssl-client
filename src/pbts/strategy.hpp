@@ -46,6 +46,6 @@ namespace pbts
             -> pbts::wpoint;
         auto generate_obstacle(int **field, const std::vector<pbts::wpoint> &enemy_robots) -> void;
         auto recursive_wave(int **field, const std::vector<pbts::wpoint> points, int prev_cost) -> void;
-        //int pertoBola(const fira_message::Robot &ally_robots, const fira_message::Robot &enemy_robots, const fira_message::Ball &ball);
+        auto pertoBola(std::vector<pbts::robot>& allied_robots, const std::vector<pbts::robot> &enemy_robots,  const pbts::ball& ball) -> int;
     };
 } // namespace pbts
