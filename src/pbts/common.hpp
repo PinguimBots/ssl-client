@@ -7,9 +7,11 @@
 namespace pbts
 {
     using point = std::complex<double>;
+    using wpoint = std::complex<int>;
 
     // auto [x, y] = pbts::to_pair( ponto );
     auto to_pair(const pbts::point& p) -> std::pair<double, double>;
+    auto to_pair(const pbts::wpoint& p) -> std::pair<int, int>;
     using rect = std::array<point, 4>;
 
     struct field_geometry

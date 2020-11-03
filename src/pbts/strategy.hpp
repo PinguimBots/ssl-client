@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <tuple>
+#include <math.h>
 
 #include "pbts/common.hpp"
 
@@ -23,16 +24,28 @@ namespace pbts
             -> std::vector<pbts::point>;
 
     private:
-        int xT = 200; //cm
-        int yT = 150; //cm
-        int dx = 5;
-        int dy = 5;
-        int M  = xT/dx;
-        int N  = yT/dy;
+        const int xT = 200; //cm
+        const int yT = 150; //cm
+        const int dx = 5;   //cm
+        const int dy = 5;   //cm
+        const int M = (int)std::round(xT / dx);
+        const int N = (int)std::round(yT / dy);
 
-        auto create_path() -> pbts::point;
-        auto pbts::Strategy::fourNeighborhood(int x, int y) -> std::vector<std::tuple<int,int>>;
-
+        auto create_path(
+            const pbts::point goal_position,
+            const pbts::robot &allied_robot,
+            const std::vector<pbts::robot> &enemy_robots) 
+            -> pbts::point;
+        auto four_neighborhood(pbts::wpoint point) -> std::vector<pbts::wpoint>;
+        auto d_neighborhood(pbts::wpoint point) -> std::vector<pbts::wpoint>;
+        auto valid_neighboors(pbts::wpoint point) -> std::vector<pbts::wpoint>;
+        auto wave_planner(
+            const pbts::wpoint goal_position,
+            const pbts::wpoint allied_robot,
+            const std::vector<pbts::wpoint> &enemy_robots)
+            -> pbts::wpoint;
+        auto generate_obstacle(int **field, const std::vector<pbts::wpoint> &enemy_robots) -> void;
+        auto recursive_wave(int **field, const std::vector<pbts::wpoint> points, int prev_cost) -> void;
         //int pertoBola(const fira_message::Robot &ally_robots, const fira_message::Robot &enemy_robots, const fira_message::Ball &ball);
     };
 } // namespace pbts
