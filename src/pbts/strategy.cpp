@@ -20,7 +20,7 @@ auto pbts::Strategy::generate_robot_positions(
     return {};
 }
 
-int pbts::Strategy::pertoBola(std::vector<pbts::robot> &allied_robots, const std::vector<pbts::robot> &enemy_robots, const pbts::ball &ball)
+auto pbts::Strategy::pertoBola(std::vector<pbts::robot> &allied_robots, const std::vector<pbts::robot> &enemy_robots, const pbts::ball &ball) -> int
 {
     /*
         Verifica quem está mais perto da bola considerando se tem marcação ou não
@@ -49,7 +49,7 @@ int pbts::Strategy::pertoBola(std::vector<pbts::robot> &allied_robots, const std
     dist_r2_enemy1 = sqrt(pow((x2 - xe1), 2) + pow((y2 - ye1), 2));
     dist_r2_enemy2 = sqrt(pow((x2 - xe2), 2) + pow((y2 - ye2), 2));
 
-    if (dist_robot_bola1 > dist_robot_bola2)
+    if (dist_robot_bola1 > dist_robot_bola2) {
         if ((dist_r1_enemy1 > dist_r2_enemy1) && (dist_r1_enemy2 > dist_r2_enemy2))
         {
             return 2;
@@ -64,6 +64,7 @@ int pbts::Strategy::pertoBola(std::vector<pbts::robot> &allied_robots, const std
         }
         else
             return 1;
+    }
 }
 
 auto pbts::Strategy::wave_planner(
@@ -83,6 +84,8 @@ auto pbts::Strategy::wave_planner(
     std::vector<pbts::wpoint> neighboors = valid_neighboors(goal_position);
 
     recursive_wave((int **)discreet_field, neighboors, 1);
+
+    
 
     return {};
 }
