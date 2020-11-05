@@ -7,6 +7,7 @@
 namespace pbts
 {
     using point = std::complex<double>;
+    // Ponto usado pelo wavefront planner (cordenada discreta).
     using wpoint = std::complex<int>;
 
     // auto [x, y] = pbts::to_pair( ponto );

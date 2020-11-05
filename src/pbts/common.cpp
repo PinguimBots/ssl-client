@@ -5,4 +5,9 @@ namespace pbts {
     {
         return {p.real(), p.imag()};
     }
+
+    auto to_pair(const pbts::wpoint& p) -> std::pair<int, int>
+    {
+        return {p.real(), p.imag()};
+    }
 }

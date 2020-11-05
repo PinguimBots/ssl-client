@@ -38,6 +38,7 @@ sources = files(
     'src/pbts/strategy.cpp',
     'src/pbts/simulator_connection.cpp',
     'src/pbts/common.cpp',
+    'src/pbts/parse.cpp',
 )
 
 protobuf_generator = generator(

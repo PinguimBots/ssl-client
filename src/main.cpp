@@ -26,17 +26,18 @@ static const constexpr char usage[] = R"(pbssl ver 0.0.
         --in-address INADDR    Multicast group address used to listen to fira_sim::sim_to_ref::Environment [default: 224.0.0.0].
         --out-port OUTPORT     Port    used to send fira_sim::sim_to_ref::Packet [default: 20011].
         --out-address OUTADDR  Address used to send fira_sim::sim_to_ref::Packet [default: 127.0.0.1].
-)"; 
+)";
 
-int main(int argc, char* argv[]){
+int main(int argc, char *argv[])
+{
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-    // We dont want Qt to hijack the command line arguments 
+    // We dont want Qt to hijack the command line arguments
     // so we'll just lie saying that there were none.
     // Also, why doesn't it take an int but an int&, nonsense.
     auto fake_arg_count = 1;
     auto app = QCoreApplication{fake_arg_count, argv};
-    std::signal(SIGINT, [](int signal){
+    std::signal(SIGINT, [](int signal) {
         fmt::print("SIGINT Received, calling QCoreApplication::exit()\n");
         QCoreApplication::exit(0);
     });
@@ -44,31 +45,46 @@ int main(int argc, char* argv[]){
     auto args = docopt::docopt(
         usage,
         {argv + 1, argv + argc},
-        true,            // show help if requested
-        "pbssl ver 0.0"  // version string
+        true,           // show help if requested
+        "pbssl ver 0.0" // version string
     );
 
-    auto maybe_in_port  = pbts::parse::port( args["--in-port"].asString() );
-    if(!maybe_in_port)
-        {fmt::print("PARSE_ERROR: invalid in-port\n");    return 1;}
-    auto in_addr_valid  = pbts::parse::ipv4( args["--in-address"].asString() );
-    if(!in_addr_valid)
-        {fmt::print("PARSE_ERROR: invalid in-address\n"); return 1;}
-    auto maybe_out_port = pbts::parse::port( args["--out-port"].asString() );
-    if(!maybe_out_port)
-        {fmt::print("PARSE_ERROR: invalid out-port\n");   return 1;}
-    auto out_addr_valid = pbts::parse::ipv4( args["--out-address"].asString() );
-    if(!out_addr_valid)
-        {fmt::print("PARSE_ERROR: invalid out-address\n");return 1;}
+    auto maybe_in_port = pbts::parse::port(args["--in-port"].asString());
+    auto maybe_in_addr = pbts::parse::ipv4(args["--in-address"].asString());
+    auto maybe_out_port = pbts::parse::port(args["--out-port"].asString());
+    auto maybe_out_addr = pbts::parse::ipv4(args["--out-address"].asString());
 
-    const auto in_addr = args["--in-address"].asString();
+    if (!maybe_in_port)
+    {
+        fmt::print("PARSE_ERROR: invalid in-port\n");
+        return 1;
+    }
+    if (!maybe_in_addr)
+    {
+        fmt::print("PARSE_ERROR: invalid in-address\n");
+        return 1;
+    }
+    if (!maybe_out_port)
+    {
+        fmt::print("PARSE_ERROR: invalid out-port\n");
+        return 1;
+    }
+    if (!maybe_out_addr)
+    {
+        fmt::print("PARSE_ERROR: invalid out-address\n");
+        return 1;
+    }
+
+    const auto in_addr = maybe_in_addr.value();
     const auto in_port = static_cast<std::uint16_t>(maybe_in_port.value());
-    const auto out_addr = args["--out-address"].asString();
+    const auto out_addr = maybe_out_addr.value();
     const auto out_port = static_cast<std::uint16_t>(maybe_out_port.value());
 
     const auto is_yellow = args["--team"].asString() == "yellow";
 
     auto bounds = std::optional<pbts::field_geometry>{};
+
+    auto strategy = pbts::Strategy();
 
     pbts::simulator_connection simulator{
         {in_addr, in_port},
@@ -77,30 +93,40 @@ int main(int argc, char* argv[]){
             /// TODO: measure timing
 
             /// TODO: Make sure it's necessary to verify has_frame() and has_field().
-            if(!environment.has_field()) {
+            if (!environment.has_field())
+            {
                 fmt::print("MESSAGE_ERROR: NO FIELD (has_field() == false)\n");
                 return;
-            } else if(!environment.has_frame()) {
+            }
+            else if (!environment.has_frame())
+            {
                 fmt::print("MESSAGE_ERROR: NO FRAME (has_frame() == false)\n");
                 return;
             }
 
-            if (!bounds.has_value()) {
+            if (!bounds.has_value())
+            {
                 const auto [len, width, goal_width, goal_depth] = environment.field();
 
-                auto left_goal_bounds = std::array< std::complex<double>, 4>{{
-                    {-len/2 - goal_depth, goal_width/2}, {-len/2, goal_width/2},
-                    {-len/2 - goal_depth, -goal_width/2}, {-len/2, -goal_width/2},
+                auto left_goal_bounds = std::array<std::complex<double>, 4>{{
+                    {-len / 2 - goal_depth, goal_width / 2},
+                    {-len / 2, goal_width / 2},
+                    {-len / 2 - goal_depth, -goal_width / 2},
+                    {-len / 2, -goal_width / 2},
                 }};
                 // Mirror of the left_goal_bounds, thats why it's out of order.
                 auto right_goal_bounds = std::array{
-                    left_goal_bounds[1] * -1.0, left_goal_bounds[0] * -1.0,
-                    left_goal_bounds[3] * -1.0, left_goal_bounds[2] * -1.0,
+                    left_goal_bounds[1] * -1.0,
+                    left_goal_bounds[0] * -1.0,
+                    left_goal_bounds[3] * -1.0,
+                    left_goal_bounds[2] * -1.0,
                 };
 
-                auto field_bounds = std::array< std::complex<double>, 4>{{
-                    {-len/2, width/2}, {len/2, width/2},
-                    {-len/2, -width/2}, {len/2, -width/2},
+                auto field_bounds = std::array<std::complex<double>, 4>{{
+                    {-len / 2, width / 2},
+                    {len / 2, width / 2},
+                    {-len / 2, -width / 2},
+                    {len / 2, -width / 2},
                 }};
 
                 bounds = {
@@ -123,34 +149,33 @@ int main(int argc, char* argv[]){
             */
 
             fira_message::sim_to_ref::Packet packet;
+            std::vector<pbts::point> pb_enemies = {{
+                {yellow_robots[0].x(), yellow_robots[0].y()},
+                {yellow_robots[1].x(), yellow_robots[1].y()},
+                {yellow_robots[2].x(), yellow_robots[2].y()}
+            }};
 
-            /* 
-            vector<points> vetor = generate_robot_positions();
 
-            for (unsigned i = 0; i < allied_team.size(); ++i)
-            point ponto = create_path(vetor[i], allied_team[i]);
-            auto [left, right] = pbts::control::generate_vels(allied_team[i], ponto);
-            */
-
-            for(const auto& robot : blue_robots) {
-                //auto [left, right] = pbts::control::generate_vels(robot, ball);
-
-                /*fmt::print(
-                    "Robo: {}\n"
-                    "\tVel Left: {} | Vel Right: {}\n",
-                    robot.robot_id(), left, right);
-                */
+            for (const auto &robot : blue_robots)
+            {
+                pbts::robot pb_robot;
+                pbts::point pb_ball, new_point;
+                
+                pb_robot.position = {robot.x(), robot.y()};
+                pb_robot.orientation = robot.orientation();
+                pb_ball = pbts::point{ball.x(), ball.y()};
+                new_point = strategy.create_path(pb_ball, pb_robot, pb_enemies);
+                auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point) );
 
                 auto command = packet.mutable_cmd()->add_robot_commands();
                 command->set_id(robot.robot_id());
                 command->set_yellowteam(is_yellow);
-                //command->set_wheel_left(left);
-                //command->set_wheel_right(right);
+                command->set_wheel_left(left);
+                command->set_wheel_right(right);
             }
 
             simulator.send(packet);
-        }
-    };
+        }};
 
     // Start the event loop (needed to be able to send and receive messages).
     app.exec();

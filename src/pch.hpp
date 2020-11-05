@@ -1,3 +1,5 @@
+// Avoid double definition errors.
+#define HAVE_STRUCT_TIMESPEC
 #include <fmt/core.h>
 
 #include <functional>
