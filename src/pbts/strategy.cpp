@@ -120,17 +120,21 @@ auto pbts::Strategy::wave_planner(
         {
             auto [nx, ny] = pbts::to_pair(neighboor);
 
-            if (discreet_field[ny][nx] < cost)
+            if (auto curr_val = discreet_field[ny][nx];
+                curr_val < cost && curr_val != 0)
             {
-                cost = discreet_field[ny][nx];
+                cost = curr_val;
                 robot_x = nx;
                 robot_y = ny;
+
+                if (curr_val == 1) goto end;
+
                 break;
             }
         }
     }
 
-    return {robot_x, robot_y};
+  end:  return {robot_x, robot_y};
 }
 
 auto pbts::Strategy::wave_path(int (&field)[N][M], const pbts::wpoint goal) -> void
@@ -178,7 +182,7 @@ auto pbts::Strategy::generate_obstacle(int (&field)[N][M], const std::vector<pbt
 auto pbts::Strategy::valid_neighbours(pbts::wpoint point) -> std::vector<pbts::wpoint>
 {
     std::vector<pbts::wpoint> fourNB;
-    std::vector<pbts::wpoint> dNB;
+    //std::vector<pbts::wpoint> dNB;
 
     fourNB = four_neighborhood(point);
     //dNB = d_neighborhood(point);
