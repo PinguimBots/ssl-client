@@ -40,14 +40,14 @@ namespace pbts
     private:
         auto four_neighborhood(pbts::wpoint point) -> std::vector<pbts::wpoint>;
         auto d_neighborhood(pbts::wpoint point) -> std::vector<pbts::wpoint>;
-        auto valid_neighboors(pbts::wpoint point) -> std::vector<pbts::wpoint>;
+        auto valid_neighbours(pbts::wpoint point) -> std::vector<pbts::wpoint>;
         auto wave_planner(
             const pbts::wpoint goal_position,
             const pbts::wpoint allied_robot,
             const std::vector<pbts::wpoint> &enemy_robots)
             -> pbts::wpoint;
-        auto generate_obstacle(int **field, const std::vector<pbts::wpoint> &enemy_robots) -> void;
-        auto recursive_wave(int **field, const std::vector<pbts::wpoint> points, int prev_cost) -> void;
+        auto generate_obstacle(int (&field)[N][M], const std::vector<pbts::wpoint> &enemy_robots) -> void;
+        auto wave_path(int (&field)[N][M], const pbts::wpoint goal) -> void;
         auto pertoBola(std::vector<pbts::robot>& allied_robots, const std::vector<pbts::robot> &enemy_robots,  const pbts::ball& ball) -> int;
         auto discreet_to_real(pbts::wpoint wpoint) -> pbts::point;
         auto real_to_discreet(pbts::point point) -> pbts::wpoint;

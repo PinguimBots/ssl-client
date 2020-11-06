@@ -1,4 +1,5 @@
 #include "pbts/strategy.hpp"
+#include <queue>
 
 auto pbts::Strategy::generate_robot_positions(
     const pbts::field_geometry &field,
@@ -69,32 +70,51 @@ auto pbts::Strategy::wave_planner(
     const std::vector<pbts::wpoint> &enemy_robots)
     -> pbts::wpoint
 {
-    int discreet_field[N][M] = {-1};
+    int discreet_field[N][M];
     auto [goal_x, goal_y] = pbts::to_pair(goal_position);
     auto [robot_x, robot_y] = pbts::to_pair(allied_robot);
-
-    generate_obstacle((int **)discreet_field, enemy_robots);
 
     for (int i = 0; i < N; i++)
     {
         for (int j = 0; j < M; j++)
         {
-            printf("%d ", discreet_field[i][j]);
+            discreet_field[i][j] = -1;
+        }
+    }
+
+    generate_obstacle(discreet_field, enemy_robots);
+
+ /*    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < M; j++)
+        {
+            printf("%d", discreet_field[i][j]);
         }
         printf("\n");
     }
+    printf("\n\n"); */
 
     discreet_field[goal_y][goal_x] = 1;
 
-    std::vector<pbts::wpoint> neighboors = valid_neighboors(goal_position);
+    wave_path(discreet_field, goal_position);
 
-    recursive_wave((int **)discreet_field, neighboors, 1);
+/*     for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < M; j++)
+        {
+            printf("[%d]", discreet_field[i][j]);
+        }
+        printf("\\\n");
+    }
+    printf("\n\n");
+
+    exit(1); */
 
     int cost = discreet_field[robot_y][robot_x];
 
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 10; i++)
     {
-        neighboors = valid_neighboors({robot_x, robot_y});
+        auto neighboors = valid_neighbours({robot_x, robot_y});
 
         for (auto neighboor : neighboors)
         {
@@ -113,65 +133,57 @@ auto pbts::Strategy::wave_planner(
     return {robot_x, robot_y};
 }
 
-auto pbts::Strategy::recursive_wave(int **field, const std::vector<pbts::wpoint> points, int prev_cost) -> void
+auto pbts::Strategy::wave_path(int (&field)[N][M], const pbts::wpoint goal) -> void
 {
 
-    for (const auto point : points)
-    {
-        auto [x, y] = pbts::to_pair(point);
+    auto open_queue = std::queue<pbts::wpoint>();
+    open_queue.push(goal);
 
-        printf("X = %d | Y = %d\n", x, y);
-        printf("FIELD[Y][X] = %d\n", field[y][x]);
+    while(!open_queue.empty()) {
+        auto current_pos = open_queue.front();
+        auto [curr_x, curr_y] = pbts::to_pair(current_pos);
+        auto curr_val = field[curr_y][curr_x];
+        auto neighbours = valid_neighbours(current_pos);
 
-        if (field[y][x] == -1)
-        {
-            std::vector<pbts::wpoint> neighboors = valid_neighboors(point);
-            field[y][x] = prev_cost + 1;
+        for (const auto& neighbour : neighbours) {
+            auto [looking_x, looking_y] = pbts::to_pair(neighbour);
 
-            recursive_wave(field, neighboors, field[y][x]);
+            if (auto old_val = field[looking_y][looking_x];
+                old_val == -1 || curr_val + 1 < old_val) {
+                    field[looking_y][looking_x] = curr_val + 1;
+                    open_queue.push(neighbour);
+            }
         }
+
+        open_queue.pop();
     }
+
 }
 
-auto pbts::Strategy::generate_obstacle(int **field, const std::vector<pbts::wpoint> &enemy_robots) -> void
+auto pbts::Strategy::generate_obstacle(int (&field)[N][M], const std::vector<pbts::wpoint> &enemy_robots) -> void
 {
-    int r = 1, theta = 0;
-    int step = 7;
-
-    printf("ENTROU\n");
 
     for (const auto &robot : enemy_robots)
     {
-        auto [r_x, r_y] = pbts::to_pair(robot);
-        int h = r_x + (xT / 2);
-        int k = r_y + (yT / 2);
+        auto neighboors = valid_neighbours(robot);
 
-        while (theta <= 360)
-        {
-            int x = h + r * std::cos(theta);
-            int y = k + r * std::sin(theta);
+        for (const auto &neighboor : neighboors) {
+            auto [rx, ry] = pbts::to_pair(neighboor);
 
-            if ((x < M && x >= 0) && (y < N && y >= 0))
-            {
-                field[y][x] = 0;
-            }
-            theta += step;
+            field[ry][rx] = 0;
         }
-
-        theta = 0;
     }
-    printf("SAIU\n");
 }
 
-auto pbts::Strategy::valid_neighboors(pbts::wpoint point) -> std::vector<pbts::wpoint>
+auto pbts::Strategy::valid_neighbours(pbts::wpoint point) -> std::vector<pbts::wpoint>
 {
     std::vector<pbts::wpoint> fourNB;
     std::vector<pbts::wpoint> dNB;
 
     fourNB = four_neighborhood(point);
-    dNB = d_neighborhood(point);
+    //dNB = d_neighborhood(point);
 
-    fourNB.insert(fourNB.end(), dNB.begin(), dNB.end());
+    //fourNB.insert(fourNB.end(), dNB.begin(), dNB.end());
 
     return fourNB;
 }
