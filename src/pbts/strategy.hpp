@@ -40,7 +40,7 @@ namespace pbts
     private:
         auto four_neighborhood(pbts::wpoint point) -> std::vector<pbts::wpoint>;
         auto d_neighborhood(pbts::wpoint point) -> std::vector<pbts::wpoint>;
-        auto valid_neighbours(pbts::wpoint point) -> std::vector<pbts::wpoint>;
+        auto valid_neighbours(pbts::wpoint point, int ntype) -> std::vector<pbts::wpoint>;
         auto wave_planner(
             const pbts::wpoint goal_position,
             const pbts::wpoint allied_robot,

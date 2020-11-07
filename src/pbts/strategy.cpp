@@ -114,7 +114,7 @@ auto pbts::Strategy::wave_planner(
 
     for (int i = 0; i < 10; i++)
     {
-        auto neighboors = valid_neighbours({robot_x, robot_y});
+        auto neighboors = valid_neighbours({robot_x, robot_y}, 0);
 
         for (auto neighboor : neighboors)
         {
@@ -128,8 +128,6 @@ auto pbts::Strategy::wave_planner(
                 robot_y = ny;
 
                 if (curr_val == 1) goto end;
-
-                break;
             }
         }
     }
@@ -147,7 +145,7 @@ auto pbts::Strategy::wave_path(int (&field)[N][M], const pbts::wpoint goal) -> v
         auto current_pos = open_queue.front();
         auto [curr_x, curr_y] = pbts::to_pair(current_pos);
         auto curr_val = field[curr_y][curr_x];
-        auto neighbours = valid_neighbours(current_pos);
+        auto neighbours = valid_neighbours(current_pos, 0);
 
         for (const auto& neighbour : neighbours) {
             auto [looking_x, looking_y] = pbts::to_pair(neighbour);
@@ -169,7 +167,7 @@ auto pbts::Strategy::generate_obstacle(int (&field)[N][M], const std::vector<pbt
 
     for (const auto &robot : enemy_robots)
     {
-        auto neighboors = valid_neighbours(robot);
+        auto neighboors = valid_neighbours(robot, 1);
 
         for (const auto &neighboor : neighboors) {
             auto [rx, ry] = pbts::to_pair(neighboor);
@@ -179,15 +177,23 @@ auto pbts::Strategy::generate_obstacle(int (&field)[N][M], const std::vector<pbt
     }
 }
 
-auto pbts::Strategy::valid_neighbours(pbts::wpoint point) -> std::vector<pbts::wpoint>
+auto pbts::Strategy::valid_neighbours(pbts::wpoint point, int ntype) -> std::vector<pbts::wpoint>
 {
     std::vector<pbts::wpoint> fourNB;
-    //std::vector<pbts::wpoint> dNB;
+    std::vector<pbts::wpoint> dNB;
 
     fourNB = four_neighborhood(point);
-    //dNB = d_neighborhood(point);
 
-    //fourNB.insert(fourNB.end(), dNB.begin(), dNB.end());
+    switch (ntype)
+    {
+    case 1:
+        dNB = d_neighborhood(point);
+        fourNB.insert(fourNB.end(), dNB.begin(), dNB.end());
+        break;
+    
+    default:
+        break;
+    }
 
     return fourNB;
 }
