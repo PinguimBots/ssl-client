@@ -259,27 +259,27 @@ auto pbts::Strategy::create_path(
 auto pbts::Strategy::discreet_to_real(pbts::wpoint wpoint) -> pbts::point
 {
 
-    auto [wx, wy] = pbts::to_pair(wpoint);
+    auto [iin, jin] = pbts::to_pair(wpoint);
 
-    double xout = wx * dx - xbias;
-    double yout = wy * dy - ybias;
+    double xout = iin * dx - dx + xmin;
+    double yout = jin * dy - dy + ymin;
 
-    if (xout > (xT / 2))
+    if (xout > xmax)
     {
-        xout = xT / 2;
+        xout = xmax;
     }
-    else if (xout < (-xT / 2))
+    else if (xout < xmin)
     {
-        xout = -xT / 2;
+        xout = xmin;
     }
 
-    if (yout > (yT / 2))
+    if (yout > ymax)
     {
-        yout = yT / 2;
+        yout = ymax;
     }
-    else if (yout < (-yT / 2))
+    else if (yout < ymin)
     {
-        xout = -yT / 2;
+        xout = ymin;
     }
 
     return {xout, yout};
@@ -289,24 +289,21 @@ auto pbts::Strategy::real_to_discreet(pbts::point point) -> pbts::wpoint
 {
     auto [xin, yin] = pbts::to_pair(point);
 
-    auto xnew = xin + xbias;
-    auto ynew = yin + ybias;
+    int iout = std::round((M-1)*((xin-xmin)/xT));
+    int jout = std::round((N-1)*((yin-ymin)/yT));
 
-    int iout = round(M * xnew / xT);
-    int jout = round(N * ynew / yT);
-
-    if (iout < 1)
+    if (iout < 0)
     {
-        iout = 1;
+        iout = 0;
     }
     else if (iout > M)
     {
         iout = M;
     }
 
-    if (jout < 1)
+    if (jout < 0)
     {
-        jout = 1;
+        jout = 0;
     }
     else if (jout > N)
     {

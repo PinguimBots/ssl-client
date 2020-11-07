@@ -21,13 +21,20 @@ namespace pbts
             )
             -> std::vector<pbts::point>;
 
-        static const constexpr auto xT = 2.0d; //cm
-        static const constexpr auto yT = 1.5d; //cm
-        static const constexpr auto dx = 0.025d;   //cm
-        static const constexpr auto dy = 0.025d;   //cm
+        //static const constexpr auto dt = 50e-3;
+        static const constexpr auto tmax = 10;
+        static const constexpr auto telap = 0;
 
-        static const constexpr auto xbias = xT/2;
-        static const constexpr auto ybias = yT/2;
+        static const constexpr auto xmin = -0.0;
+        static const constexpr auto xmax = +2.0;
+        static const constexpr auto xT = xmax - xmin; //cm
+
+        static const constexpr auto ymin = -0.0;
+        static const constexpr auto ymax = +2.0;
+        static const constexpr auto yT = ymax - ymin; //cm
+
+        static const constexpr auto dx = 0.05d;   //cm
+        static const constexpr auto dy = 0.05d;   //cm
 
         static const constexpr int M = std::round(xT/dx);
         static const constexpr int N = std::round(yT/dy);
