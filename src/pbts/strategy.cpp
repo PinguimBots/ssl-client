@@ -184,16 +184,11 @@ auto pbts::Strategy::valid_neighbours(pbts::wpoint point, int ntype) -> std::vec
 
     fourNB = four_neighborhood(point);
 
-    switch (ntype)
-    {
-    case 1:
+    if (ntype == 1) {
         dNB = d_neighborhood(point);
         fourNB.insert(fourNB.end(), dNB.begin(), dNB.end());
-        break;
-    
-    default:
-        break;
     }
+
 
     return fourNB;
 }
