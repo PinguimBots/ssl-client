@@ -24,6 +24,8 @@ namespace pbts
 
     struct robot
     {
+        int robot_id;
+
         point position;
         double orientation; // In rad.
 
