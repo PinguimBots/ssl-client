@@ -32,23 +32,22 @@ namespace pbts
             )
             -> std::vector<pbts::point>;
 
-        //static const constexpr auto dt = 50e-3;
-        static const constexpr auto tmax = 10;
-        static const constexpr auto telap = 0;
+        static const constexpr auto xmin = -1.0;
+        static const constexpr auto xmax = +1.0;
+        static const constexpr auto xT = xmax - xmin; //m
 
-        static const constexpr auto xmin = -0.0;
-        static const constexpr auto xmax = +2.0;
-        static const constexpr auto xT = xmax - xmin; //cm
+        static const constexpr auto ymin = -0.75;
+        static const constexpr auto ymax = +0.75;
+        static const constexpr auto yT = ymax - ymin; //m
 
-        static const constexpr auto ymin = -0.0;
-        static const constexpr auto ymax = +2.0;
-        static const constexpr auto yT = ymax - ymin; //cm
+        static const constexpr auto dx = 0.05d;   //m
+        static const constexpr auto dy = 0.05d;   //m
 
-        static const constexpr auto dx = 0.05d;   //cm
-        static const constexpr auto dy = 0.05d;   //cm
+        static const constexpr auto imin = 0;
+        static const constexpr auto jmin = 0;
 
-        static const constexpr int M = std::round(xT/dx);
-        static const constexpr int N = std::round(yT/dy);
+        static const constexpr int imax = std::round(xT/dx) + imin;
+        static const constexpr int jmax = std::round(yT/dy) + jmin;
 
         auto create_path(
             const pbts::point goal_position,
@@ -75,8 +74,8 @@ namespace pbts
             const pbts::wpoint allied_robot,
             const std::vector<pbts::wpoint> &enemy_robots)
             -> pbts::wpoint;
-        auto generate_obstacle(int (&field)[N][M], const std::vector<pbts::wpoint> &enemy_robots) -> void;
-        auto wave_path(int (&field)[N][M], const pbts::wpoint goal) -> void;
+        auto generate_obstacle(int (&field)[imax][jmax], const std::vector<pbts::wpoint> &enemy_robots) -> void;
+        auto wave_path(int (&field)[imax][jmax], const pbts::wpoint goal) -> void;
         auto pertoBola(std::vector<pbts::robot>& allied_robots, const std::vector<pbts::robot> &enemy_robots,  const pbts::ball& ball) -> int;
         auto discreet_to_real(pbts::wpoint wpoint) -> pbts::point;
         auto real_to_discreet(pbts::point point) -> pbts::wpoint;

@@ -1,6 +1,7 @@
 #include "pbts/strategy.hpp"
 #include <queue>
 #include <iostream>
+
 auto pbts::Strategy::generate_robot_positions(
     const pbts::field_geometry &field,
     const std::vector<pbts::robot> &allied_robots,
@@ -202,13 +203,13 @@ auto pbts::Strategy::wave_planner(
     const std::vector<pbts::wpoint> &enemy_robots)
     -> pbts::wpoint
 {
-    int discreet_field[N][M];
+    int discreet_field[imax][jamx];
     auto [goal_x, goal_y] = pbts::to_pair(goal_position);
     auto [robot_x, robot_y] = pbts::to_pair(allied_robot);
 
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < imax; i++)
     {
-        for (int j = 0; j < M; j++)
+        for (int j = 0; j < jmax; j++)
         {
             discreet_field[i][j] = -1;
         }
@@ -226,7 +227,7 @@ auto pbts::Strategy::wave_planner(
     }
     printf("\n\n"); */
 
-    discreet_field[goal_y][goal_x] = 1;
+    discreet_field[goal_x][goal_y] = 1;
 
     wave_path(discreet_field, goal_position);
 
@@ -242,7 +243,7 @@ auto pbts::Strategy::wave_planner(
 
     exit(1); */
 
-    int cost = discreet_field[robot_y][robot_x];
+    int cost = discreet_field[robot_x][robot_y];
 
     for (int i = 0; i < 10; i++)
     {
@@ -267,7 +268,7 @@ auto pbts::Strategy::wave_planner(
   end:  return {robot_x, robot_y};
 }
 
-auto pbts::Strategy::wave_path(int (&field)[N][M], const pbts::wpoint goal) -> void
+auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal) -> void
 {
 
     auto open_queue = std::queue<pbts::wpoint>();
@@ -294,7 +295,7 @@ auto pbts::Strategy::wave_path(int (&field)[N][M], const pbts::wpoint goal) -> v
 
 }
 
-auto pbts::Strategy::generate_obstacle(int (&field)[N][M], const std::vector<pbts::wpoint> &enemy_robots) -> void
+auto pbts::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vector<pbts::wpoint> &enemy_robots) -> void
 {
 
     for (const auto &robot : enemy_robots)
@@ -393,8 +394,8 @@ auto pbts::Strategy::discreet_to_real(pbts::wpoint wpoint) -> pbts::point
 
     auto [iin, jin] = pbts::to_pair(wpoint);
 
-    double xout = iin * dx - dx + xmin;
-    double yout = jin * dy - dy + ymin;
+    double xout = iin * dx - imin * dx + xmin;
+    double yout = jin * dy - jmin * dy + ymin;
 
     if (xout > xmax)
     {
@@ -421,25 +422,25 @@ auto pbts::Strategy::real_to_discreet(pbts::point point) -> pbts::wpoint
 {
     auto [xin, yin] = pbts::to_pair(point);
 
-    int iout = std::round((M-1)*((xin-xmin)/xT));
-    int jout = std::round((N-1)*((yin-ymin)/yT));
+    int iout = std::round((imax-1)*((xin-xmin)/xT)) + imin;
+    int jout = std::round((jmax-1)*((yin-ymin)/yT)) + jmin;
 
-    if (iout < 0)
+    if (iout < imin)
     {
-        iout = 0;
+        iout = imin;
     }
-    else if (iout > M)
+    else if (iout > imax)
     {
-        iout = M;
+        iout = imax;
     }
 
-    if (jout < 0)
+    if (jout < jmin)
     {
-        jout = 0;
+        jout = jmin;
     }
-    else if (jout > N)
+    else if (jout > jmax)
     {
-        jout = N;
+        jout = jmax;
     }
 
     return {iout, jout};
