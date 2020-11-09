@@ -6,6 +6,7 @@
 
 #include "pbts/common.hpp"
 
+
 #define GOALKEEPER_std_Y 0
 #define GOALKEEPER_std_X -0.67
 
@@ -59,7 +60,8 @@ namespace pbts
             const pbts::field_geometry& field,
             const pbts::robot& robot,
             const pbts::ball& ball,
-            const std::vector<pbts::point> &enemy_robots
+            const std::vector<pbts::point> &enemy_robots,
+            double team
         ) -> std::tuple<pbts::point, int>;
 
         auto kick(const pbts::robot& robot, const pbts::ball& ball) -> std::tuple<pbts::point, int>;
@@ -83,10 +85,10 @@ namespace pbts
         auto real_to_discreet(pbts::point point) -> pbts::wpoint;
         auto rotate(const pbts::robot& robot, const pbts::ball& ball) -> std::tuple<pbts::point, int>;
        
-        auto trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ball) -> std::tuple<pbts::point, int>;
+        auto trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ball, double team) -> std::tuple<pbts::point, int>;
 
         auto moveBack(const pbts::robot& rbt) -> std::tuple<pbts::point, int>;
-        auto towardGoal(const pbts::robot& rbt, const pbts::field_geometry& field) -> std::tuple<pbts::point, int>;
+        auto towardGoal(const pbts::robot& rbt, const pbts::field_geometry& field, double team) -> std::tuple<pbts::point, int>;
         auto moveOntoBall(const pbts::robot& rbt, const pbts::ball& ball) -> std::tuple<pbts::point, int>;
 
 

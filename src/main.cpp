@@ -207,6 +207,30 @@ int main(int argc, char *argv[])
                 command->set_wheel_right(right);
             }
 
+             for (const auto &robot : yellow_robots)
+            {
+                pbts::robot pb_robot;
+                pbts::ball  pb_ball;
+                //pbts::point new_point;
+                
+                pb_robot.position = {robot.x(), robot.y()};
+                pb_robot.orientation = robot.orientation();
+                pb_robot.id = robot.robot_id();
+                pb_ball.position = pbts::point{ball.x(), ball.y()};
+                pb_ball.velocity = pbts::point{ball.vx(), ball.vy()};
+
+                auto [new_point, rotation] = strategy.actions(bounds.value(), pb_robot, pb_ball, pb_enemies, -1);
+                auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, rotation ));
+                //auto [left, right] = pbts::to_pair(pbts::control::rotate(pb_robot, M_PI));
+
+                auto command = packet.mutable_cmd()->add_robot_commands();
+                command->set_id(robot.robot_id());
+                command->set_yellowteam(true);
+                command->set_wheel_left(left);
+                command->set_wheel_right(right);
+            }
+
+            //simulator.send(packet);
             VSSS.simulator_send(packet);
         },
         /*referee_in_params=*/{ref_addr, ref_port},
