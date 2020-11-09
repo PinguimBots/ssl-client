@@ -66,16 +66,18 @@ namespace pbts
 
     private:
         bool isNear(pbts::point point1, pbts::point point2, double tol);
-        auto four_neighborhood(pbts::wpoint point) -> std::vector<pbts::wpoint>;
-        auto d_neighborhood(pbts::wpoint point) -> std::vector<pbts::wpoint>;
-        auto valid_neighbours(pbts::wpoint point, int ntype) -> std::vector<pbts::wpoint>;
+        auto four_neighborhood(pbts::wpoint point, int radius) -> std::vector<pbts::wpoint>;
+        auto d_neighborhood(pbts::wpoint point, int radius) -> std::vector<pbts::wpoint>;
+        auto valid_neighbours(pbts::wpoint point, int ntype, int radius) -> std::vector<pbts::wpoint>;
         auto wave_planner(
             const pbts::wpoint goal_position,
             const pbts::wpoint allied_robot,
             const std::vector<pbts::wpoint> &enemy_robots)
             -> pbts::wpoint;
         auto generate_obstacle(int (&field)[imax][jmax], const std::vector<pbts::wpoint> &enemy_robots) -> void;
-        auto wave_path(int (&field)[imax][jmax], const pbts::wpoint goal) -> void;
+        auto next_point(const pbts::wpoint pos_now, std::vector<std::vector<int>> &cost) -> pbts::wpoint;
+        auto add_clearance(int (&field)[imax][jmax], const pbts::wpoint robot_position) -> void;
+        auto wave_path(int (&field)[imax][jmax], const pbts::wpoint goal) -> std::vector<std::vector<int>>;
         auto pertoBola(std::vector<pbts::robot>& allied_robots, const std::vector<pbts::robot> &enemy_robots,  const pbts::ball& ball) -> int;
         auto discreet_to_real(pbts::wpoint wpoint) -> pbts::point;
         auto real_to_discreet(pbts::point point) -> pbts::wpoint;
