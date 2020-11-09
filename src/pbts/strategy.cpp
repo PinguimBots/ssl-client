@@ -1,6 +1,7 @@
 #include "pbts/strategy.hpp"
 #include <queue>
 #include <iostream>
+
 auto pbts::Strategy::generate_robot_positions(
     const pbts::field_geometry &field,
     const std::vector<pbts::robot> &allied_robots,
@@ -207,19 +208,21 @@ auto pbts::Strategy::wave_planner(
     const std::vector<pbts::wpoint> &enemy_robots)
     -> pbts::wpoint
 {
-    int discreet_field[N][M];
+    int discreet_field[imax][jmax];
     auto [goal_x, goal_y] = pbts::to_pair(goal_position);
-    auto [robot_x, robot_y] = pbts::to_pair(allied_robot);
+    //auto [robot_x, robot_y] = pbts::to_pair(allied_robot);
 
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < imax; i++)
     {
-        for (int j = 0; j < M; j++)
+        for (int j = 0; j < jmax; j++)
         {
-            discreet_field[i][j] = -1;
+            discreet_field[i][j] = 0;
         }
     }
 
     generate_obstacle(discreet_field, enemy_robots);
+
+    add_clearance(discreet_field, allied_robot);
 
  /*    for (int i = 0; i < N; i++)
     {
@@ -231,9 +234,9 @@ auto pbts::Strategy::wave_planner(
     }
     printf("\n\n"); */
 
-    discreet_field[goal_y][goal_x] = 1;
+    discreet_field[goal_x][goal_y] = 1;
 
-    wave_path(discreet_field, goal_position);
+    auto cost = wave_path(discreet_field, goal_position);
 
 /*     for (int i = 0; i < N; i++)
     {
@@ -246,83 +249,176 @@ auto pbts::Strategy::wave_planner(
     printf("\n\n");
 
     exit(1); */
+    
 
-    int cost = discreet_field[robot_y][robot_x];
+    return next_point(allied_robot, cost);
+}
 
-    for (int i = 0; i < 10; i++)
-    {
-        auto neighboors = valid_neighbours({robot_x, robot_y}, 0);
+auto pbts::Strategy::add_clearance(int (&field)[imax][jmax], const pbts::wpoint robot_position) -> void
+{
+    //auto [icle, jcle] = pbts::to_pair(robot_position);
 
-        for (auto neighboor : neighboors)
-        {
-            auto [nx, ny] = pbts::to_pair(neighboor);
+    auto neighbours = valid_neighbours(robot_position, 1, 2);
 
-            if (auto curr_val = discreet_field[ny][nx];
-                curr_val < cost && curr_val != 0)
-            {
-                cost = curr_val;
-                robot_x = nx;
-                robot_y = ny;
+    for (auto const neighbour : neighbours) {
+        auto [ni, nj] = pbts::to_pair(neighbour);
 
-                if (curr_val == 1) goto end;
-            }
+        field[ni][nj] = 0;
+    }
+}
+
+auto pbts::Strategy::next_point(const pbts::wpoint pos_now, std::vector<std::vector<int>> &cost) -> pbts::wpoint
+{
+    for (int i = imin; i < imax; i++) {
+        for (int j = jmin; j < jmax; j++) {
+            if (cost[i][j] == 0) cost[i][j] = 10000;
         }
     }
 
-  end:  return {robot_x, robot_y};
+    for (int i = imin; i < imax; i++) {
+        for (int j = jmin; j < jmax; j++) {
+            printf("%d", cost[i][j]);
+        }
+    }
+
+    scanf("Enter pra continuar ...");
+
+    auto [i_now, j_now] = pbts::to_pair(pos_now);
+
+    int cost_ij = cost[i_now][j_now];
+
+    int i_next = i_now;
+    int j_next = j_now;
+
+    auto neighbours = valid_neighbours(pos_now, 0, 1);
+
+    for (const auto &neighbour : neighbours) {
+        auto [new_i, new_j] = pbts::to_pair(neighbour);
+
+        if (cost[new_i][new_j] < cost_ij) {
+            i_next = new_i;
+            j_next = new_j;
+            cost_ij = cost[new_i][new_j];
+        }
+    }
+
+    /* if ((i_now > imin) && (i_now < imax)) {
+        if (cost[i_now][j_now] < cost_ij) {
+            i_next = i_now - 5;
+        }
+        else if (cost[i_now+5][j_now] < cost_ij) {
+            i_next = i_now + 5;
+        }
+    }
+
+    if ((j_now > jmin) && (j_now < jmax)) {
+        if (cost[i_now][j_now-5] < cost_ij) {
+            j_next = j_now - 5;
+        }
+        else if (cost[i_now][j_now+5] < cost_ij) {
+            j_next = j_now + 5;
+        }
+    } */
+
+    return {i_next, j_next};
 }
 
-auto pbts::Strategy::wave_path(int (&field)[N][M], const pbts::wpoint goal) -> void
+auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal) -> std::vector<std::vector<int>>
 {
 
-    auto open_queue = std::queue<pbts::wpoint>();
-    open_queue.push(goal);
+    int occ[imax][jmax];
 
-    while(!open_queue.empty()) {
-        auto current_pos = open_queue.front();
+    for (int i = 0; i < imax; i++) {
+        for (int j = 0; j < jmax; j++) {
+            occ[i][j] = field[i][j];
+        }
+    }
+
+    std::vector<std::vector<int>> cost(imax, std::vector<int> (jmax, 0));
+
+    int xaxis[imax];
+    int yaxis[jmax];
+
+    for (int i = imin; i < imax; i++) {
+        xaxis[i] = i;
+    }
+
+    for (int j = jmin; j < jmax; j++) {
+        yaxis[j] = j;
+    }
+
+    int goali = 0;
+    int goalj = 0;
+
+    auto [igoal, jgoal] = pbts::to_pair(goal);
+
+    for (int i = 0; i < imax; i++) {
+        if (abs(xaxis[i] - igoal) < abs(xaxis[goali] - igoal)) {
+            goali = i;
+        }
+    }
+
+    for (int i = 0; i < jmax; i++) {
+        if (abs(yaxis[i] - jgoal) < abs(yaxis[goalj] - igoal)) {
+            goalj = i;
+        }
+    }
+
+    cost[goali][goalj] = 1;
+
+    auto open = std::queue<pbts::wpoint>();
+    open.push({goali, goalj});
+
+    while(!open.empty()) {
+        auto current_pos = open.front();
         auto [curr_x, curr_y] = pbts::to_pair(current_pos);
-        auto curr_val = field[curr_y][curr_x];
-        auto neighbours = valid_neighbours(current_pos, 0);
+
+        auto neighbours = valid_neighbours(current_pos, 0, 1);
 
         for (const auto& neighbour : neighbours) {
             auto [looking_x, looking_y] = pbts::to_pair(neighbour);
 
-            if (auto old_val = field[looking_y][looking_x];
-                old_val == -1 || curr_val + 1 < old_val) {
-                    field[looking_y][looking_x] = curr_val + 1;
-                    open_queue.push(neighbour);
-            }
+            if (occ[looking_x][looking_y] == 1) continue;
+
+            if (cost[looking_x][looking_y] != 0) continue;
+
+            cost[looking_x][looking_y] = cost[curr_x][curr_y] + 1;
+
+            open.push(neighbour);
+
         }
 
-        open_queue.pop();
+        open.pop();
     }
+
+    return cost;
 
 }
 
-auto pbts::Strategy::generate_obstacle(int (&field)[N][M], const std::vector<pbts::wpoint> &enemy_robots) -> void
+auto pbts::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vector<pbts::wpoint> &enemy_robots) -> void
 {
 
     for (const auto &robot : enemy_robots)
     {
-        auto neighboors = valid_neighbours(robot, 1);
+        auto neighboors = valid_neighbours(robot, 1, 2);
 
         for (const auto &neighboor : neighboors) {
-            auto [rx, ry] = pbts::to_pair(neighboor);
+            auto [ri, rj] = pbts::to_pair(neighboor);
 
-            field[ry][rx] = 0;
+            field[ri][rj] = 1;
         }
     }
 }
 
-auto pbts::Strategy::valid_neighbours(pbts::wpoint point, int ntype) -> std::vector<pbts::wpoint>
+auto pbts::Strategy::valid_neighbours(pbts::wpoint point, int ntype, int radius) -> std::vector<pbts::wpoint>
 {
     std::vector<pbts::wpoint> fourNB;
     std::vector<pbts::wpoint> dNB;
 
-    fourNB = four_neighborhood(point);
+    fourNB = four_neighborhood(point, radius);
 
     if (ntype == 1) {
-        dNB = d_neighborhood(point);
+        dNB = d_neighborhood(point, radius);
         fourNB.insert(fourNB.end(), dNB.begin(), dNB.end());
     }
 
@@ -330,18 +426,18 @@ auto pbts::Strategy::valid_neighbours(pbts::wpoint point, int ntype) -> std::vec
     return fourNB;
 }
 
-auto pbts::Strategy::four_neighborhood(pbts::wpoint point) -> std::vector<pbts::wpoint>
+auto pbts::Strategy::four_neighborhood(pbts::wpoint point, int radius) -> std::vector<pbts::wpoint>
 {
     auto [x, y] = pbts::to_pair(point);
 
-    std::vector<pbts::wpoint> possibleMoves = {{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}};
+    std::vector<pbts::wpoint> possibleMoves = {{x + radius, y}, {x - radius, y}, {x, y + radius}, {x, y - radius}};
     std::vector<pbts::wpoint> validMoves;
 
     for (auto move : possibleMoves)
     {
         auto [mx, my] = pbts::to_pair(move);
 
-        if ((mx < M && mx >= 0) && (my < N && my >= 0))
+        if ((mx < imax && mx >= imin) && (my < jmax && my >= jmin))
         {
             validMoves.push_back(move);
         }
@@ -350,18 +446,18 @@ auto pbts::Strategy::four_neighborhood(pbts::wpoint point) -> std::vector<pbts::
     return validMoves;
 }
 
-auto pbts::Strategy::d_neighborhood(pbts::wpoint point) -> std::vector<pbts::wpoint>
+auto pbts::Strategy::d_neighborhood(pbts::wpoint point, int radius) -> std::vector<pbts::wpoint>
 {
     auto [x, y] = pbts::to_pair(point);
 
-    std::vector<pbts::wpoint> possibleMoves = {{x + 1, y + 1}, {x + 1, y - 1}, {x - 1, y + 1}, {x - 1, y - 1}};
+    std::vector<pbts::wpoint> possibleMoves = {{x + radius, y + radius}, {x + radius, y - radius}, {x - radius, y + radius}, {x - radius, y - radius}};
     std::vector<pbts::wpoint> validMoves;
 
     for (auto move : possibleMoves)
     {
         auto [mx, my] = pbts::to_pair(move);
 
-        if ((mx < M && mx >= 0) && (my < N && my >= 0))
+        if ((mx < imax && mx >= imin) && (my < jmax && my >= jmin))
         {
             validMoves.push_back(move);
         }
@@ -398,8 +494,8 @@ auto pbts::Strategy::discreet_to_real(pbts::wpoint wpoint) -> pbts::point
 
     auto [iin, jin] = pbts::to_pair(wpoint);
 
-    double xout = iin * dx - dx + xmin;
-    double yout = jin * dy - dy + ymin;
+    double xout = iin * dx - imin * dx + xmin;
+    double yout = jin * dy - jmin * dy + ymin;
 
     if (xout > xmax)
     {
@@ -426,25 +522,25 @@ auto pbts::Strategy::real_to_discreet(pbts::point point) -> pbts::wpoint
 {
     auto [xin, yin] = pbts::to_pair(point);
 
-    int iout = std::round((M-1)*((xin-xmin)/xT));
-    int jout = std::round((N-1)*((yin-ymin)/yT));
+    int iout = std::round((imax-1)*((xin-xmin)/xT)) + imin;
+    int jout = std::round((jmax-1)*((yin-ymin)/yT)) + jmin;
 
-    if (iout < 0)
+    if (iout < imin)
     {
-        iout = 0;
+        iout = imin;
     }
-    else if (iout > M)
+    else if (iout > imax)
     {
-        iout = M;
+        iout = imax;
     }
 
-    if (jout < 0)
+    if (jout < jmin)
     {
-        jout = 0;
+        jout = jmin;
     }
-    else if (jout > N)
+    else if (jout > jmax)
     {
-        jout = N;
+        jout = jmax;
     }
 
     return {iout, jout};
