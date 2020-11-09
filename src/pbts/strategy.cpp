@@ -1,6 +1,6 @@
 #include "pbts/strategy.hpp"
 #include <queue>
-
+#include <iostream>
 auto pbts::Strategy::generate_robot_positions(
     const pbts::field_geometry &field,
     const std::vector<pbts::robot> &allied_robots,
@@ -63,6 +63,138 @@ auto pbts::Strategy::pertoBola(std::vector<pbts::robot> &allied_robots, const st
     else
         return 1;
 }
+
+
+auto pbts::Strategy::actions(
+    const pbts::field_geometry& field,
+    const pbts::robot& robot,
+    const pbts::ball& ball,
+    const std::vector<pbts::point> &enemy_robots
+) -> std::tuple<pbts::point, int>
+{
+    /*
+    * Each role has limited actions 
+    * -> goalkeeper: stays restricted to goal bounds, following the y-axis of the ball
+    * -> defenser: moves along the first half of the field, stay quiet if the attacker holds the ball
+    * -> attacker: moves onto the ball and carries it toward the goal
+    */
+    pbts::wpoint wgoal_position;
+    pbts::wpoint wallied_robot, wnew_position;
+    std::vector<pbts::wpoint> wenemy_robots;
+
+    std::tuple<pbts::point, int> action;
+    printf("%d\n ", robot.id);
+
+    if(robot.id == pbts::GOALKEEPER)
+    {
+        pbts::Strategy::isNear(robot.position, ball.position, 8.0e-2) 
+        ? action = pbts::Strategy::kick(robot, ball)
+        : action = pbts::Strategy::trackBallYAxix(robot, ball);
+       
+    }
+    else if(robot.id == pbts::DEFENDER)
+    {
+       pbts::point point = (DEFENDER_std_X, DEFENDER_std_Y);
+       pbts::Strategy::isNear(robot.position, ball.position , 8.0e-2) 
+       ? action = pbts::Strategy::kick(robot, ball)
+       : action = pbts::Strategy::trackBallYAxix(robot, ball);
+
+    }
+    else if(robot.id == pbts::ATTACKER)
+    {
+        
+        pbts::Strategy::isNear(robot.position, ball.position, 7e-2) 
+        ? action = pbts::Strategy::towardGoal(robot, field)
+        : action = pbts::Strategy::moveOntoBall(robot, ball);
+
+    }
+    
+    // wgoal_position = real_to_discreet(action);
+    // wallied_robot = real_to_discreet(robot.position);
+
+    // for (auto enemy_robot : enemy_robots)
+    // {
+    //     wenemy_robots.push_back(real_to_discreet(enemy_robot));
+    // }
+
+    return action;
+
+    wnew_position = wave_planner(wgoal_position, wallied_robot, wenemy_robots);
+
+    return {discreet_to_real(wnew_position), 1};
+}
+
+auto pbts::Strategy::rotate(const pbts::robot& robot, const pbts::ball& ball) -> std::tuple<pbts::point, int>
+{
+    // auto angle_error = robot.orientation - angle;
+    // auto point = pbts::point(cos(angle_error)*6.0e-1 + robot.position.real(), 
+    //                          sin(angle_error)*6.0e-1 + robot.position.imag());
+    
+    if(ball.position.imag() < 0)   return {ball.position, 1};
+    else  return {ball.position, 2};
+
+
+}
+
+
+auto pbts::Strategy::kick(const pbts::robot& robot, const pbts::ball& ball) -> std::tuple<pbts::point, int>
+{
+    printf("%d kicking\n", robot.id);
+    return pbts::Strategy::rotate(robot, ball);
+}
+
+bool pbts::Strategy::isNear(pbts::point point1, pbts::point point2, double tol)
+{
+    printf("%lf \n ", std::abs((point2 - point1)));
+    return (std::abs((point2 - point1)) < tol);
+    
+}
+
+auto pbts::Strategy::trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ball) -> std::tuple<pbts::point, int>
+{
+    /*
+    *Need to limit the goalkeeper's area
+    */
+    printf("%d Tracking\n", rbt.id);
+    auto position = rbt.id == pbts::GOALKEEPER
+                    ? pbts::point(GOALKEEPER_std_X, std::clamp(ball.position.imag(), GOAL_AREA_MIN, GOAL_AREA_MAX))
+                    : pbts::point(DEFENDER_std_X, ball.position.imag());
+    
+    // auto ball_to_robot_angle = ball.position - rbt.position;
+    //pbts::control::generate_vels(rbt, position);
+    return {position,
+            0};
+
+}
+auto pbts::Strategy::moveBack(const pbts::robot& rbt) -> std::tuple<pbts::point, int>
+{
+    printf("%d Moving back\n", rbt.id);
+    //  pbts::control::generate_vels(rbt, pbts::point(pbts::DEFENDER_std_X, pbts::DEFENDER_std_Y));
+    return {(DEFENDER_std_X, DEFENDER_std_Y),
+             0};
+}
+
+auto pbts::Strategy::towardGoal(const pbts::robot& rbt, const pbts::field_geometry& field) -> std::tuple<pbts::point, int>
+{
+    auto point = [](pbts::rect bound) {return (bound[0]+bound[1]+bound[2]+bound[3])/4.;};
+     
+    auto points = point(field.right_goal_bounds);
+
+    // pbts::control::generate_vels(rbt, points);
+    return {points,
+            0};
+}
+auto pbts::Strategy::moveOntoBall(const pbts::robot& rbt, const pbts::ball& ball) -> std::tuple<pbts::point, int>
+{
+    // double ball_angle = std::arg(ball.velocity);
+
+
+    // pbts::control::generate_vels(rbt, ball.position);
+    return {ball.position,
+            0};
+}
+
+
 
 auto pbts::Strategy::wave_planner(
     const pbts::wpoint goal_position,
