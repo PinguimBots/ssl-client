@@ -106,26 +106,31 @@ auto pbts::Strategy::actions(
     {
         
         pbts::Strategy::isNear(robot.position, ball.position, 7e-2) 
-        ? action = pbts::Strategy::kick(robot, ball)
-        : action = pbts::Strategy::moveOntoBall(robot, ball);
+        ? action = pbts::Strategy::towardGoal(robot, field, team)
+        : action = pbts::Strategy::moveOntoBall(robot, ball, field, team);
+        
+        // auto [new_point, flag] = action;
+
+        // wgoal_position = real_to_discreet(new_point);
+        // wallied_robot = real_to_discreet(robot.position);
+
+        // for (auto enemy_robot : enemy_robots)
+        // {
+        //     wenemy_robots.push_back(real_to_discreet(enemy_robot));
+        // }
+        // wnew_position = wave_planner(wgoal_position, wallied_robot, wenemy_robots);
+
+        // int x =  wnew_position.real();
+        // int y =  wnew_position.imag();
+        // printf("%d %d \n ", x, y);
+
+        // printf("%lf %lf \n ", robot.position.real(), robot.position.imag());
+    
+        // action = {discreet_to_real(wnew_position), flag};
 
     }
     
-    auto [new_point, flag] = action;
-
-    wgoal_position = real_to_discreet(new_point);
-    wallied_robot = real_to_discreet(robot.position);
-
-    for (auto enemy_robot : enemy_robots)
-    {
-        wenemy_robots.push_back(real_to_discreet(enemy_robot));
-    }
-
-    //return action;
-
-    wnew_position = wave_planner(wgoal_position, wallied_robot, wenemy_robots);
-
-    return {discreet_to_real(wnew_position), flag};
+    return action;
 }
 
 auto pbts::Strategy::rotate(const pbts::robot& robot, const pbts::ball& ball) -> std::tuple<pbts::point, int>
@@ -178,22 +183,48 @@ auto pbts::Strategy::moveBack(const pbts::robot& rbt) -> std::tuple<pbts::point,
              0};
 }
 
-auto pbts::Strategy::towardGoal(const pbts::robot& rbt, const pbts::field_geometry& field, double team) -> std::tuple<pbts::point, int>
+auto pbts::Strategy::towardGoal(const pbts::robot& rbt, 
+    const pbts::field_geometry& field, 
+    double team) -> std::tuple<pbts::point, int>
 {
     auto point = [](pbts::rect bound) {return (bound[0]+bound[1]+bound[2]+bound[3])/4.;};
-     
-    auto points = team == 1.0 
-    ? point(field.right_goal_bounds)
-    : point(field.left_goal_bounds);
+    pbts::point new_point;
 
-    // pbts::control::generate_vels(rbt, points);
-    return {points,
-            0};
+
+    team == 1.0
+    ? new_point = point(field.right_goal_bounds)
+    : new_point = point(field.left_goal_bounds);
+ 
+    
+    return {new_point, 0};
+
 }
-auto pbts::Strategy::moveOntoBall(const pbts::robot& rbt, const pbts::ball& ball) -> std::tuple<pbts::point, int>
+auto pbts::Strategy::moveOntoBall(
+    const pbts::robot& rbt,
+    const pbts::ball& ball,
+    const pbts::field_geometry& field,
+    double team) -> std::tuple<pbts::point, int>
 {
     // double ball_angle = std::arg(ball.velocity);
 
+    // pbts::point new_point;
+
+    // if(rbt.position.real() < ball.position.real()  || std::abs(rbt.position - ball.position) > 1.5e-1)
+    //     return {ball.position, 0};
+    // else if(rbt.position.real() >= ball.position.real())
+    // {
+    //     if(rbt.position.imag() >= ball.position.imag())
+    //     {
+    //         new_point.imag(std::clamp(ball.position.imag()+.1, -field.field_bounds[0].imag() ,field.field_bounds[0].imag()));
+    //         new_point.real(std::clamp(ball.position.real()-.05*team, team*field.field_bounds[0].real(), team*-field.field_bounds[0].imag()));
+    //     }
+    //     else
+    //     {
+    //         new_point.imag(std::clamp(ball.position.imag()-.1, -field.field_bounds[0].imag(), field.field_bounds[0].imag()));
+    //         new_point.real(std::clamp(ball.position.real()-.05*team, team*field.field_bounds[0].real(), team * -field.field_bounds[0].imag()));
+    //     }
+        
+    // }
 
     // pbts::control::generate_vels(rbt, ball.position);
     return {ball.position,
@@ -275,13 +306,8 @@ auto pbts::Strategy::next_point(const pbts::wpoint pos_now, std::vector<std::vec
         }
     }
 
-    for (int i = imin; i < imax; i++) {
-        for (int j = jmin; j < jmax; j++) {
-            printf("%d", cost[i][j]);
-        }
-    }
 
-    scanf("Enter pra continuar ...");
+    ///dads/scanf("Enter pra continuar ...");
 
     auto [i_now, j_now] = pbts::to_pair(pos_now);
 
@@ -325,7 +351,7 @@ auto pbts::Strategy::next_point(const pbts::wpoint pos_now, std::vector<std::vec
 
 auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal) -> std::vector<std::vector<int>>
 {
-
+    
     int occ[imax][jmax];
 
     for (int i = 0; i < imax; i++) {

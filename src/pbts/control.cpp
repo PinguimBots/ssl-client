@@ -101,7 +101,9 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
     if(rotation == 0)
     { vell = linvel_left; velr = linvel_right;}
     else if(rotation == 1) {vell = 10*velmin; velr = 9.7*velmax;}
-    else {vell = 9.7*velmax; velr = 10*velmin;}
+    else if(rotation == 2){vell = 9.7*velmax; velr = 10*velmin;}
+    else if(rotation == 3){vell = 0; velr = 0.1*velmin;}
+    else if(rotation == 4){vell = 10*velmax; velr = 0;}
 
     return {vell, velr};
 }

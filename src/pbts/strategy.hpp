@@ -89,7 +89,11 @@ namespace pbts
 
         auto moveBack(const pbts::robot& rbt) -> std::tuple<pbts::point, int>;
         auto towardGoal(const pbts::robot& rbt, const pbts::field_geometry& field, double team) -> std::tuple<pbts::point, int>;
-        auto moveOntoBall(const pbts::robot& rbt, const pbts::ball& ball) -> std::tuple<pbts::point, int>;
+        auto moveOntoBall(
+            const pbts::robot& rbt,
+            const pbts::ball& ball,
+            const pbts::field_geometry& field,
+            double team) -> std::tuple<pbts::point, int>;
 
 
     };
