@@ -270,6 +270,14 @@ auto pbts::Strategy::next_point(const pbts::wpoint pos_now, std::vector<std::vec
         }
     }
 
+    for (int i = imin; i < imax; i++) {
+        for (int j = jmin; j < jmax; j++) {
+            printf("%d", cost[i][j]);
+        }
+    }
+
+    scanf("Enter pra continuar ...");
+
     auto [i_now, j_now] = pbts::to_pair(pos_now);
 
     int cost_ij = cost[i_now][j_now];
