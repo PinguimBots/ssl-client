@@ -16,16 +16,19 @@
 static const constexpr char usage[] = R"(pbssl ver 0.0.
 
     Usage:
-        pbssl [(--team=TEAM | -t=TEAM)] [--in-port=INPORT] [--in-address=INADDR] [--out-port=OUTPORT] [--out-address=OUTADDR]
+        pbssl [(--team=TEAM | -t=TEAM)] [--in-port=INPORT] [--in-address=INADDR] [--out-port=OUTPORT] [--out-address=OUTADDR] [--ref-address=ADDREF] [--ref-port=REFPORT] [--rep-port=REPPORT]
 
     Options:
         -h --help              Show this screen.
         --version              Show version.
-        --team TEAM, -t TEAM   asdf [default: blue].
-        --in-port INPORT       Multicast group port    used to listen to fira_sim::sim_to_ref::Environment [default: 10020].
-        --in-address INADDR    Multicast group address used to listen to fira_sim::sim_to_ref::Environment [default: 224.0.0.0].
+        --team TEAM, -t TEAM   Set team color [default: blue].
+        --in-port INPORT       Multicast group port    used to listen for fira_sim::sim_to_ref::Environment [default: 10020].
+        --in-address INADDR    Multicast group address used to listen for fira_sim::sim_to_ref::Environment [default: 224.0.0.0].
         --out-port OUTPORT     Port    used to send fira_sim::sim_to_ref::Packet [default: 20011].
         --out-address OUTADDR  Address used to send fira_sim::sim_to_ref::Packet [default: 127.0.0.1].
+        --ref-address ADDREF   Address used to communicate with the VSSRef [default: 224.0.0.1].
+        --ref-port REFPORT     Port to receive information from the Referee [default: 10003].
+        --rep-port REPPORT     Port to send replacement information to the Referee [default: 10004].
 )";
 
 int main(int argc, char *argv[])
@@ -54,6 +57,10 @@ int main(int argc, char *argv[])
     auto maybe_out_port = pbts::parse::port(args["--out-port"].asString());
     auto maybe_out_addr = pbts::parse::ipv4(args["--out-address"].asString());
 
+    auto maybe_ref_addr = pbts::parse::ipv4(args["--ref-address"].asString());
+    auto maybe_ref_port = pbts::parse::port(args["--ref-port"].asString());
+    auto maybe_rep_port = pbts::parse::port(args["--rep-port"].asString());
+
     if (!maybe_in_port)
     {
         fmt::print("PARSE_ERROR: invalid in-port\n");
@@ -74,11 +81,30 @@ int main(int argc, char *argv[])
         fmt::print("PARSE_ERROR: invalid out-address\n");
         return 1;
     }
+    if (!maybe_ref_addr)
+    {
+        fmt::print("PARSE_ERROR: invalid ref-address\n");
+        return 1;
+    }
+    if (!maybe_ref_port)
+    {
+        fmt::print("PARSE_ERROR: invalid ref-port\n");
+        return 1;
+    }
+    if (!maybe_rep_port)
+    {
+        fmt::print("PARSE_ERROR: invalid rep-port\n");
+        return 1;
+    }
 
     const auto in_addr = maybe_in_addr.value();
     const auto in_port = static_cast<std::uint16_t>(maybe_in_port.value());
     const auto out_addr = maybe_out_addr.value();
     const auto out_port = static_cast<std::uint16_t>(maybe_out_port.value());
+
+    const auto ref_addr = maybe_ref_addr.value();
+    const auto ref_port = static_cast<std::uint16_t>(maybe_ref_port.value());
+    const auto rep_port = static_cast<std::uint16_t>(maybe_rep_port.value());
 
     const auto is_yellow = args["--team"].asString() == "yellow";
 
@@ -86,10 +112,10 @@ int main(int argc, char *argv[])
 
     auto strategy = pbts::Strategy();
 
-    pbts::simulator_connection simulator{
+    pbts::simulator_connection VSSS{
         {in_addr, in_port},
         {out_addr, out_port},
-        /* on_receive= */ [&](auto environment) {
+        /* on_simulator_receive= */ [&](auto environment) {
             /// TODO: measure timing
 
             /// TODO: Make sure it's necessary to verify has_frame() and has_field().
@@ -162,6 +188,7 @@ int main(int argc, char *argv[])
                 pbts::ball  pb_ball;
                 //pbts::point new_point;
                 
+                pb_robot.robot_id = robot.robot_id();
                 pb_robot.position = {robot.x(), robot.y()};
                 pb_robot.orientation = robot.orientation();
                 pb_robot.id = robot.robot_id();
@@ -179,6 +206,7 @@ int main(int argc, char *argv[])
                 command->set_wheel_right(right);
             }
 
+<<<<<<< HEAD
              for (const auto &robot : yellow_robots)
             {
                 pbts::robot pb_robot;
@@ -203,6 +231,14 @@ int main(int argc, char *argv[])
             }
 
             simulator.send(packet);
+=======
+            VSSS.simulator_send(packet);
+        },
+        /*referee_in_params=*/{ref_addr, ref_port},
+        /*replacer_out_params=*/{ref_addr, rep_port},
+        /*on_referee_receive=*/ [&](auto command) {
+            // TODO: receber pela linha de comando os parametros do referee e replacer.
+>>>>>>> 98606af5d3909317cc9b2520f5071c80289d155a
         }};
 
     // Start the event loop (needed to be able to send and receive messages).
