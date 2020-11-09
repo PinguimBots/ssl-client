@@ -56,7 +56,7 @@ pbts::simulator_connection::simulator_connection
             command.ParseFromArray(data.data(), data.size());
             on_receive(command);
         }
-    )
+    );
 }
 
 auto pbts::simulator_connection::simulator_send(const fira_message::sim_to_ref::Packet& packet) -> bool
@@ -70,7 +70,7 @@ auto pbts::simulator_connection::simulator_send(const fira_message::sim_to_ref::
     return bytes_sent == dg.size();
 }
 
-auto pbts::simulator_connection::replacer_send(const VSSRef::team_to_ref::VSSRef_Placement& placement) -> bool;
+auto pbts::simulator_connection::replacer_send(const VSSRef::team_to_ref::VSSRef_Placement& placement) -> bool
 {
     QByteArray dg;
     dg.resize(placement.ByteSize());

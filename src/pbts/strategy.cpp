@@ -110,19 +110,21 @@ auto pbts::Strategy::actions(
 
     }
     
-    // wgoal_position = real_to_discreet(action);
-    // wallied_robot = real_to_discreet(robot.position);
+    auto [new_point, flag] = action;
 
-    // for (auto enemy_robot : enemy_robots)
-    // {
-    //     wenemy_robots.push_back(real_to_discreet(enemy_robot));
-    // }
+    wgoal_position = real_to_discreet(new_point);
+    wallied_robot = real_to_discreet(robot.position);
 
-    return action;
+    for (auto enemy_robot : enemy_robots)
+    {
+        wenemy_robots.push_back(real_to_discreet(enemy_robot));
+    }
+
+    //return action;
 
     wnew_position = wave_planner(wgoal_position, wallied_robot, wenemy_robots);
 
-    return {discreet_to_real(wnew_position), 1};
+    return {discreet_to_real(wnew_position), flag};
 }
 
 auto pbts::Strategy::rotate(const pbts::robot& robot, const pbts::ball& ball) -> std::tuple<pbts::point, int>

@@ -206,7 +206,6 @@ int main(int argc, char *argv[])
                 command->set_wheel_right(right);
             }
 
-<<<<<<< HEAD
              for (const auto &robot : yellow_robots)
             {
                 pbts::robot pb_robot;
@@ -230,15 +229,13 @@ int main(int argc, char *argv[])
                 command->set_wheel_right(right);
             }
 
-            simulator.send(packet);
-=======
+            //simulator.send(packet);
             VSSS.simulator_send(packet);
         },
         /*referee_in_params=*/{ref_addr, ref_port},
         /*replacer_out_params=*/{ref_addr, rep_port},
         /*on_referee_receive=*/ [&](auto command) {
             // TODO: receber pela linha de comando os parametros do referee e replacer.
->>>>>>> 98606af5d3909317cc9b2520f5071c80289d155a
         }};
 
     // Start the event loop (needed to be able to send and receive messages).
