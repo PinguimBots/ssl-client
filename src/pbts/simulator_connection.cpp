@@ -15,7 +15,7 @@ pbts::simulator_connection::simulator_connection
     , simulator_out_addr{simulator_out_params.ip.data()}
     , simulator_out_port{simulator_out_params.port}
     , simulator_in_socket{}
-    , referee_out_socket{}
+    , replacer_out_socket{}
     , replacer_out_addr{replacer_out_params.ip.data()}
     , replacer_out_port{replacer_out_params.port}
     , referee_in_socket{}
@@ -70,11 +70,11 @@ auto pbts::simulator_connection::simulator_send(const fira_message::sim_to_ref::
     return bytes_sent == dg.size();
 }
 
-auto pbts::replacer_send(const VSSRef::team_to_ref::VSSRef_Placement& placement) -> bool;
+auto pbts::simulator_connection::replacer_send(const VSSRef::team_to_ref::VSSRef_Placement& placement) -> bool;
 {
     QByteArray dg;
     dg.resize(placement.ByteSize());
-    bool succes = placement.SerializeToArray(dg.data(), dg.size());
+    bool success = placement.SerializeToArray(dg.data(), dg.size());
     if(!success) {return false;}
 
     auto bytes_sent = replacer_out_socket.writeDatagram(dg, replacer_out_addr, replacer_out_port);
