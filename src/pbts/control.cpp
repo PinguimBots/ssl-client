@@ -8,7 +8,17 @@
 
 #include <fmt/core.h>
 
-auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos) -> pbts::point
+auto pbts::control::rotate(pbts::robot robot, double angle) -> pbts::point
+{
+    auto angle_error = robot.orientation - angle;
+    const double kap = 1.0, kad = 0.2, velmax = 1.0, velmin = -1.0;
+
+    return {angle_error*velmin,
+            angle_error*velmax};
+}
+
+
+auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int rotation) -> pbts::point
 {
     // NOTE: atan  returns the angle value between -pi/2 (-90deg) and pi/2 (90deg)
     // while atan2 returns the angle value between -pi (-180deg) and pi (180deg).
@@ -29,11 +39,12 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos) -> 
 
     double angleError = 0.0, target_angle = 0.0;
 
+    double epsilon = 0;
     
     if(x < target_x){
-        target_angle = atan((target_y - y)/(target_x - x));
+        target_angle = atan((target_y - y)/(target_x - x + epsilon));
     } else {
-        target_angle = pi + atan((target_y - y)/(target_x - x));
+        target_angle = pi + atan((target_y - y)/(target_x - x + epsilon));
     }
 
     angleError = target_angle - orientation;
@@ -51,9 +62,9 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos) -> 
     }
 
     double robot_angle_error = 0.0, linvel_left = 0.0, linvel_right = 0.0;
-    const double kap = 1.0, kad = 0.2, velmax = 20.0, velmin = -20.0;
+    const double kap = 1.0, kad = 0.2, velmax = 10.0, velmin = -10.0;
 
-    double vel_front = std::clamp(100.0 * positionError * cos(angleError), velmin, velmax);
+    double vel_front = std::clamp(100.0 * (positionError)* cos(angleError), velmin, velmax);
     double vel_side  = std::clamp(10.0 * sin(angleError),                velmin, velmax);
 
     if(vel_front > 0) {
@@ -86,5 +97,11 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos) -> 
                 Linvel Right: {}\n\n", \
                 positionError, (angleError*180)/pi, vel_front, vel_side, linvel_left, linvel_right);
     
-    return {linvel_left, linvel_right};
+    double vell, velr;
+    if(rotation == 0)
+    { vell = linvel_left; velr = linvel_right;}
+    else if(rotation == 1) {vell = 10*velmin; velr = 9.7*velmax;}
+    else {vell = 9.7*velmax; velr = 10*velmin;}
+
+    return {vell, velr};
 }

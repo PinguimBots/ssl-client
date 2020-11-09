@@ -31,6 +31,8 @@ namespace pbts
 
         point velocity;
         double rotation_velocity; // In rad/sec
+
+        int id;
     };
 
     struct ball
