@@ -103,41 +103,81 @@ auto pbts::Strategy::actions(
 
         actionType acType;
 
-        pbts::Strategy::isNear(robot.position, ball.position, 8e-2) 
-        ? pbts::Strategy::isNear(robot.position, is_yellow
-                                                 ? point(field.left_goal_bounds) 
-                                                 : point(field.right_goal_bounds), 4e-2) 
-        ? acType = actionType::KICK 
-        : acType = actionType::TOWARDGOAL
-        : acType = actionType::MOVETOBALL;
-
-        if (acType == actionType::TOWARDGOAL) {
-            return pbts::Strategy::towardGoal(robot, field, team);
-        }
-        else if (acType == actionType::KICK) {
-            action = pbts::Strategy::kick(robot, ball);
-        }
-        else if (acType == actionType::MOVETOBALL) {
-            action = pbts::Strategy::moveOntoBall(robot, ball, field, team);
-        }
-
-        auto [new_point, flag] = action;
-        
-        if(is_yellow)
+         if(!is_yellow)
         {
-            new_point.real() > -DEFENDER_std_X
-            ? new_point.real(-DEFENDER_std_X - .225) 
-            : new_point.real(new_point.real());
+            if(robot.position.real() > ball.position.real())
+                action = {pbts::point(DEFENDER_std_X + .225, robot.position.imag()), 0};
+            else
+            {
+                 pbts::Strategy::isNear(robot.position, ball.position, 8e-2) 
+                    ? pbts::Strategy::isNear(robot.position, is_yellow
+                                                            ? point(field.left_goal_bounds) 
+                                                            : point(field.right_goal_bounds), 4e-2) 
+                    ? acType = actionType::KICK 
+                    : acType = actionType::TOWARDGOAL
+                    : acType = actionType::MOVETOBALL;
+
+                    if (acType == actionType::TOWARDGOAL) {
+                        return pbts::Strategy::towardGoal(robot, field, team);
+                    }
+                    else if (acType == actionType::KICK) {
+                        action = pbts::Strategy::kick(robot, ball);
+                    }
+                    else if (acType == actionType::MOVETOBALL) {
+                        action = pbts::Strategy::moveOntoBall(robot, ball, field, team);
+                    }
+
+                    auto [new_point, flag] = action;
+                    
+                   
+                    new_point.real() < DEFENDER_std_X
+                    ? new_point.real(DEFENDER_std_X + .225) 
+                    : new_point.real(new_point.real());
+                
+
+                    action = {pbts::Strategy::create_path(new_point, robot, enemy_robots), flag};
+            }
         }
         else    
         {
-            new_point.real() < DEFENDER_std_X
-            ? new_point.real(DEFENDER_std_X + .225) 
-            : new_point.real(new_point.real());
+            if(robot.position.real() < ball.position.real())
+            { action = {pbts::point(-DEFENDER_std_X - .225, robot.position.imag()), 0};}
+            else 
+            {
+                 pbts::Strategy::isNear(robot.position, ball.position, 8e-2) 
+                ? pbts::Strategy::isNear(robot.position, is_yellow
+                                                        ? point(field.left_goal_bounds) 
+                                                        : point(field.right_goal_bounds), 4e-2) 
+                ? acType = actionType::KICK 
+                : acType = actionType::TOWARDGOAL
+                : acType = actionType::MOVETOBALL;
+
+                if (acType == actionType::TOWARDGOAL) {
+                    return pbts::Strategy::towardGoal(robot, field, team);
+                }
+                else if (acType == actionType::KICK) {
+                    action = pbts::Strategy::kick(robot, ball);
+                }
+                else if (acType == actionType::MOVETOBALL) {
+                    action = pbts::Strategy::moveOntoBall(robot, ball, field, team);
+                }
+
+                auto [new_point, flag] = action;
+                
+                
+                new_point.real() > -DEFENDER_std_X
+                ? new_point.real(-DEFENDER_std_X - .225) 
+                : new_point.real(new_point.real());
+                
+                
+
+
+                action = {pbts::Strategy::create_path(new_point, robot, enemy_robots), flag};
+            }
         }
 
 
-        action = {pbts::Strategy::create_path(new_point, robot, enemy_robots), flag};
+       
    
     }
     
