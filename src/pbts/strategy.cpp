@@ -286,9 +286,9 @@ auto pbts::Strategy::wave_planner(
         }
         printf("\n");
     }
-    printf("\n\n");
+    printf("\n\n"); */
 
-    c = getchar(); */
+    //c = getchar();
 
     wave_path(discreet_field, goal_position, cost);
 
@@ -305,7 +305,9 @@ auto pbts::Strategy::wave_planner(
         printf("\n");
     }
 
-    printf("\n\n"); */
+    printf("\n\n");
+
+    c = getchar(); */
 
     return next_point(allied_robot, goal_position, cost);
 }
@@ -314,13 +316,21 @@ auto pbts::Strategy::add_clearance(int (&field)[imax][jmax], const pbts::wpoint 
 {
     //auto [icle, jcle] = pbts::to_pair(goal_position);
 
-    auto neighbours = valid_neighbours(goal_position, 1, 1);
+    int theta = 0;
+    const int raio = 1;
+    const int step = 10;
 
-    for (auto const neighbour : neighbours) {
-        auto [ni, nj] = pbts::to_pair(neighbour);
+    auto [hx, hy] = pbts::to_pair(goal_position);
 
-        field[ni][nj] = 0;
+    while (theta <= 360) {
+        int x = round(hx + raio * cos(theta));
+        int y = round(hy + raio * sin(theta));
+
+        field[x][y] = 0;
+        theta += step;
     }
+
+    theta = 0;
 
 }
 
@@ -453,15 +463,15 @@ auto pbts::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vect
     } */
 
     int theta = 0;
-    const int raio = 2.5;
-    const int step = 20;
+    const int raio = 3;
+    const int step = 10;
 
     for (const auto &robot : enemy_robots) {
         auto [hx, hy] = pbts::to_pair(robot);
 
         while (theta <= 360) {
-            int x = hx + raio * cos(theta);
-            int y = hy + raio * sin(theta);
+            int x = round(hx + raio * cos(theta));
+            int y = round(hy + raio * sin(theta));
 
             field[x][y] = 1;
             theta += step;

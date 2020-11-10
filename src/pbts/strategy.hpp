@@ -62,8 +62,8 @@ namespace pbts
         static const constexpr auto ymax = +0.75;
         static const constexpr auto yT = ymax - ymin; //m
 
-        static const constexpr auto dx = 0.05d;   //m
-        static const constexpr auto dy = 0.05d;   //m
+        static const constexpr auto dx = 0.04d;   //m
+        static const constexpr auto dy = 0.04d;   //m
 
         static const constexpr auto imin = 0;
         static const constexpr auto jmin = 0;
