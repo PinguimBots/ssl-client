@@ -22,8 +22,8 @@ static const constexpr char usage[] = R"(pbssl ver 0.0.
         -h --help              Show this screen.
         --version              Show version.
         --team TEAM, -t TEAM   Set team color [default: blue].
-        --in-port INPORT       Multicast group port    used to listen for fira_sim::sim_to_ref::Environment [default: 10020].
-        --in-address INADDR    Multicast group address used to listen for fira_sim::sim_to_ref::Environment [default: 224.0.0.0].
+        --in-port INPORT       Multicast group port    used to listen for fira_sim::sim_to_ref::Environment [default: 10002].
+        --in-address INADDR    Multicast group address used to listen for fira_sim::sim_to_ref::Environment [default: 224.0.0.1].
         --out-port OUTPORT     Port    used to send fira_sim::sim_to_ref::Packet [default: 20011].
         --out-address OUTADDR  Address used to send fira_sim::sim_to_ref::Packet [default: 127.0.0.1].
         --ref-address ADDREF   Address used to communicate with the VSSRef [default: 224.0.0.1].
