@@ -39,7 +39,7 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
 
     double angleError = 0.0, target_angle = 0.0;
 
-    double epsilon = 0;
+    double epsilon = 1e-18;
     
     if(x < target_x){
         target_angle = atan((target_y - y)/(target_x - x + epsilon));
@@ -62,7 +62,7 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
     }
 
     double robot_angle_error = 0.0, linvel_left = 0.0, linvel_right = 0.0;
-    const double kap = 1.0, kad = 0.2, velmax = 10.0, velmin = -10.0;
+    const double kap = 1.0, kad = 0.2, velmax = 20.0, velmin = -20.0;
 
     double vel_front = std::clamp(100.0 * (positionError)* cos(angleError), velmin, velmax);
     double vel_side  = std::clamp(10.0 * sin(angleError),                velmin, velmax);

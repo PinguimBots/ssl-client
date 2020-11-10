@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
                     pb_ball.position = pbts::point{ball.x(), ball.y()};
                     pb_ball.velocity = pbts::point{ball.vx(), ball.vy()};
 
-                    for (const auto &other_robot : blue_robots) {
+                    for (const auto &other_robot : allied_team) {
                         if (other_robot.robot_id() != pbts::ATTACKER) {
                             pb_enemies.push_back({other_robot.x(), other_robot.y()});
                         }
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
                                                                   pb_enemies, 
                                                                   is_yellow ? -1.0 : 1.0);
                     //auto new_point = strategy.actions(pb_ball.position, pb_robot, pb_enemies, 1);
-                    auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, 0 ));
+                    auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, rotation));
                     //auto [left, right] = pbts::to_pair(pbts::control::rotate(pb_robot, M_PI));
 
                     auto command = packet.mutable_cmd()->add_robot_commands();
