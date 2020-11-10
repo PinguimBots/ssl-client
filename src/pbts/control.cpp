@@ -62,10 +62,10 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
     }
 
     double robot_angle_error = 0.0, linvel_left = 0.0, linvel_right = 0.0;
-    const double kap = 1.0, kad = 0.2, velmax = 20.0, velmin = -20.0;
+    const double kap = 1.0, kad = 0.2, velmax = 80.0, velmin = -80.0;
 
-    double vel_front = std::clamp(100.0 * (positionError)* cos(angleError), velmin, velmax);
-    double vel_side  = std::clamp(10.0 * sin(angleError),                velmin, velmax);
+    double vel_front = std::clamp(110.0 * (positionError)* cos(angleError), velmin, velmax);
+    double vel_side  = std::clamp(30.0 * sin(angleError),                velmin, velmax);
 
     if(vel_front > 0) {
         linvel_left = vel_front - vel_side;

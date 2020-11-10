@@ -274,7 +274,7 @@ auto pbts::Strategy::wave_planner(
 
     add_clearance(discreet_field, goal_position);
 
-    add_shield_ball(discreet_field, goal_position);
+    //add_shield_ball(discreet_field, goal_position);
 
     /* printf("FIELD\n");
 
@@ -309,7 +309,11 @@ auto pbts::Strategy::wave_planner(
 
     c = getchar(); */
 
-    return next_point(allied_robot, goal_position, cost);
+    int increment = is_yellow ? 2 : -2;
+
+    auto [goal_i, goal_j] = pbts::to_pair(goal_position);
+
+    return next_point(allied_robot, {goal_i + increment, goal_j}, cost);
 }
 
 auto pbts::Strategy::add_clearance(int (&field)[imax][jmax], const pbts::wpoint goal_position) -> void
@@ -317,7 +321,7 @@ auto pbts::Strategy::add_clearance(int (&field)[imax][jmax], const pbts::wpoint 
     //auto [icle, jcle] = pbts::to_pair(goal_position);
 
     int theta = 0;
-    const int raio = 1;
+    const int raio = 2;
     const int step = 10;
 
     auto [hx, hy] = pbts::to_pair(goal_position);
@@ -376,7 +380,7 @@ auto pbts::Strategy::next_point(const pbts::wpoint pos_now, const pbts::wpoint g
     int j_next = j_now;
     int i = 0;
 
-    while (i < 2) {
+    while (i < 7) {
 
         auto neighbours = valid_neighbours({i_next,j_next}, 1, 1);
 
@@ -389,15 +393,15 @@ auto pbts::Strategy::next_point(const pbts::wpoint pos_now, const pbts::wpoint g
                 cost_ij = cost[new_i][new_j];
             }
 
-            if (i_next == i_goal && j_next == j_goal) {
+            /* if (i_next == i_goal && j_next == j_goal) {
                 goto end;
-            }
+            } */
         }
 
         ++i;
     }   
 
-    end: return {i_next, j_next};
+    /*end:*/ return {i_next, j_next};
 }
 
 auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal, std::vector<std::vector<int>> &cost) -> void
@@ -463,7 +467,7 @@ auto pbts::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vect
     } */
 
     int theta = 0;
-    const int raio = 3;
+    const int raio = 2;
     const int step = 10;
 
     for (const auto &robot : enemy_robots) {
@@ -505,21 +509,29 @@ auto pbts::Strategy::add_shield_ball(int (&field)[imax][jmax], const pbts::wpoin
         jfin = jmax;
     }
 
-    for (int i = iini; i <= ifin; i++){
+    /* for (int i = iini; i <= ifin; i++){
         for (int j = jini; j <= jfin; j++){
             field[i][j] = 1;
         }
-    }
+    } */
 
     if (!is_yellow) {
-        field[i_ball-2][j_ball] = 0;
-        field[i_ball-1][j_ball] = 0;
-        field[i_ball][j_ball] = 0;
+        field[i_ball-1][j_ball+2] = 1;
+        field[i_ball][j_ball+1] = 1;
+        field[i_ball+1][j_ball+1] = 1;
+        field[i_ball+1][j_ball] = 1;
+        field[i_ball+1][j_ball-1] = 1;
+        field[i_ball][j_ball-1] = 1;
+        field[i_ball-1][j_ball-2] = 1;
     }
     else {
-        field[i_ball][j_ball] = 0;
-        field[i_ball+1][j_ball] = 0;
-        field[i_ball+2][j_ball] = 0;
+        field[i_ball+1][j_ball+2] = 1;
+        field[i_ball][j_ball+1] = 1;
+        field[i_ball-1][j_ball+1] = 1;
+        field[i_ball-1][j_ball] = 1;
+        field[i_ball-1][j_ball-1] = 1;
+        field[i_ball][j_ball-1] = 1;
+        field[i_ball+1][j_ball-2] = 1;
     }
 }
 
