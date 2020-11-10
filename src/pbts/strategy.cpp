@@ -258,6 +258,20 @@ auto pbts::Strategy::wave_planner(
 
     generate_obstacle(discreet_field, enemy_robots);
 
+    /* printf("FIELD\n");
+
+    for (int i = 0; i < imax; i++)
+    {
+        for (int j = 0; j < jmax; j++)
+        {
+            printf("%d", discreet_field[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+    c = getchar(); */
+
     add_clearance(discreet_field, goal_position);
 
     add_shield_ball(discreet_field, goal_position);
@@ -272,9 +286,9 @@ auto pbts::Strategy::wave_planner(
         }
         printf("\n");
     }
-    printf("\n\n"); */
+    printf("\n\n");
 
-    //c = getchar();
+    c = getchar(); */
 
     wave_path(discreet_field, goal_position, cost);
 
@@ -421,7 +435,7 @@ auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal
 auto pbts::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vector<pbts::wpoint> &enemy_robots) -> void
 {
 
-    for (const auto &robot : enemy_robots)
+    /* for (const auto &robot : enemy_robots)
     {
         auto [i_now, j_now] = pbts::to_pair(robot);
         std::vector<pbts::wpoint> neighboors = {{i_now, j_now+2},{i_now+1,j_now+2},{i_now+2,j_now+2},{i_now+2,j_now+1},{i_now+2,j_now},{i_now+2,j_now-1},{i_now+2,j_now-2},{i_now+1,j_now-2},{i_now,j_now-2},{i_now-1,j_now-2},{i_now-2,j_now-2},{i_now-2,j_now-1},{i_now-2,j_now},{i_now-2,j_now+1},{i_now-2,j_now+2},{i_now-1,j_now+2}};
@@ -436,6 +450,24 @@ auto pbts::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vect
 
             field[ri][rj] = 1;
         }
+    } */
+
+    int theta = 0;
+    const int raio = 2.5;
+    const int step = 20;
+
+    for (const auto &robot : enemy_robots) {
+        auto [hx, hy] = pbts::to_pair(robot);
+
+        while (theta <= 360) {
+            int x = hx + raio * cos(theta);
+            int y = hy + raio * sin(theta);
+
+            field[x][y] = 1;
+            theta += step;
+        }
+
+        theta = 0;
     }
 }
 
