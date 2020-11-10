@@ -24,15 +24,13 @@ namespace pbts
 
     struct robot
     {
-        int robot_id;
+        int id;
 
         point position;
         double orientation; // In rad.
 
         point velocity;
         double rotation_velocity; // In rad/sec
-
-        int id;
     };
 
     struct ball

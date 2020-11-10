@@ -4,6 +4,7 @@
 #include <array>
 
 #include "pb/common.pb.h"
+#include "pb/vssref_command.pb.h"
 
 /// Structured binding support for protobuf types.
 // Macro for automating boilerplate.
@@ -106,16 +107,16 @@ namespace fira_message {
 }
 PBTS_QOL_TUPLIFY(fira_message::Frame, 3);
 
-#undef PBTS_QOL_TUPLIFY
-
-/// General utility
-namespace pbts {
-    // When you want to declare a std::array of some type but
-    // infer the size.
-    template <typename V, typename... T>
-    constexpr auto array_of(T&&... t)
-        -> std::array < V, sizeof...(T) >
-    {
-        return { std::forward<T>(t)... };
+namespace VSSRef::ref_to_team {
+    template <std::size_t I>
+    auto get(const VSSRef_Command& c) {
+        if constexpr(I == 0) {return c.foul();}
+        else if constexpr(I == 1) {return c.teamcolor();}
+        else if constexpr(I == 2) {return c.foulquadrant();}
+        else if constexpr(I == 3) {return c.timestamp();}
+        else if constexpr(I == 4) {return c.gamehalf();}
     }
 }
+PBTS_QOL_TUPLIFY(VSSRef::ref_to_team::VSSRef_Command, 5);
+
+#undef PBTS_QOL_TUPLIFY

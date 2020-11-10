@@ -112,6 +112,11 @@ int main(int argc, char *argv[])
 
     auto strategy = pbts::Strategy();
 
+    strategy.setTeam(is_yellow);
+
+    bool game_on = true;
+    bool foul = false;
+
     pbts::simulator_connection VSSS{
         {in_addr, in_port},
         {out_addr, out_port},
@@ -151,8 +156,8 @@ int main(int argc, char *argv[])
                 auto field_bounds = std::array<std::complex<double>, 4>{{
                     {-len / 2, width / 2},
                     {len / 2, width / 2},
-                    {-len / 2, -width / 2},
                     {len / 2, -width / 2},
+                    {-len / 2, -width / 2},
                 }};
 
                 bounds = {
@@ -160,85 +165,193 @@ int main(int argc, char *argv[])
                     right_goal_bounds,
                     field_bounds,
                 };
+
+                strategy.setBounds(bounds.value());
             }
-
-            auto [blue_robots, yellow_robots, ball] = environment.frame();
-            auto [ball_x, ball_y, ball_z, ball_vx, ball_vy, ball_vz] = ball;
-
-            /*
-            auto& allied_team = is_yellow ? yellow_robots : blue_robots;
-            auto target_goal  = is_yellow
-                ? pbts::Strategy::goal_bound_type::left
-                : pbts::Strategy::goal_bound_type::right;
-            auto& enemy_team  = is_yellow ? blue_robots   : yellow_robots; 
-            strategy.tick(allied_team, enemy_team);
-            */
 
             fira_message::sim_to_ref::Packet packet;
-            std::vector<pbts::point> pb_enemies = {{
-                {yellow_robots[0].x(), yellow_robots[0].y()},
-                {yellow_robots[1].x(), yellow_robots[1].y()},
-                {yellow_robots[2].x(), yellow_robots[2].y()}
-            }};
 
-
-            for (const auto &robot : blue_robots)
+            if (game_on)
             {
-                pbts::robot pb_robot;
-                pbts::ball  pb_ball;
-                //pbts::point new_point;
+                auto [blue_robots, yellow_robots, ball] = environment.frame();
+                auto [ball_x, ball_y, ball_z, ball_vx, ball_vy, ball_vz] = ball;
                 
-                pb_robot.robot_id = robot.robot_id();
-                pb_robot.position = {robot.x(), robot.y()};
-                pb_robot.orientation = robot.orientation();
-                pb_robot.id = robot.robot_id();
-                pb_ball.position = pbts::point{ball.x(), ball.y()};
-                pb_ball.velocity = pbts::point{ball.vx(), ball.vy()};
+                
+                auto& allied_team = is_yellow ? yellow_robots : blue_robots;
 
-                auto [new_point, rotation] = strategy.actions(bounds.value(), pb_robot, pb_ball, pb_enemies, 1);
-                //auto new_point = strategy.create_path(pb_ball.position, pb_robot, pb_enemies);
-                auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, 0 ));
-                //auto [left, right] = pbts::to_pair(pbts::control::rotate(pb_robot, M_PI));
+                auto& enemy_team  = is_yellow ? blue_robots   : yellow_robots; 
+                
 
-                auto command = packet.mutable_cmd()->add_robot_commands();
-                command->set_id(robot.robot_id());
-                command->set_yellowteam(is_yellow);
-                command->set_wheel_left(left);
-                command->set_wheel_right(right);
+                std::vector<pbts::point> pb_enemies = {{
+                    {enemy_team[0].x(), enemy_team[0].y()},
+                    {enemy_team[1].x(), enemy_team[1].y()},
+                    {enemy_team[2].x(), enemy_team[2].y()}
+                }};
+
+                //  std::vector<pbts::point> pb_enemies = {{
+                //     {blue_robots[0].x(), blue_robots[0].y()},
+                //     {blue_robots[1].x(), blue_robots[1].y()},
+                //     {blue_robots[2].x(), blue_robots[2].y()}
+                // }};
+
+
+
+                for (const auto &robot : allied_team)
+                {
+                    pbts::robot pb_robot;
+                    pbts::ball  pb_ball;
+                    //pbts::point new_point;
+                    
+            
+
+                    pb_robot.id = robot.robot_id();
+                    pb_robot.position = {robot.x(), robot.y()};
+                    pb_robot.orientation = robot.orientation();
+                    pb_ball.position = pbts::point{ball.x(), ball.y()};
+                    pb_ball.velocity = pbts::point{ball.vx(), ball.vy()};
+
+                    for (const auto &other_robot : blue_robots) {
+                        if (other_robot.robot_id() != pbts::ATTACKER) {
+                            pb_enemies.push_back({other_robot.x(), other_robot.y()});
+                        }
+                    }
+
+                    auto [new_point, rotation] = strategy.actions(bounds.value(), 
+                                                                  pb_robot,
+                                                                  pb_ball,
+                                                                  pb_enemies, 
+                                                                  is_yellow ? -1.0 : 1.0);
+                    //auto new_point = strategy.actions(pb_ball.position, pb_robot, pb_enemies, 1);
+                    auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, 0 ));
+                    //auto [left, right] = pbts::to_pair(pbts::control::rotate(pb_robot, M_PI));
+
+                    auto command = packet.mutable_cmd()->add_robot_commands();
+                    command->set_id(robot.robot_id());
+                    command->set_yellowteam(is_yellow);
+                    command->set_wheel_left(left);
+                    command->set_wheel_right(right);
+                    VSSS.simulator_send(packet);
+                
+                }
+
+                // for (const auto &robot : yellow_robots)
+                // {
+                //     pbts::robot pb_robot;
+                //     pbts::ball  pb_ball;
+                //     //pbts::point new_point;
+                    
+                //     pb_robot.position = {robot.x(), robot.y()};
+                //     pb_robot.orientation = robot.orientation();
+                //     pb_robot.id = robot.robot_id();
+                //     pb_ball.position = pbts::point{ball.x(), ball.y()};
+                //     pb_ball.velocity = pbts::point{ball.vx(), ball.vy()};
+                    
+                //     for (const auto &other_robot : yellow_robots) {
+                //         if (other_robot.robot_id() != pbts::ATTACKER) {
+                //             pb_enemies.push_back({other_robot.x(), other_robot.y()});
+                //         }
+                //     }
+
+                //     auto [new_point, rotation] = strategy.actions(bounds.value(), pb_robot, pb_ball, pb_enemies, -1);
+                //     auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, rotation ));
+                //     //auto [left, right] = pbts::to_pair(pbts::control::rotate(pb_robot, M_PI));
+
+                //     auto command = packet.mutable_cmd()->add_robot_commands();
+                //     command->set_id(robot.robot_id());
+                //     command->set_yellowteam(true);
+                //     command->set_wheel_left(left);
+                //     command->set_wheel_right(right);
+                //     VSSS.simulator_send(packet);
+                // } 
+
+                //simulator.send(packet);
                 //VSSS.simulator_send(packet);
             }
-
-            //  for (const auto &robot : yellow_robots)
-            // {
-            //     pbts::robot pb_robot;
-            //     pbts::ball  pb_ball;
-            //     //pbts::point new_point;
-                
-            //     pb_robot.position = {robot.x(), robot.y()};
-            //     pb_robot.orientation = robot.orientation();
-            //     pb_robot.id = robot.robot_id();
-            //     pb_ball.position = pbts::point{ball.x(), ball.y()};
-            //     pb_ball.velocity = pbts::point{ball.vx(), ball.vy()};
-
-            //     auto [new_point, rotation] = strategy.actions(bounds.value(), pb_robot, pb_ball, pb_enemies, -1);
-            //     auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, rotation ));
-            //     //auto [left, right] = pbts::to_pair(pbts::control::rotate(pb_robot, M_PI));
-
-            //     auto command = packet.mutable_cmd()->add_robot_commands();
-            //     command->set_id(robot.robot_id());
-            //     command->set_yellowteam(true);
-            //     command->set_wheel_left(left);
-            //     command->set_wheel_right(right);
-            //     //VSSS.simulator_send(packet);
-            // }
-
-            //simulator.send(packet);
-            VSSS.simulator_send(packet);
+            else
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    auto command = packet.mutable_cmd()->add_robot_commands();
+                    command->set_id(i);
+                    command->set_yellowteam(is_yellow);
+                    command->set_wheel_left(0.0);
+                    command->set_wheel_right(0.0);
+                    VSSS.simulator_send(packet);
+                }
+            } 
         },
-        /*referee_in_params=*/{ref_addr, ref_port},
-        /*replacer_out_params=*/{ref_addr, rep_port},
-        /*on_referee_receive=*/ [&](auto command) {
-            // TODO: receber pela linha de comando os parametros do referee e replacer.
+        /* referee_in_params= */ {ref_addr, ref_port},
+        /* replacer_out_params= */ {ref_addr, rep_port},
+        /* on_referee_receive= */ [&](auto command) {
+            auto [foul, teamcolor, foul_quadrant, timestamp, game_half] = command;
+            // foul => {
+            //    VSSRef::Foul::FREE_KICK, ...::PENALTY_KICK, ...::GOAL_KICK, 
+            //    ...::FREE_BALL, ...::KICKOFF , ...::STOP , ...::GAME_ON}
+            // color => {
+            //    VSSRef::Color::BLUE, ...::YELLOW, ...::NONE (que ?)}
+            // foul_quadrant => {
+            //     VSSRef::Quadrant::NO_QUADRANT, ...::QUADRANT_1,
+            //     ...::QUADRANT_2, ...::QUADRANT_3, ...::QUADRANT_4}
+            // timestamp => double
+            // game_half => {
+            //    VSSRef::Half::NO_HALF, ...::FIRST_HALF, ...::SECOND_HALF}
+
+            switch (foul)
+            {
+            case VSSRef::Foul::FREE_BALL:
+                break;
+            case VSSRef::Foul::FREE_KICK:
+                break;
+            case VSSRef::Foul::GOAL_KICK:
+                break;
+            case VSSRef::Foul::PENALTY_KICK:
+                break;
+            case VSSRef::Foul::KICKOFF:
+                break;
+            case VSSRef::Foul::STOP:
+                game_on = false;
+
+                break;
+            case VSSRef::Foul::GAME_ON:
+                game_on = true;
+                break;
+            default:
+                break;
+            }
+
+            switch (teamcolor)
+            {
+                
+            case VSSRef::Color::NONE:
+                break;
+            case VSSRef::Color::BLUE:
+                break;
+            case VSSRef::Color::YELLOW:
+                break;
+            default:
+                //Cor não identificada
+                break;
+            }
+
+            switch (foul_quadrant)
+            {
+            case VSSRef::Quadrant::NO_QUADRANT:
+                break;
+            case VSSRef::Quadrant::QUADRANT_1:
+                break;
+            case VSSRef::Quadrant::QUADRANT_2:
+                break;
+            case VSSRef::Quadrant::QUADRANT_3:
+                break;
+            case VSSRef::Quadrant::QUADRANT_4:
+                break;
+            default:
+                break;
+            }
+
+            //Estrutura pra idenficar a falta e reposicionar
+            //VSSRef::team_to_ref::VSSRef_Placement placement;
+            //VSSS.replacer_send(placement)
         }};
 
     // Start the event loop (needed to be able to send and receive messages).

@@ -104,30 +104,19 @@ auto pbts::Strategy::actions(
     }
     else if(robot.id == pbts::ATTACKER)
     {
-        
+        auto point = [](pbts::rect bound) {return (bound[0]+bound[1]+bound[2]+bound[3])/4.;};
+
         pbts::Strategy::isNear(robot.position, ball.position, 7e-2) 
-        ? action = pbts::Strategy::towardGoal(robot, field, team)
+        ? pbts::Strategy::isNear(robot.position, team*point(field.left_goal_bounds), 7e-1) 
+        ? action = pbts::Strategy::kick(robot, ball)
+        : action = pbts::Strategy::towardGoal(robot, field, team)
         : action = pbts::Strategy::moveOntoBall(robot, ball, field, team);
         
-        // auto [new_point, flag] = action;
-
-        // wgoal_position = real_to_discreet(new_point);
-        // wallied_robot = real_to_discreet(robot.position);
-
-        // for (auto enemy_robot : enemy_robots)
-        // {
-        //     wenemy_robots.push_back(real_to_discreet(enemy_robot));
-        // }
-        // wnew_position = wave_planner(wgoal_position, wallied_robot, wenemy_robots);
-
-        // int x =  wnew_position.real();
-        // int y =  wnew_position.imag();
-        // printf("%d %d \n ", x, y);
-
-        // printf("%lf %lf \n ", robot.position.real(), robot.position.imag());
+        
+        auto [new_point, flag] = action;
     
-        // action = {discreet_to_real(wnew_position), flag};
-
+        action = {pbts::Strategy::create_path(new_point, robot, enemy_robots), flag};
+   
     }
     
     return action;
@@ -240,7 +229,8 @@ auto pbts::Strategy::wave_planner(
     -> pbts::wpoint
 {
     int discreet_field[imax][jmax];
-    auto [goal_x, goal_y] = pbts::to_pair(goal_position);
+    std::vector<std::vector<int>> cost(imax, std::vector<int> (jmax, 0));
+    //auto [goal_x, goal_y] = pbts::to_pair(goal_position);
     //auto [robot_x, robot_y] = pbts::to_pair(allied_robot);
 
     for (int i = 0; i < imax; i++)
@@ -253,11 +243,15 @@ auto pbts::Strategy::wave_planner(
 
     generate_obstacle(discreet_field, enemy_robots);
 
-    add_clearance(discreet_field, allied_robot);
+    add_clearance(discreet_field, goal_position);
 
- /*    for (int i = 0; i < N; i++)
+    add_shield_ball(discreet_field, goal_position);
+
+    /* printf("FIELD\n");
+
+    for (int i = 0; i < imax; i++)
     {
-        for (int j = 0; j < M; j++)
+        for (int j = 0; j < jmax; j++)
         {
             printf("%d", discreet_field[i][j]);
         }
@@ -265,41 +259,45 @@ auto pbts::Strategy::wave_planner(
     }
     printf("\n\n"); */
 
-    discreet_field[goal_x][goal_y] = 1;
+    //c = getchar();
 
-    auto cost = wave_path(discreet_field, goal_position);
+    wave_path(discreet_field, goal_position, cost);
 
-/*     for (int i = 0; i < N; i++)
-    {
-        for (int j = 0; j < M; j++)
-        {
-            printf("[%d]", discreet_field[i][j]);
+    /* for (int i = imin; i < imax; i++) {
+        for (int j = jmin; j < jmax; j++) {
+            if (cost[i][j] == 10000) {
+                printf("[X ] ");
+            }
+            else if (cost[i][j] < 10)
+                printf("[%d ] ", cost[i][j]);
+
+            else printf("[%d] ", cost[i][j]);
         }
-        printf("\\\n");
+        printf("\n");
     }
-    printf("\n\n");
 
-    exit(1); */
-    
+    printf("\n\n"); */
 
-    return next_point(allied_robot, cost);
+    return next_point(allied_robot, goal_position, cost);
 }
 
-auto pbts::Strategy::add_clearance(int (&field)[imax][jmax], const pbts::wpoint robot_position) -> void
+auto pbts::Strategy::add_clearance(int (&field)[imax][jmax], const pbts::wpoint goal_position) -> void
 {
-    //auto [icle, jcle] = pbts::to_pair(robot_position);
+    //auto [icle, jcle] = pbts::to_pair(goal_position);
 
-    auto neighbours = valid_neighbours(robot_position, 1, 2);
+    auto neighbours = valid_neighbours(goal_position, 1, 1);
 
     for (auto const neighbour : neighbours) {
         auto [ni, nj] = pbts::to_pair(neighbour);
 
         field[ni][nj] = 0;
     }
+
 }
 
-auto pbts::Strategy::next_point(const pbts::wpoint pos_now, std::vector<std::vector<int>> &cost) -> pbts::wpoint
+auto pbts::Strategy::next_point(const pbts::wpoint pos_now, const pbts::wpoint goal, std::vector<std::vector<int>> &cost) -> pbts::wpoint
 {
+    // Onde custo = 0 -> custo = 10mil
     for (int i = imin; i < imax; i++) {
         for (int j = jmin; j < jmax; j++) {
             if (cost[i][j] == 0) cost[i][j] = 10000;
@@ -308,48 +306,62 @@ auto pbts::Strategy::next_point(const pbts::wpoint pos_now, std::vector<std::vec
 
 
     ///dads/scanf("Enter pra continuar ...");
+    // APENAS PRINT
+    /* for (int i = imin; i < imax; i++) {
+        for (int j = jmin; j < jmax; j++) {
+            if (cost[i][j] == 10000) {
+                printf("[X ] ");
+            }
+            else if (cost[i][j] < 10)
+                printf("[%d ] ", cost[i][j]);
 
+            else printf("[%d] ", cost[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n"); */
+
+    // APENAS PRINT
+
+    //c = getchar();
+
+
+    auto [i_goal, j_goal] = pbts::to_pair(goal);
     auto [i_now, j_now] = pbts::to_pair(pos_now);
 
     int cost_ij = cost[i_now][j_now];
 
+    // printf("COST IJ %d\n", cost_ij);
+
     int i_next = i_now;
     int j_next = j_now;
+    int i = 0;
 
-    auto neighbours = valid_neighbours(pos_now, 0, 1);
+    while (i < 2) {
 
-    for (const auto &neighbour : neighbours) {
-        auto [new_i, new_j] = pbts::to_pair(neighbour);
+        auto neighbours = valid_neighbours({i_next,j_next}, 1, 1);
 
-        if (cost[new_i][new_j] < cost_ij) {
-            i_next = new_i;
-            j_next = new_j;
-            cost_ij = cost[new_i][new_j];
+        for (const auto &neighbour : neighbours) {
+            auto [new_i, new_j] = pbts::to_pair(neighbour);
+
+            if (cost[new_i][new_j] < cost_ij) {
+                i_next = new_i;
+                j_next = new_j;
+                cost_ij = cost[new_i][new_j];
+            }
+
+            if (i_next == i_goal && j_next == j_goal) {
+                goto end;
+            }
         }
-    }
 
-    /* if ((i_now > imin) && (i_now < imax)) {
-        if (cost[i_now][j_now] < cost_ij) {
-            i_next = i_now - 5;
-        }
-        else if (cost[i_now+5][j_now] < cost_ij) {
-            i_next = i_now + 5;
-        }
-    }
+        ++i;
+    }   
 
-    if ((j_now > jmin) && (j_now < jmax)) {
-        if (cost[i_now][j_now-5] < cost_ij) {
-            j_next = j_now - 5;
-        }
-        else if (cost[i_now][j_now+5] < cost_ij) {
-            j_next = j_now + 5;
-        }
-    } */
-
-    return {i_next, j_next};
+    end: return {i_next, j_next};
 }
 
-auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal) -> std::vector<std::vector<int>>
+auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal, std::vector<std::vector<int>> &cost) -> void
 {
     
     int occ[imax][jmax];
@@ -360,40 +372,12 @@ auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal
         }
     }
 
-    std::vector<std::vector<int>> cost(imax, std::vector<int> (jmax, 0));
-
-    int xaxis[imax];
-    int yaxis[jmax];
-
-    for (int i = imin; i < imax; i++) {
-        xaxis[i] = i;
-    }
-
-    for (int j = jmin; j < jmax; j++) {
-        yaxis[j] = j;
-    }
-
-    int goali = 0;
-    int goalj = 0;
-
     auto [igoal, jgoal] = pbts::to_pair(goal);
 
-    for (int i = 0; i < imax; i++) {
-        if (abs(xaxis[i] - igoal) < abs(xaxis[goali] - igoal)) {
-            goali = i;
-        }
-    }
-
-    for (int i = 0; i < jmax; i++) {
-        if (abs(yaxis[i] - jgoal) < abs(yaxis[goalj] - igoal)) {
-            goalj = i;
-        }
-    }
-
-    cost[goali][goalj] = 1;
+    cost[igoal][jgoal] = 1;
 
     auto open = std::queue<pbts::wpoint>();
-    open.push({goali, goalj});
+    open.push({igoal, jgoal});
 
     while(!open.empty()) {
         auto current_pos = open.front();
@@ -417,8 +401,6 @@ auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal
         open.pop();
     }
 
-    return cost;
-
 }
 
 auto pbts::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vector<pbts::wpoint> &enemy_robots) -> void
@@ -426,13 +408,61 @@ auto pbts::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vect
 
     for (const auto &robot : enemy_robots)
     {
-        auto neighboors = valid_neighbours(robot, 1, 2);
+        auto [i_now, j_now] = pbts::to_pair(robot);
+        std::vector<pbts::wpoint> neighboors = {{i_now, j_now+2},{i_now+1,j_now+2},{i_now+2,j_now+2},{i_now+2,j_now+1},{i_now+2,j_now},{i_now+2,j_now-1},{i_now+2,j_now-2},{i_now+1,j_now-2},{i_now,j_now-2},{i_now-1,j_now-2},{i_now-2,j_now-2},{i_now-2,j_now-1},{i_now-2,j_now},{i_now-2,j_now+1},{i_now-2,j_now+2},{i_now-1,j_now+2}};
+        
+        // Opções para teste
+        //valid_neighbours({i_now, j_now}, 1, 1);
+        
+        //{{i_now, j_now+2},{i_now+1,j_now+2},{i_now+2,j_now+2},{i_now+2,j_now+1},{i_now+2,j_now},{i_now+2,j_now-1},{i_now+2,j_now-2},{i_now+1,j_now-2},{i_now,j_now-2},{i_now-1,j_now-2},{i_now-2,j_now-2},{i_now-2,j_now-1},{i_now-2,j_now},{i_now-2,j_now+1},{i_now-2,j_now+2},{i_now-1,j_now+2}};
 
         for (const auto &neighboor : neighboors) {
             auto [ri, rj] = pbts::to_pair(neighboor);
 
             field[ri][rj] = 1;
         }
+    }
+}
+
+auto pbts::Strategy::add_shield_ball(int (&field)[imax][jmax], const pbts::wpoint ball) -> void
+{
+    auto [i_ball, j_ball] = pbts::to_pair(ball);
+
+
+    auto iini = i_ball - 0;
+    auto ifin = i_ball + 1;
+    auto jini = j_ball - 1;
+    auto jfin = j_ball + 1;
+
+    if (iini < imin){
+        iini = imin;
+    }
+    else if(ifin > imax){
+        ifin = imax;
+    }
+
+    if (jini < jmin){
+        jini = jmin;
+    }
+    else if(jfin > jmax){
+        jfin = jmax;
+    }
+
+    for (int i = iini; i <= ifin; i++){
+        for (int j = jini; j <= jfin; j++){
+            field[i][j] = 1;
+        }
+    }
+
+    if (!is_yellow) {
+        field[i_ball-2][j_ball] = 0;
+        field[i_ball-1][j_ball] = 0;
+        field[i_ball][j_ball] = 0;
+    }
+    else {
+        field[i_ball][j_ball] = 0;
+        field[i_ball+1][j_ball] = 0;
+        field[i_ball+2][j_ball] = 0;
     }
 }
 
@@ -498,10 +528,12 @@ auto pbts::Strategy::create_path(
     const std::vector<pbts::point> &enemy_robots)
     -> pbts::point
 {
+    //Correspondestes Discretas
     pbts::wpoint wgoal_position;
     pbts::wpoint wallied_robot, wnew_position;
     std::vector<pbts::wpoint> wenemy_robots;
 
+    // Transformação
     wgoal_position = real_to_discreet(goal_position);
     wallied_robot = real_to_discreet(allied_robot.position);
 
@@ -510,7 +542,32 @@ auto pbts::Strategy::create_path(
         wenemy_robots.push_back(real_to_discreet(enemy_robot));
     }
 
+    // Geração da nova posição
     wnew_position = wave_planner(wgoal_position, wallied_robot, wenemy_robots);
+
+
+    /* auto [currx, curry] = pbts::to_pair(allied_robot.position);
+    printf("Real Robot Current: Pos[x] = %f | Pos[y] = %f\n", currx, curry);
+
+    auto [wcurri, wcurrj] = pbts::to_pair(wallied_robot);
+    printf("Discreet Robot Current: Pos[i] = %d | Pos[j] = %d\n\n", wcurri, wcurrj);
+
+
+    auto [newx, newy] = pbts::to_pair(discreet_to_real(wnew_position));
+    printf("Real Robot New: Pos[x] = %f | Pos[y] = %f\n", newx, newy);
+
+    auto [wni, wnj] = pbts::to_pair(wnew_position);
+    printf("Discreet Robot New: Pos[i] = %d | Pos[j] = %d\n\n", wni, wnj);
+
+
+    auto [goal_x, goal_y] = pbts::to_pair(goal_position);
+    printf("Real Goal: Pos[x] = %f | Pos[y] = %f\n", goal_x, goal_y);
+
+    auto [wgi, wgj] = pbts::to_pair(wgoal_position);
+    printf("Discreet Goal: Pos[i] = %d | Pos[j] = %d\n\n", wgi, wgj); */
+
+
+    //c = getchar();
 
     return {discreet_to_real(wnew_position)};
 }
@@ -570,4 +627,14 @@ auto pbts::Strategy::real_to_discreet(pbts::point point) -> pbts::wpoint
     }
 
     return {iout, jout};
+}
+
+auto pbts::Strategy::setTeam(bool is_yellow) -> void
+{
+    this->is_yellow = is_yellow;
+}
+
+auto pbts::Strategy::setBounds(pbts::field_geometry bounds) -> void
+{
+    field_bounds = bounds;
 }
