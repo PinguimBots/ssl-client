@@ -20,7 +20,7 @@ pbts::simulator_connection::simulator_connection
     , replacer_out_port{replacer_out_params.port}
     , referee_in_socket{}
 {
-    simulator_in_socket.bind(QHostAddress::AnyIPv4, simulator_in_params.port);
+    simulator_in_socket.bind(QHostAddress::AnyIPv4, simulator_in_params.port,QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
     simulator_in_socket.joinMulticastGroup(QHostAddress{simulator_in_params.ip.data()});
 
     // Connection is automatically severed when simulator_in_socket is destroyed.
@@ -41,7 +41,7 @@ pbts::simulator_connection::simulator_connection
         }
     );
 
-    referee_in_socket.bind(QHostAddress::AnyIPv4, referee_in_params.port);
+    referee_in_socket.bind(QHostAddress::AnyIPv4, referee_in_params.port,QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
     referee_in_socket.joinMulticastGroup(QHostAddress{referee_in_params.ip.data()});
 
     QObject::connect(&referee_in_socket, &QUdpSocket::readyRead,
