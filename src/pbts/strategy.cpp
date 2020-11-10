@@ -316,13 +316,13 @@ auto pbts::Strategy::wave_planner(
 
     c = getchar(); */
 
-    int increment = is_yellow ? 3 : -3;
+    //int increment = is_yellow ? -5 : 5;
 
     auto [goal_i, goal_j] = pbts::to_pair(goal_position);
 
     //if (isNear(discreet_to_real(allied_robot), discreet_to_real(goal_position), 8.0e-2))
 
-    return next_point(allied_robot, {goal_i + increment, goal_j}, cost);
+    return next_point(allied_robot, {goal_i, goal_j}, cost);
 }
 
 auto pbts::Strategy::add_clearance(int (&field)[imax][jmax], const pbts::wpoint goal_position) -> void
