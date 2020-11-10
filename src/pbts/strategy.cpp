@@ -80,10 +80,6 @@ auto pbts::Strategy::actions(
     * -> defenser: moves along the first half of the field, stay quiet if the attacker holds the ball
     * -> attacker: moves onto the ball and carries it toward the goal
     */
-    pbts::wpoint wgoal_position;
-    pbts::wpoint wallied_robot, wnew_position;
-    std::vector<pbts::wpoint> wenemy_robots;
-
     std::tuple<pbts::point, int> action;
     printf("%d\n ", robot.id);
 
@@ -105,15 +101,26 @@ auto pbts::Strategy::actions(
     {
         auto point = [](pbts::rect bound) {return (bound[0]+bound[1]+bound[2]+bound[3])/4.;};
 
+        actionType acType;
+
         pbts::Strategy::isNear(robot.position, ball.position, 8e-2) 
         ? pbts::Strategy::isNear(robot.position, is_yellow
                                                  ? point(field.left_goal_bounds) 
-                                                 : point(field.right_goal_bounds), 4e-1) 
-        ? action = pbts::Strategy::kick(robot, ball)
-        : action = pbts::Strategy::towardGoal(robot, field, team)
-        : action = pbts::Strategy::moveOntoBall(robot, ball, field, team);
-        
-        
+                                                 : point(field.right_goal_bounds), 4e-2) 
+        ? acType = actionType::KICK 
+        : acType = actionType::TOWARDGOAL
+        : acType = actionType::MOVETOBALL;
+
+        if (acType == actionType::TOWARDGOAL) {
+            return pbts::Strategy::towardGoal(robot, field, team);
+        }
+        else if (acType == actionType::KICK) {
+            action = pbts::Strategy::kick(robot, ball);
+        }
+        else if (acType == actionType::MOVETOBALL) {
+            action = pbts::Strategy::moveOntoBall(robot, ball, field, team);
+        }
+
         auto [new_point, flag] = action;
         
         if(is_yellow)
@@ -274,7 +281,7 @@ auto pbts::Strategy::wave_planner(
 
     add_clearance(discreet_field, goal_position);
 
-    //add_shield_ball(discreet_field, goal_position);
+    add_shield_ball(discreet_field, goal_position);
 
     /* printf("FIELD\n");
 
@@ -286,9 +293,9 @@ auto pbts::Strategy::wave_planner(
         }
         printf("\n");
     }
-    printf("\n\n"); */
+    printf("\n\n");
 
-    //c = getchar();
+    c = getchar(); */
 
     wave_path(discreet_field, goal_position, cost);
 
@@ -309,9 +316,11 @@ auto pbts::Strategy::wave_planner(
 
     c = getchar(); */
 
-    int increment = is_yellow ? 2 : -2;
+    int increment = is_yellow ? 3 : -3;
 
     auto [goal_i, goal_j] = pbts::to_pair(goal_position);
+
+    //if (isNear(discreet_to_real(allied_robot), discreet_to_real(goal_position), 8.0e-2))
 
     return next_point(allied_robot, {goal_i + increment, goal_j}, cost);
 }
@@ -380,7 +389,7 @@ auto pbts::Strategy::next_point(const pbts::wpoint pos_now, const pbts::wpoint g
     int j_next = j_now;
     int i = 0;
 
-    while (i < 7) {
+    while (i < 5) {
 
         auto neighbours = valid_neighbours({i_next,j_next}, 1, 1);
 
@@ -489,26 +498,6 @@ auto pbts::Strategy::add_shield_ball(int (&field)[imax][jmax], const pbts::wpoin
 {
     auto [i_ball, j_ball] = pbts::to_pair(ball);
 
-
-    auto iini = i_ball - 0;
-    auto ifin = i_ball + 1;
-    auto jini = j_ball - 1;
-    auto jfin = j_ball + 1;
-
-    if (iini < imin){
-        iini = imin;
-    }
-    else if(ifin > imax){
-        ifin = imax;
-    }
-
-    if (jini < jmin){
-        jini = jmin;
-    }
-    else if(jfin > jmax){
-        jfin = jmax;
-    }
-
     /* for (int i = iini; i <= ifin; i++){
         for (int j = jini; j <= jfin; j++){
             field[i][j] = 1;
@@ -516,21 +505,42 @@ auto pbts::Strategy::add_shield_ball(int (&field)[imax][jmax], const pbts::wpoin
     } */
 
     if (!is_yellow) {
-        field[i_ball-1][j_ball+2] = 1;
+        field[i_ball-1][j_ball+1] = 1;
         field[i_ball][j_ball+1] = 1;
         field[i_ball+1][j_ball+1] = 1;
         field[i_ball+1][j_ball] = 1;
         field[i_ball+1][j_ball-1] = 1;
         field[i_ball][j_ball-1] = 1;
+        field[i_ball-1][j_ball-1] = 1;
+
+        field[i_ball-1][j_ball+2] = 1;
+        field[i_ball][j_ball+2] = 1;
+        field[i_ball+1][j_ball+2] = 1;
+        field[i_ball+2][j_ball+1] = 1;
+        field[i_ball+2][j_ball] = 1;
+        field[i_ball+2][j_ball-1] = 1;
+        field[i_ball+1][j_ball-2] = 1;
+        field[i_ball][j_ball-2] = 1;
         field[i_ball-1][j_ball-2] = 1;
+        
     }
     else {
-        field[i_ball+1][j_ball+2] = 1;
+        field[i_ball+1][j_ball+1] = 1;
         field[i_ball][j_ball+1] = 1;
         field[i_ball-1][j_ball+1] = 1;
         field[i_ball-1][j_ball] = 1;
         field[i_ball-1][j_ball-1] = 1;
         field[i_ball][j_ball-1] = 1;
+        field[i_ball+1][j_ball-1] = 1;
+
+        field[i_ball+1][j_ball+2] = 1;
+        field[i_ball][j_ball+2] = 1;
+        field[i_ball-1][j_ball+2] = 1;
+        field[i_ball-2][j_ball+1] = 1;
+        field[i_ball-2][j_ball] = 1;
+        field[i_ball-2][j_ball-1] = 1;
+        field[i_ball-1][j_ball-2] = 1;
+        field[i_ball][j_ball-2] = 1;
         field[i_ball+1][j_ball-2] = 1;
     }
 }

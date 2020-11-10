@@ -71,12 +71,14 @@ namespace pbts
         static const constexpr int imax = std::round(xT/dx) + imin;
         static const constexpr int jmax = std::round(yT/dy) + jmin;
 
+        enum class actionType {KICK, TOWARDGOAL, MOVETOBALL};
+
         pbts::field_geometry field_bounds;
 
         bool is_yellow;
 
         //Só pros scanf;
-        //char c;
+        // char c;
 
         bool isNear(pbts::point point1, pbts::point point2, double tol);
         
