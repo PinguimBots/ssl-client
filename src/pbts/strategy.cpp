@@ -389,28 +389,6 @@ auto pbts::Strategy::next_point(const pbts::wpoint pos_now, const pbts::wpoint g
         }
     }
 
-
-    ///dads/scanf("Enter pra continuar ...");
-    // APENAS PRINT
-    /* for (int i = imin; i < imax; i++) {
-        for (int j = jmin; j < jmax; j++) {
-            if (cost[i][j] == 10000) {
-                printf("[X ] ");
-            }
-            else if (cost[i][j] < 10)
-                printf("[%d ] ", cost[i][j]);
-
-            else printf("[%d] ", cost[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n\n"); */
-
-    // APENAS PRINT
-
-    //c = getchar();
-
-
     auto [i_goal, j_goal] = pbts::to_pair(goal);
     auto [i_now, j_now] = pbts::to_pair(pos_now);
 
