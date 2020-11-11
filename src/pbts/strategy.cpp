@@ -85,14 +85,14 @@ auto pbts::Strategy::actions(
 
     if(robot.id == pbts::GOALKEEPER)
     {
-        pbts::Strategy::isNear(robot.position, ball.position, 8.0e-2) 
+        pbts::Strategy::isNear(robot.position, ball.position, 5.0e-2) 
         ? action = pbts::Strategy::kick(robot, ball)
         : action = pbts::Strategy::trackBallYAxix(robot, ball, team );
        
     }
     else if(robot.id == pbts::DEFENDER)
     {
-       pbts::Strategy::isNear(robot.position, ball.position , 8.0e-2) 
+       pbts::Strategy::isNear(robot.position, ball.position , 6.0e-2) 
        ? action = pbts::Strategy::kick(robot, ball)
        : action = pbts::Strategy::trackBallYAxix(robot, ball, team);
 
@@ -216,12 +216,41 @@ auto pbts::Strategy::trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ba
     *Need to limit the goalkeeper's area
     */
     printf("%d Tracking\n", rbt.id);
-    auto position = rbt.id == pbts::GOALKEEPER
-                    ? pbts::point(team*GOALKEEPER_std_X, std::clamp(ball.position.imag(), GOAL_AREA_MIN, GOAL_AREA_MAX))
-                    : pbts::point(team*DEFENDER_std_X, ball.position.imag());
+
+    auto [ball_x, ball_y] = pbts::to_pair(ball.position);
+    auto [bvel_x, bvel_y] = pbts::to_pair(ball.velocity);
+    auto [robot_x, robot_y] = pbts::to_pair(rbt.position);
+
+    /* if (rbt.id == pbts::GOALKEEPER) {  
+
+        increment = ball_y == 0 ? 0 : ball_y > 0 ? +0.15 : -0.15;
+    } */
+
+    //increment = ball_y == 0 ? 0 : ball_y > 0 ? +0.15 : -0.15;
+
+    //Sim.. ta uma merda, mas eu já to com a cabeça cansada
+    if (bvel_y < 0) {
+        if (ball_y >= robot_y) {
+            bvel_y = 0;
+        }
+    }
+    else if (bvel_y > 0) {
+        if (ball_y <= robot_y) {
+            bvel_y = 0;
+        }
+    }
+
+    auto new_y = ball_y + bvel_y;
+
+    pbts::point position = rbt.id == pbts::GOALKEEPER
+                    ? pbts::point(team*GOALKEEPER_std_X, std::clamp(new_y, GOAL_AREA_MIN, GOAL_AREA_MAX))
+                    : pbts::point(team*DEFENDER_std_X, new_y);
     
     // auto ball_to_robot_angle = ball.position - rbt.position;
     //pbts::control::generate_vels(rbt, position);
+
+    
+
     return {position,
             0};
 
