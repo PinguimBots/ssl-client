@@ -8,7 +8,7 @@
 
 
 #define GOALKEEPER_std_Y 0
-#define GOALKEEPER_std_X -0.67
+#define GOALKEEPER_std_X -0.71
 
 #define GOAL_AREA_MIN -0.350
 #define GOAL_AREA_MAX 0.350
