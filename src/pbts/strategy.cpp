@@ -226,13 +226,6 @@ auto pbts::Strategy::trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ba
             0};
 
 }
-auto pbts::Strategy::moveBack(const pbts::robot& rbt) -> std::tuple<pbts::point, int>
-{
-    printf("%d Moving back\n", rbt.id);
-    //  pbts::control::generate_vels(rbt, pbts::point(pbts::DEFENDER_std_X, pbts::DEFENDER_std_Y));
-    return {(DEFENDER_std_X, DEFENDER_std_Y),
-             0};
-}
 
 auto pbts::Strategy::towardGoal(const pbts::robot& rbt, 
     const pbts::field_geometry& field, 
