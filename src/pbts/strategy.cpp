@@ -85,14 +85,17 @@ auto pbts::Strategy::actions(
 
     if(robot.id == pbts::GOALKEEPER)
     {
-        pbts::Strategy::isNear(robot.position, ball.position, 5.0e-2) 
+        
+        pbts::Strategy::isNear(robot.position, ball.position, 8.0e-2) 
         ? action = pbts::Strategy::kick(robot, ball)
         : action = pbts::Strategy::trackBallYAxix(robot, ball, team );
+
+        
        
     }
     else if(robot.id == pbts::DEFENDER)
     {
-       pbts::Strategy::isNear(robot.position, ball.position , 6.0e-2) 
+       pbts::Strategy::isNear(robot.position, ball.position , 8.0e-2) 
        ? action = pbts::Strategy::kick(robot, ball)
        : action = pbts::Strategy::trackBallYAxix(robot, ball, team);
 
@@ -109,7 +112,7 @@ auto pbts::Strategy::actions(
                 action = {pbts::point(DEFENDER_std_X + .225, robot.position.imag()), 0};
             else
             {
-                 pbts::Strategy::isNear(robot.position, ball.position, 8e-2) 
+                 pbts::Strategy::isNear(robot.position, ball.position, 6e-2) 
                     ? pbts::Strategy::isNear(robot.position, is_yellow
                                                             ? point(field.left_goal_bounds) 
                                                             : point(field.right_goal_bounds), 4e-2) 
@@ -144,10 +147,10 @@ auto pbts::Strategy::actions(
             { action = {pbts::point(-DEFENDER_std_X - .225, robot.position.imag()), 0};}
             else 
             {
-                 pbts::Strategy::isNear(robot.position, ball.position, 8e-2) 
+                 pbts::Strategy::isNear(robot.position, ball.position, 6e-2) 
                 ? pbts::Strategy::isNear(robot.position, is_yellow
                                                         ? point(field.left_goal_bounds) 
-                                                        : point(field.right_goal_bounds), 4e-2) 
+                                                        : point(field.right_goal_bounds), 7e-2) 
                 ? acType = actionType::KICK 
                 : acType = actionType::TOWARDGOAL
                 : acType = actionType::MOVETOBALL;
@@ -182,6 +185,20 @@ auto pbts::Strategy::actions(
     }
     
     return action;
+}
+
+
+auto pbts::Strategy::lin_pred(pbts::point point1, pbts::point point2, double x) -> pbts::point
+{
+    auto [x1, y1] = pbts::to_pair(point1);
+    auto [x2, y2] = pbts::to_pair(point2);
+
+    double k, y;
+
+    k =  (x - x1)/(x2 - x1 + 1e-15);
+    y = y1 + k*(y2-y1);
+
+    return {x, y};
 }
 
 auto pbts::Strategy::rotate(const pbts::robot& robot, const pbts::ball& ball) -> std::tuple<pbts::point, int>
@@ -242,13 +259,9 @@ auto pbts::Strategy::trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ba
 
     auto new_y = ball_y + bvel_y;
 
-    pbts::point position = rbt.id == pbts::GOALKEEPER
-                    ? pbts::point(team*GOALKEEPER_std_X, std::clamp(new_y, GOAL_AREA_MIN, GOAL_AREA_MAX))
-                    : pbts::point(team*DEFENDER_std_X, new_y);
-    
-    // auto ball_to_robot_angle = ball.position - rbt.position;
-    //pbts::control::generate_vels(rbt, position);
-
+    pbts::point position = rbt.id == pbts::DEFENDER
+        ? pbts::point(team*DEFENDER_std_X, new_y)
+        : pbts::point(team*GOALKEEPER_std_X, std::clamp(new_y, GOAL_AREA_MIN, GOAL_AREA_MAX));
     
 
     return {position,
@@ -378,11 +391,7 @@ auto pbts::Strategy::wave_planner(
 
     c = getchar(); */
 
-    //int increment = is_yellow ? -5 : 5;
-
     auto [goal_i, goal_j] = pbts::to_pair(goal_position);
-
-    //if (isNear(discreet_to_real(allied_robot), discreet_to_real(goal_position), 8.0e-2))
 
     return next_point(allied_robot, {goal_i, goal_j}, cost);
 }
@@ -429,7 +438,7 @@ auto pbts::Strategy::next_point(const pbts::wpoint pos_now, const pbts::wpoint g
     int j_next = j_now;
     int i = 0;
 
-    while (i < 5) {
+    while (i < 4) {
 
         auto neighbours = valid_neighbours({i_next,j_next}, 1, 1);
 

@@ -8,10 +8,11 @@
 
 
 #define GOALKEEPER_std_Y 0
-#define GOALKEEPER_std_X -0.68
+#define GOALKEEPER_std_X -0.65
 
 #define GOAL_AREA_MIN -0.350
 #define GOAL_AREA_MAX 0.350
+
 
 #define DEFENDER_std_X -0.4
 #define DEFENDER_std_Y 0.260
@@ -71,6 +72,8 @@ namespace pbts
         static const constexpr int imax = std::round(xT/dx) + imin;
         static const constexpr int jmax = std::round(yT/dy) + jmin;
 
+        pbts::point old_point = {0.0, 0.0};
+
         enum class actionType {KICK, TOWARDGOAL, MOVETOBALL};
 
         pbts::field_geometry field_bounds;
@@ -118,6 +121,7 @@ namespace pbts
             const pbts::ball& ball,
             const pbts::field_geometry& field,
             double team) -> std::tuple<pbts::point, int>;
+        auto lin_pred(pbts::point point1, pbts::point point2, double x) -> pbts::point;
 
 
     };
