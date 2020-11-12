@@ -105,7 +105,7 @@ auto pbts::Strategy::actions(
     {
         auto point = [](pbts::rect bound) {return (bound[0]+bound[1]+bound[2]+bound[3])/4.;};
 
-        pbts::Strategy::isNear(robot.position, ball.position, 8e-2) 
+        pbts::Strategy::isNear(robot.position, ball.position, 6e-2) 
         ? pbts::Strategy::isNear(robot.position, is_yellow
                                                  ? point(field.left_goal_bounds) 
                                                  : point(field.right_goal_bounds), 4e-1) 
@@ -130,7 +130,7 @@ auto pbts::Strategy::actions(
         }
 
 
-        action = {pbts::Strategy::create_path(new_point, robot, enemy_robots), flag};
+        //action = {pbts::Strategy::create_path(new_point, robot, enemy_robots), flag};
    
     }
     
@@ -444,10 +444,10 @@ auto pbts::Strategy::add_shield_ball(int (&field)[imax][jmax], const pbts::wpoin
     auto [i_ball, j_ball] = pbts::to_pair(ball);
 
 
-    auto iini = i_ball - 0;
-    auto ifin = i_ball + 1;
-    auto jini = j_ball - 1;
-    auto jfin = j_ball + 1;
+    auto iini = i_ball - is_yellow ? 0 : 2;
+    auto ifin = i_ball + is_yellow ? 2 : 0;
+    auto jini = j_ball - 2;
+    auto jfin = j_ball + 2;
 
     if (iini < imin){
         iini = imin;
@@ -468,19 +468,23 @@ auto pbts::Strategy::add_shield_ball(int (&field)[imax][jmax], const pbts::wpoin
             field[i][j] = 1;
         }
     }
+    
+    
 
     if (!is_yellow) {
-        field[i_ball-2][j_ball] = 0;
-        field[i_ball-1][j_ball] = 0;
-        field[i_ball][j_ball] = 0;
+        field[iini][j_ball] = 0;
+        field[iini+1][j_ball] = 0;
+        //field[iini+2][j_ball] = 0;
+       
     }
     else {
-        field[i_ball][j_ball] = 0;
-        field[i_ball+1][j_ball] = 0;
-        field[i_ball+2][j_ball] = 0;
+        //field[ifin-2][j_ball] = 0;
+        field[ifin-1][j_ball] = 0;
+        field[ifin][j_ball] = 0;
+      
     }
 }
-
+    
 auto pbts::Strategy::valid_neighbours(pbts::wpoint point, int ntype, int radius) -> std::vector<pbts::wpoint>
 {
     std::vector<pbts::wpoint> fourNB;
@@ -551,6 +555,7 @@ auto pbts::Strategy::create_path(
     // Transformação
     wgoal_position = real_to_discreet(goal_position);
     wallied_robot = real_to_discreet(allied_robot.position);
+        
 
     for (auto enemy_robot : enemy_robots)
     {
