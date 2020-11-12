@@ -152,7 +152,7 @@ auto pbts::Strategy::actions(
                  pbts::Strategy::isNear(robot.position, ball.position, 6e-2) 
                 ? pbts::Strategy::isNear(robot.position, is_yellow
                                                         ? point(field.left_goal_bounds) 
-                                                        : point(field.right_goal_bounds), 4e-1) 
+                                                        : point(field.right_goal_bounds), 3e-1) 
                 ? acType = actionType::KICK 
                 : acType = actionType::TOWARDGOAL
                 : acType = actionType::MOVETOBALL;
