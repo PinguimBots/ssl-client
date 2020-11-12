@@ -62,7 +62,7 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
     }
 
     double robot_angle_error = 0.0, linvel_left = 0.0, linvel_right = 0.0;
-    const double velmax = 20.0, velmin = -20.0; //kap = 1.0, kad = 0.2
+    const double velmax = 100.0, velmin = -100.0; //kap = 1.0, kad = 0.2
 
     double vel_front;
 
