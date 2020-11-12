@@ -62,10 +62,18 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
     }
 
     double robot_angle_error = 0.0, linvel_left = 0.0, linvel_right = 0.0;
-    const double kap = 1.0, kad = 0.2, velmax = 40.0, velmin = -40.0;
+    const double velmax = 20.0, velmin = -20.0; //kap = 1.0, kad = 0.2, 
 
-    double vel_front = std::clamp(90.0 * (positionError)* cos(angleError), velmin, velmax);
-    double vel_side  = std::clamp(30.0 * sin(angleError),                velmin, velmax);
+    double vel_front;
+
+    if (robot.id == 1) { 
+        vel_front = std::clamp(100.0 * cos(angleError), velmin, velmax);
+    }
+    else {
+        vel_front = std::clamp(100.0 * (positionError)* cos(angleError), velmin, velmax);
+    }
+    
+    double vel_side  = std::clamp(10.0 * sin(angleError), velmin, velmax);
 
     if(vel_front > 0) {
         linvel_left = vel_front - vel_side;
@@ -89,13 +97,13 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
         linvel_right = velmin;
     }
 
-    fmt::print("Position Error: {}\n \
+/*     fmt::print("Position Error: {}\n \
                 Angle Error: {}\n \
                 Vel Front: {}\n \
                 Vel Side: {}\n \
                 Linvel Left: {}\n \
                 Linvel Right: {}\n\n", \
-                positionError, (angleError*180)/pi, vel_front, vel_side, linvel_left, linvel_right);
+                positionError, (angleError*180)/pi, vel_front, vel_side, linvel_left, linvel_right); */
     
     double vell, velr;
     if(rotation == 0)
