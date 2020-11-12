@@ -2,7 +2,7 @@
 #include <queue>
 #include <iostream>
 
-auto pbts::Strategy::generate_robot_positions(
+/* auto pbts::Strategy::generate_robot_positions(
     const pbts::field_geometry &field,
     const std::vector<pbts::robot> &allied_robots,
     const std::vector<pbts::robot> &enemy_robots,
@@ -20,15 +20,15 @@ auto pbts::Strategy::generate_robot_positions(
     //Usar as demarcações do campo
 
     return {};
-}
+} */
 
-auto pbts::Strategy::pertoBola(std::vector<pbts::robot> &allied_robots, const std::vector<pbts::robot> &enemy_robots, const pbts::ball &ball) -> int
+/* auto pbts::Strategy::pertoBola(std::vector<pbts::robot> &allied_robots, const std::vector<pbts::robot> &enemy_robots, const pbts::ball &ball) -> int
 {
-    /*
-        Verifica quem está mais perto da bola considerando se tem marcação ou não
-        Caso houver marcação, definir critério de desempate 
+    
+        // Verifica quem está mais perto da bola considerando se tem marcação ou não
+        // Caso houver marcação, definir critério de desempate 
 
-     */
+
 
     double dist_robot_bola1, dist_r1_enemy1, dist_r1_enemy2, dist_r2_enemy1, dist_robot_bola2, dist_r2_enemy2;
 
@@ -63,7 +63,7 @@ auto pbts::Strategy::pertoBola(std::vector<pbts::robot> &allied_robots, const st
     }
     else
         return 1;
-}
+} */
 
 
 auto pbts::Strategy::actions(
@@ -262,7 +262,11 @@ auto pbts::Strategy::trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ba
 
     auto new_y = ball_y + bvel_y;
 
-    pbts::point position;
+    pbts::point position = rbt.id == pbts::GOALKEEPER
+                    ? pbts::point(team*GOALKEEPER_std_X, std::clamp(new_y, GOAL_AREA_MIN, GOAL_AREA_MAX))
+                    : pbts::point(team*DEFENDER_std_X, new_y);
+
+    /* pbts::point position;
     pbts::point predicted_position = lin_pred(old_point, 
                                      ball.position,
                                      rbt.id == pbts::DEFENDER
@@ -282,7 +286,8 @@ auto pbts::Strategy::trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ba
             : pbts::point(team*GOALKEEPER_std_X, std::clamp(ball.position.imag(), GOAL_AREA_MIN, GOAL_AREA_MAX));
     }
 
-    old_point = ball.position;
+    old_point = ball.position; */
+
     return {position,
             0};
 

@@ -8,7 +8,7 @@
 
 
 #define GOALKEEPER_std_Y 0
-#define GOALKEEPER_std_X -0.65
+#define GOALKEEPER_std_X -0.675
 
 #define GOAL_AREA_MIN -0.350
 #define GOAL_AREA_MAX 0.350
@@ -25,14 +25,13 @@ namespace pbts
     {
     public:
         // Generates the final position for each allied robot.
-        auto generate_robot_positions(
+        /* auto generate_robot_positions(
             const pbts::field_geometry &field,
             const std::vector<pbts::robot> &allied_robots,
             const std::vector<pbts::robot> &enemy_robots,
-            const pbts::ball &ball /*,
-        const pbts::game_info& game_state*/
+            const pbts::ball &ball
             )
-            -> std::vector<pbts::point>;
+            -> std::vector<pbts::point>; */
 
         auto create_path(
             const pbts::point goal_position,
@@ -105,7 +104,7 @@ namespace pbts
         auto add_clearance(int (&field)[imax][jmax], const pbts::wpoint goal_position) -> void;
         auto add_shield_ball(int (&field)[imax][jmax], const pbts::wpoint ball) -> void;
         
-        auto pertoBola(std::vector<pbts::robot>& allied_robots, const std::vector<pbts::robot> &enemy_robots,  const pbts::ball& ball) -> int;
+        //auto pertoBola(std::vector<pbts::robot>& allied_robots, const std::vector<pbts::robot> &enemy_robots,  const pbts::ball& ball) -> int;
         
         auto discreet_to_real(pbts::wpoint wpoint) -> pbts::point;
         auto real_to_discreet(pbts::point point) -> pbts::wpoint;
