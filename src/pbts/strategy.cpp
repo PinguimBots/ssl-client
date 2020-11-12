@@ -81,7 +81,7 @@ auto pbts::Strategy::actions(
     * -> attacker: moves onto the ball and carries it toward the goal
     */
     std::tuple<pbts::point, int> action;
-    printf("%d\n ", robot.id);
+    //printf("\n\nRobot id: %d  |  Orientation: %f\n\n ", robot.id, robot.orientation);
 
     if(robot.id == pbts::GOALKEEPER)
     {
@@ -219,13 +219,13 @@ auto pbts::Strategy::rotate(const pbts::robot& robot, const pbts::ball& ball) ->
 
 auto pbts::Strategy::kick(const pbts::robot& robot, const pbts::ball& ball) -> std::tuple<pbts::point, int>
 {
-    printf("%d kicking\n", robot.id);
+    //printf("%d kicking\n", robot.id);
     return pbts::Strategy::rotate(robot, ball);
 }
 
 bool pbts::Strategy::isNear(pbts::point point1, pbts::point point2, double tol)
 {
-    printf("%lf \n ", std::abs((point2 - point1)));
+    //printf("%lf \n ", std::abs((point2 - point1)));
     return (std::abs((point2 - point1)) < tol);
     
 }
@@ -235,18 +235,11 @@ auto pbts::Strategy::trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ba
     /*
     *Need to limit the goalkeeper's area
     */
-    printf("%d Tracking\n", rbt.id);
+    //printf("%d Tracking\n", rbt.id);
 
-    auto [ball_x, ball_y] = pbts::to_pair(ball.position);
+    /* auto [ball_x, ball_y] = pbts::to_pair(ball.position);
     auto [bvel_x, bvel_y] = pbts::to_pair(ball.velocity);
     auto [robot_x, robot_y] = pbts::to_pair(rbt.position);
-
-    /* if (rbt.id == pbts::GOALKEEPER) {  
-
-        increment = ball_y == 0 ? 0 : ball_y > 0 ? +0.15 : -0.15;
-    } */
-
-    //increment = ball_y == 0 ? 0 : ball_y > 0 ? +0.15 : -0.15;
 
     //Sim.. ta uma merda, mas eu já to com a cabeça cansada
     if (bvel_y < 0) {
@@ -264,9 +257,9 @@ auto pbts::Strategy::trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ba
 
     pbts::point position = rbt.id == pbts::GOALKEEPER
                     ? pbts::point(team*GOALKEEPER_std_X, std::clamp(new_y, GOAL_AREA_MIN, GOAL_AREA_MAX))
-                    : pbts::point(team*DEFENDER_std_X, new_y);
+                    : pbts::point(team*DEFENDER_std_X, new_y); */
 
-    /* pbts::point position;
+    pbts::point position;
     pbts::point predicted_position = lin_pred(old_point, 
                                      ball.position,
                                      rbt.id == pbts::DEFENDER
@@ -286,7 +279,7 @@ auto pbts::Strategy::trackBallYAxix(const pbts::robot& rbt, const pbts::ball& ba
             : pbts::point(team*GOALKEEPER_std_X, std::clamp(ball.position.imag(), GOAL_AREA_MIN, GOAL_AREA_MAX));
     }
 
-    old_point = ball.position; */
+    old_point = ball.position;
 
     return {position,
             0};
@@ -300,7 +293,7 @@ auto pbts::Strategy::towardGoal(const pbts::robot& rbt,
     auto point = [](pbts::rect bound) {return (bound[0]+bound[1]+bound[2]+bound[3])/4.;};
     pbts::point new_point;
 
-    printf("%d Toward Goal\n", rbt.id);
+    //printf("%d Toward Goal\n", rbt.id);
     team == 1.0
     ? new_point = point(field.right_goal_bounds)
     : new_point = point(field.left_goal_bounds);
