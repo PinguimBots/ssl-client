@@ -114,8 +114,7 @@ int main(int argc, char *argv[])
 
     strategy.setTeam(is_yellow);
 
-    bool game_on = true;
-    bool foul = false;
+    bool game_on = false;
 
     pbts::simulator_connection VSSS{
         {in_addr, in_port},
