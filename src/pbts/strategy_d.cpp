@@ -1,5 +1,6 @@
 #include <pbts/strategy.hpp>
 #include <queue>
+#include <omp.h>
 
 auto pbts::Strategy::wave_planner(
     const pbts::wpoint goal_position,
@@ -12,6 +13,7 @@ auto pbts::Strategy::wave_planner(
     //auto [goal_x, goal_y] = pbts::to_pair(goal_position);
     //auto [robot_x, robot_y] = pbts::to_pair(allied_robot);
 
+    #pragma omp parallel for
     for (int i = 0; i < imax; i++)
     {
         for (int j = 0; j < jmax; j++)
@@ -103,6 +105,7 @@ auto pbts::Strategy::add_clearance(int (&field)[imax][jmax], const pbts::wpoint 
 auto pbts::Strategy::next_point(const pbts::wpoint pos_now, const pbts::wpoint goal, std::vector<std::vector<int>> &cost) -> pbts::wpoint
 {
     // Onde custo = 0 -> custo = 10mil
+    #pragma omp parallel for
     for (int i = imin; i < imax; i++) {
         for (int j = jmin; j < jmax; j++) {
             if (cost[i][j] == 0) cost[i][j] = 10000;
@@ -149,6 +152,7 @@ auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal
     
     int occ[imax][jmax];
 
+    #pragma omp parallel for
     for (int i = 0; i < imax; i++) {
         for (int j = 0; j < jmax; j++) {
             occ[i][j] = field[i][j];
@@ -370,6 +374,7 @@ auto pbts::Strategy::create_path(
 
 auto pbts::Strategy::init_border_obstacle_field() -> void
 {
+    #pragma omp parallel for
     for (int i = imin; i < imax; i++)
     {
         for (int j = jmin; j < jmin; j++)
@@ -405,6 +410,7 @@ auto pbts::Strategy::add_border_field_obstacle() -> void
     auto [f_2_i, f_2_j] = pbts::to_pair(real_to_discreet(field_bounds.field_bounds[2]));
     auto [f_3_i, f_3_j] = pbts::to_pair(real_to_discreet(field_bounds.field_bounds[3]));
 
+    #pragma omp parallel for
     for (int i = 0; i < imax; i++)
     {
         for (int j = 0; j < jmax; j++)
