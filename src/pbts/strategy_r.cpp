@@ -147,6 +147,8 @@ auto pbts::Strategy::attacker_action(
             action = {create_path(new_point, robot, enemy_robots), flag};
         }
     }
+
+    return action;
 }
 
 auto pbts::Strategy::lin_pred(pbts::point point1, pbts::point point2, double x) -> pbts::point
