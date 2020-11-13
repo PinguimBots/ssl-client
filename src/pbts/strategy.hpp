@@ -63,13 +63,6 @@ namespace pbts
             MOVETOBALL
         };
 
-        enum Roles
-        {
-            GOALKEEPER,
-            ATTACKER,
-            DEFENDER
-        };
-
         pbts::field_geometry field_bounds;
 
         bool is_yellow;
