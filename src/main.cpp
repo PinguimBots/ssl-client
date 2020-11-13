@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
                                                                   pb_ball,
                                                                   pb_enemies);
               
-                    auto [left, right] = pbts::to_pair( pbts::generate_vels(pb_robot, new_point, rotation));
+                    auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, rotation));
 
                     auto command = packet.mutable_cmd()->add_robot_commands();
                     command->set_id(robot.robot_id());
