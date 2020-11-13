@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 
     strategy.setTeam(is_yellow);
 
-    bool game_on = false;
+    bool game_on = true;
 
     pbts::simulator_connection VSSS{
         {in_addr, in_port},
@@ -187,21 +187,11 @@ int main(int argc, char *argv[])
                     {enemy_team[2].x(), enemy_team[2].y()}
                 }};
 
-                //  std::vector<pbts::point> pb_enemies = {{
-                //     {blue_robots[0].x(), blue_robots[0].y()},
-                //     {blue_robots[1].x(), blue_robots[1].y()},
-                //     {blue_robots[2].x(), blue_robots[2].y()}
-                // }};
-
-
 
                 for (const auto &robot : allied_team)
                 {
                     pbts::robot pb_robot;
-                    pbts::ball  pb_ball;
-                    //pbts::point new_point;
-                    
-            
+                    pbts::ball  pb_ball; 
 
                     pb_robot.id = robot.robot_id();
                     pb_robot.position = {robot.x(), robot.y()};
@@ -220,9 +210,8 @@ int main(int argc, char *argv[])
                                                                   pb_ball,
                                                                   pb_enemies, 
                                                                   is_yellow ? -1.0 : 1.0);
-                    //auto new_point = strategy.actions(pb_ball.position, pb_robot, pb_enemies, 1);
+              
                     auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, rotation));
-                    //auto [left, right] = pbts::to_pair(pbts::control::rotate(pb_robot, M_PI));
 
                     auto command = packet.mutable_cmd()->add_robot_commands();
                     command->set_id(robot.robot_id());
@@ -233,38 +222,6 @@ int main(int argc, char *argv[])
                 
                 }
 
-                // for (const auto &robot : yellow_robots)
-                // {
-                //     pbts::robot pb_robot;
-                //     pbts::ball  pb_ball;
-                //     //pbts::point new_point;
-                    
-                //     pb_robot.position = {robot.x(), robot.y()};
-                //     pb_robot.orientation = robot.orientation();
-                //     pb_robot.id = robot.robot_id();
-                //     pb_ball.position = pbts::point{ball.x(), ball.y()};
-                //     pb_ball.velocity = pbts::point{ball.vx(), ball.vy()};
-                    
-                //     for (const auto &other_robot : yellow_robots) {
-                //         if (other_robot.robot_id() != pbts::ATTACKER) {
-                //             pb_enemies.push_back({other_robot.x(), other_robot.y()});
-                //         }
-                //     }
-
-                //     auto [new_point, rotation] = strategy.actions(bounds.value(), pb_robot, pb_ball, pb_enemies, -1);
-                //     auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, rotation ));
-                //     //auto [left, right] = pbts::to_pair(pbts::control::rotate(pb_robot, M_PI));
-
-                //     auto command = packet.mutable_cmd()->add_robot_commands();
-                //     command->set_id(robot.robot_id());
-                //     command->set_yellowteam(true);
-                //     command->set_wheel_left(left);
-                //     command->set_wheel_right(right);
-                //     VSSS.simulator_send(packet);
-                // } 
-
-                //simulator.send(packet);
-                //VSSS.simulator_send(packet);
             }
             else
             {
