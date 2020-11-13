@@ -187,7 +187,6 @@ int main(int argc, char *argv[])
                     {enemy_team[2].x(), enemy_team[2].y()}
                 }};
 
-
                 for (const auto &robot : allied_team)
                 {
                     pbts::robot pb_robot;
@@ -205,8 +204,7 @@ int main(int argc, char *argv[])
                         }
                     }
 
-                    auto [new_point, rotation] = strategy.actions(bounds.value(), 
-                                                                  pb_robot,
+                    auto [new_point, rotation] = strategy.actions(pb_robot,
                                                                   pb_ball,
                                                                   pb_enemies);
               

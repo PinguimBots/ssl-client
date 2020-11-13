@@ -27,7 +27,6 @@ namespace pbts
             -> pbts::point;
 
         auto actions(
-            const pbts::field_geometry &field,
             const pbts::robot &robot,
             const pbts::ball &ball,
             const std::vector<pbts::point> &enemy_robots) -> std::tuple<pbts::point, int>;
