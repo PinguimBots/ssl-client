@@ -107,15 +107,15 @@ namespace pbts
 
         auto rotate(const pbts::robot &robot, const pbts::ball &ball) -> std::tuple<pbts::point, int>;
 
-        auto trackBallYAxix(const pbts::robot &rbt, const pbts::ball &ball, double team) -> std::tuple<pbts::point, int>;
+        auto trackBallYAxix(const pbts::robot &robot, const pbts::ball &ball) -> std::tuple<pbts::point, int>;
 
-        auto moveBack(const pbts::robot &rbt) -> std::tuple<pbts::point, int>;
-        auto towardGoal(const pbts::robot &rbt, const pbts::field_geometry &field, double team) -> std::tuple<pbts::point, int>;
+        auto moveBack(const pbts::robot &robot) -> std::tuple<pbts::point, int>;
+        auto towardGoal(const pbts::robot &robot) -> std::tuple<pbts::point, int>;
         auto moveOntoBall(
-            const pbts::robot &rbt,
-            const pbts::ball &ball,
-            const pbts::field_geometry &field,
-            double team) -> std::tuple<pbts::point, int>;
+            const pbts::robot &robot,
+            const pbts::ball &ball) 
+            -> std::tuple<pbts::point, int>;
+            
         auto lin_pred(pbts::point point1, pbts::point point2, double x) -> pbts::point;
 
         // Actions
