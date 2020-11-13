@@ -288,7 +288,8 @@ auto pbts::Strategy::four_neighborhood(pbts::wpoint point, int radius) -> std::v
 
         if ((mx < imax && mx >= imin) && (my < jmax && my >= jmin))
         {
-            validMoves.push_back(move);
+            if (border_obstacle[mx][my] == 0)
+                validMoves.push_back(move);
         }
     }
 
@@ -308,7 +309,8 @@ auto pbts::Strategy::d_neighborhood(pbts::wpoint point, int radius) -> std::vect
 
         if ((mx < imax && mx >= imin) && (my < jmax && my >= jmin))
         {
-            validMoves.push_back(move);
+            if (border_obstacle[mx][my] == 0)
+                validMoves.push_back(move);
         }
     }
 
