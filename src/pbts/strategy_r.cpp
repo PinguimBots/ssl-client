@@ -91,7 +91,9 @@ auto pbts::Strategy::attacker_action(
 
             if (actionType == ActionType::TOWARDGOAL)
             {
-                return towardGoal(robot);
+                //return towardGoal(robot);
+
+                action = towardGoal(robot);
             }
             else if (actionType == ActionType::KICK)
             {
@@ -127,7 +129,9 @@ auto pbts::Strategy::attacker_action(
 
             if (actionType == ActionType::TOWARDGOAL)
             {
-                return towardGoal(robot);
+                //return towardGoal(robot);
+
+                action = towardGoal(robot);
             }
             else if (actionType == ActionType::KICK)
             {
