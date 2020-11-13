@@ -141,15 +141,15 @@ int main(int argc, char *argv[])
                 auto left_goal_bounds = std::array<std::complex<double>, 4>{{
                     {-len / 2 - goal_depth, goal_width / 2},
                     {-len / 2, goal_width / 2},
-                    {-len / 2 - goal_depth, -goal_width / 2},
                     {-len / 2, -goal_width / 2},
+                    {-len / 2 - goal_depth, -goal_width / 2},
                 }};
                 // Mirror of the left_goal_bounds, thats why it's out of order.
                 auto right_goal_bounds = std::array{
-                    left_goal_bounds[1] * -1.0,
-                    left_goal_bounds[0] * -1.0,
-                    left_goal_bounds[3] * -1.0,
                     left_goal_bounds[2] * -1.0,
+                    left_goal_bounds[3] * -1.0,
+                    left_goal_bounds[0] * -1.0,
+                    left_goal_bounds[1] * -1.0,
                 };
 
                 auto field_bounds = std::array<std::complex<double>, 4>{{
