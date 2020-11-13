@@ -18,15 +18,15 @@ auto pbts::Strategy::actions(
 
     switch (robot.id)
     {
-    case Roles::GOALKEEPER:
+    case pbts::Roles::GOALKEEPER:
         action = goalkeeper_action(robot, ball);
         break;
 
-    case Roles::DEFENDER:
+    case pbts::Roles::DEFENDER:
         action = defender_action(robot, ball);
         break;
 
-    case Roles::ATTACKER:
+    case pbts::Roles::ATTACKER:
         action = attacker_action(robot, ball, enemy_robots);
         break;
     }
@@ -177,7 +177,7 @@ auto pbts::Strategy::rotate(const pbts::robot &robot, const pbts::ball &ball) ->
 auto pbts::Strategy::kick(const pbts::robot &robot, const pbts::ball &ball) -> std::tuple<pbts::point, int>
 {
     //printf("%d kicking\n", robot.id);
-    return pbts::Strategy::rotate(robot, ball);
+    return rotate(robot, ball);
 }
 
 bool pbts::Strategy::isNear(pbts::point point1, pbts::point point2, double tol)
@@ -197,7 +197,7 @@ auto pbts::Strategy::trackBallYAxix(const pbts::robot &robot, const pbts::ball &
 
     pbts::point predicted_position = lin_pred(old_point,
                                               ball.position,
-                                              robot.id == Roles::DEFENDER
+                                              robot.id == pbts::Roles::DEFENDER
                                                   ? team * DEFENDER_std_X
                                                   : team * GOALKEEPER_std_X);
 
@@ -209,7 +209,7 @@ auto pbts::Strategy::trackBallYAxix(const pbts::robot &robot, const pbts::ball &
 
     else
     {
-        position = robot.id == Roles::DEFENDER
+        position = robot.id == pbts::Roles::DEFENDER
                        ? predicted_position //pbts:`:point(team*DEFENDER_std_X, new_y)
                        : pbts::point(team * GOALKEEPER_std_X, std::clamp(ball.position.imag(), GOAL_AREA_MIN, GOAL_AREA_MAX));
     }
@@ -233,6 +233,7 @@ auto pbts::Strategy::towardGoal( const pbts::robot &robot) -> std::tuple<pbts::p
 
     return {new_point, 0};
 }
+
 auto pbts::Strategy::moveOntoBall(
     const pbts::robot &robot,
     const pbts::ball &ball)
