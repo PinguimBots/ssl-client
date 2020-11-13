@@ -260,9 +260,13 @@ auto pbts::Strategy::setTeam(bool is_yellow) -> void
     this->is_yellow = is_yellow;
 
     this->team = is_yellow ? -1.0 : 1.0;
+
+    init_border_obstacle_field();
 }
 
 auto pbts::Strategy::setBounds(pbts::field_geometry bounds) -> void
 {
     field_bounds = bounds;
+
+    add_border_field_obstacle();
 }

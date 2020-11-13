@@ -28,7 +28,7 @@ auto pbts::Strategy::wave_planner(
     {
         for (int j = 0; j < jmax; j++)
         {
-            printf("%d", discreet_field[i][j]);
+            printf("%d", border_obstacle[i][j]);
         }
         printf("\n");
     }
@@ -188,23 +188,6 @@ auto pbts::Strategy::wave_path(int (&field)[imax][jmax], const pbts::wpoint goal
 
 auto pbts::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vector<pbts::wpoint> &enemy_robots) -> void
 {
-
-    /* for (const auto &robot : enemy_robots)
-    {
-        auto [i_now, j_now] = pbts::to_pair(robot);
-        std::vector<pbts::wpoint> neighboors = {{i_now, j_now+2},{i_now+1,j_now+2},{i_now+2,j_now+2},{i_now+2,j_now+1},{i_now+2,j_now},{i_now+2,j_now-1},{i_now+2,j_now-2},{i_now+1,j_now-2},{i_now,j_now-2},{i_now-1,j_now-2},{i_now-2,j_now-2},{i_now-2,j_now-1},{i_now-2,j_now},{i_now-2,j_now+1},{i_now-2,j_now+2},{i_now-1,j_now+2}};
-        
-        // Opções para teste
-        //valid_neighbours({i_now, j_now}, 1, 1);
-        
-        //{{i_now, j_now+2},{i_now+1,j_now+2},{i_now+2,j_now+2},{i_now+2,j_now+1},{i_now+2,j_now},{i_now+2,j_now-1},{i_now+2,j_now-2},{i_now+1,j_now-2},{i_now,j_now-2},{i_now-1,j_now-2},{i_now-2,j_now-2},{i_now-2,j_now-1},{i_now-2,j_now},{i_now-2,j_now+1},{i_now-2,j_now+2},{i_now-1,j_now+2}};
-
-        for (const auto &neighboor : neighboors) {
-            auto [ri, rj] = pbts::to_pair(neighboor);
-
-            field[ri][rj] = 1;
-        }
-    } */
 
     int theta = 0;
     const int raio = 2;
@@ -381,4 +364,60 @@ auto pbts::Strategy::create_path(
     //c = getchar();
 
     return {discreet_to_real(wnew_position)};
+}
+
+auto pbts::Strategy::init_border_obstacle_field() -> void
+{
+    for (int i = imin; i < imax; i++)
+    {
+        for (int j = jmin; j < jmin; j++)
+        {
+            border_obstacle[i][j] = 0;
+        }
+    }
+}
+
+auto pbts::Strategy::add_border_field_obstacle() -> void
+{
+
+    pbts::point enemy_point1, enemy_point2;
+
+    if (is_yellow) {
+        enemy_point1 = field_bounds.left_goal_bounds[1];
+        enemy_point2 = field_bounds.left_goal_bounds[2];
+    } else {
+        enemy_point1 = field_bounds.right_goal_bounds[0];
+        enemy_point2 = field_bounds.right_goal_bounds[3];
+    }
+
+    pbts::wpoint wenemy_point1, wenemy_point2;
+
+    wenemy_point1 = real_to_discreet(enemy_point1);
+    wenemy_point2 = real_to_discreet(enemy_point2);
+
+    auto [e_1_i, e_1_j] = pbts::to_pair(wenemy_point1);
+    auto [e_2_i, e_2_j] = pbts::to_pair(wenemy_point2);
+
+    auto [f_0_i, f_0_j] = pbts::to_pair(real_to_discreet(field_bounds.field_bounds[0]));
+    auto [f_1_i, f_1_j] = pbts::to_pair(real_to_discreet(field_bounds.field_bounds[1]));
+    auto [f_2_i, f_2_j] = pbts::to_pair(real_to_discreet(field_bounds.field_bounds[2]));
+    auto [f_3_i, f_3_j] = pbts::to_pair(real_to_discreet(field_bounds.field_bounds[3]));
+
+    for (int i = 0; i < imax; i++)
+    {
+        for (int j = 0; j < jmax; j++)
+        {
+            if (j == f_0_j && i >= f_0_i && i <= f_1_i) border_obstacle[i][j] = 1;
+            else if (i == f_1_i && j <= f_1_j && j >= f_2_j) border_obstacle[i][j] = 1;
+            else if (j == f_2_j && i <= f_2_i && i >= f_3_i) border_obstacle[i][j] = 1;
+            else if (i == f_3_i && j >= f_3_j && j <= f_0_j) border_obstacle[i][j] = 1;
+        }
+    }
+
+    for (int j = e_1_j; j <= e_2_i; j++) {
+
+        int i = e_1_i;
+
+        border_obstacle[i][j] = 0;
+    }
 }
