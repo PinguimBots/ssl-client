@@ -5,8 +5,7 @@ auto pbts::Strategy::actions(
     const pbts::field_geometry& field,
     const pbts::robot& robot,
     const pbts::ball& ball,
-    const std::vector<pbts::point> &enemy_robots,
-    double team
+    const std::vector<pbts::point> &enemy_robots
 ) -> std::tuple<pbts::point, int>
 {
     /*
@@ -38,7 +37,7 @@ auto pbts::Strategy::actions(
     else if(robot.id == pbts::ATTACKER)
     {
 
-        auto point = [](pbts::rect bound) {return (bound[0]+bound[1]+bound[2]+bound[3])/4.;};
+        auto point = [&](pbts::rect bound) {return (bound[0]+bound[1]+bound[2]+bound[3])/4.;};
       
         actionType acType;
  
@@ -123,6 +122,11 @@ auto pbts::Strategy::actions(
     }
     
     return action;
+}
+
+auto pbts::Strategy::attacker_action() -> std::tuple<pbts::point, int> 
+{
+
 }
 
 
@@ -239,6 +243,8 @@ auto pbts::Strategy::moveOntoBall(
 auto pbts::Strategy::setTeam(bool is_yellow) -> void
 {
     this->is_yellow = is_yellow;
+
+    this->team = is_yellow ? -1.0 : 1.0;
 }
 
 auto pbts::Strategy::setBounds(pbts::field_geometry bounds) -> void

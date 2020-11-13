@@ -208,8 +208,7 @@ int main(int argc, char *argv[])
                     auto [new_point, rotation] = strategy.actions(bounds.value(), 
                                                                   pb_robot,
                                                                   pb_ball,
-                                                                  pb_enemies, 
-                                                                  is_yellow ? -1.0 : 1.0);
+                                                                  pb_enemies);
               
                     auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, rotation));
 

@@ -24,15 +24,6 @@ namespace pbts
     class Strategy
     {
     public:
-        // Generates the final position for each allied robot.
-        /* auto generate_robot_positions(
-            const pbts::field_geometry &field,
-            const std::vector<pbts::robot> &allied_robots,
-            const std::vector<pbts::robot> &enemy_robots,
-            const pbts::ball &ball
-            )
-            -> std::vector<pbts::point>; */
-
         auto create_path(
             const pbts::point goal_position,
             const pbts::robot &allied_robot,
@@ -43,15 +34,12 @@ namespace pbts
             const pbts::field_geometry& field,
             const pbts::robot& robot,
             const pbts::ball& ball,
-            const std::vector<pbts::point> &enemy_robots,
-            double team
+            const std::vector<pbts::point> &enemy_robots
         ) -> std::tuple<pbts::point, int>;
 
         auto setTeam(bool isYellow) -> void;
 
         auto setBounds(pbts::field_geometry bounds) -> void;
-
-        auto kick(const pbts::robot& robot, const pbts::ball& ball) -> std::tuple<pbts::point, int>;
 
     private:
         static const constexpr auto xmin = -1.0;
@@ -78,11 +66,14 @@ namespace pbts
         pbts::field_geometry field_bounds;
 
         bool is_yellow;
+        double team;
 
         //Só pros scanf;
         // char c;
 
         bool isNear(pbts::point point1, pbts::point point2, double tol);
+
+        auto kick(const pbts::robot& robot, const pbts::ball& ball) -> std::tuple<pbts::point, int>;
         
         // Verificação de vizinhança
         auto four_neighborhood(pbts::wpoint point, int radius) -> std::vector<pbts::wpoint>;
@@ -103,8 +94,6 @@ namespace pbts
         auto next_point(const pbts::wpoint pos_now, const pbts::wpoint goal, std::vector<std::vector<int>> &cost) -> pbts::wpoint;
         auto add_clearance(int (&field)[imax][jmax], const pbts::wpoint goal_position) -> void;
         auto add_shield_ball(int (&field)[imax][jmax], const pbts::wpoint ball) -> void;
-        
-        //auto pertoBola(std::vector<pbts::robot>& allied_robots, const std::vector<pbts::robot> &enemy_robots,  const pbts::ball& ball) -> int;
         
         auto discreet_to_real(pbts::wpoint wpoint) -> pbts::point;
         auto real_to_discreet(pbts::point point) -> pbts::wpoint;
