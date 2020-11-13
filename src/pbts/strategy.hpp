@@ -27,7 +27,6 @@ namespace pbts
             -> pbts::point;
 
         auto actions(
-            const pbts::field_geometry &field,
             const pbts::robot &robot,
             const pbts::ball &ball,
             const std::vector<pbts::point> &enemy_robots) -> std::tuple<pbts::point, int>;
@@ -54,6 +53,8 @@ namespace pbts
         static const constexpr int imax = std::round(xT / dx) + imin;
         static const constexpr int jmax = std::round(yT / dy) + jmin;
 
+        int border_obstacle[imax][jmax];
+
         pbts::point old_point = {0.0, 0.0};
 
         enum class ActionType
@@ -69,11 +70,10 @@ namespace pbts
         double team;
 
         //Só pros scanf;
-        // char c;
+        //char c;
 
-        bool isNear(pbts::point point1, pbts::point point2, double tol);
 
-        auto kick(const pbts::robot &robot, const pbts::ball &ball) -> std::tuple<pbts::point, int>;
+        /* Métodos de manipualção de valores discretos */
 
         // Verificação de vizinhança
         auto four_neighborhood(pbts::wpoint point, int radius) -> std::vector<pbts::wpoint>;
@@ -95,12 +95,22 @@ namespace pbts
         auto add_clearance(int (&field)[imax][jmax], const pbts::wpoint goal_position) -> void;
         auto add_shield_ball(int (&field)[imax][jmax], const pbts::wpoint ball) -> void;
 
+        auto init_border_obstacle_field() -> void;
+        auto add_border_field_obstacle() -> void;
+
+        /* Utilitários */
         auto discreet_to_real(pbts::wpoint wpoint) -> pbts::point;
         auto real_to_discreet(pbts::point point) -> pbts::wpoint;
 
+
+        /* Métodos de manipualção de valores reais */
         auto rotate(const pbts::robot &robot, const pbts::ball &ball) -> std::tuple<pbts::point, int>;
 
         auto trackBallYAxix(const pbts::robot &robot, const pbts::ball &ball) -> std::tuple<pbts::point, int>;
+
+        bool isNear(pbts::point point1, pbts::point point2, double tol);
+
+        auto kick(const pbts::robot &robot, const pbts::ball &ball) -> std::tuple<pbts::point, int>;
 
         auto moveBack(const pbts::robot &robot) -> std::tuple<pbts::point, int>;
         auto towardGoal(const pbts::robot &robot) -> std::tuple<pbts::point, int>;

@@ -2,7 +2,6 @@
 #include <iostream>
 
 auto pbts::Strategy::actions(
-    const pbts::field_geometry &field,
     const pbts::robot &robot,
     const pbts::ball &ball,
     const std::vector<pbts::point> &enemy_robots) -> std::tuple<pbts::point, int>
@@ -91,7 +90,9 @@ auto pbts::Strategy::attacker_action(
 
             if (actionType == ActionType::TOWARDGOAL)
             {
-                return towardGoal(robot);
+                //return towardGoal(robot);
+
+                action = towardGoal(robot);
             }
             else if (actionType == ActionType::KICK)
             {
@@ -127,7 +128,9 @@ auto pbts::Strategy::attacker_action(
 
             if (actionType == ActionType::TOWARDGOAL)
             {
-                return towardGoal(robot);
+                //return towardGoal(robot);
+
+                action = towardGoal(robot);
             }
             else if (actionType == ActionType::KICK)
             {
@@ -262,9 +265,13 @@ auto pbts::Strategy::setTeam(bool is_yellow) -> void
     this->is_yellow = is_yellow;
 
     this->team = is_yellow ? -1.0 : 1.0;
+
+    init_border_obstacle_field();
 }
 
 auto pbts::Strategy::setBounds(pbts::field_geometry bounds) -> void
 {
     field_bounds = bounds;
+
+    add_border_field_obstacle();
 }

@@ -20,6 +20,7 @@ deps = [
     dependency('fmt', version: '>= 7.0.0', fallback: ['fmt', 'fmt_dep']),
     dependency('docopt', version: '>= 0.6.0', fallback: ['docopt', 'docopt_dep']),
     dependency('glm', version: '>= 0.9.8', fallback: ['glm', 'glm_dep']),
+    dependency('openmp'),
 ]
 # protobuf is special since we need protoc to compile .proto files
 protobuf_dep = dependency('protobuf', version: '>= 3.0.0', required: false)
