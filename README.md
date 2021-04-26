@@ -4,7 +4,7 @@
 ## Hard Dependencies
 Needed to run the project:
 - [Qt](https://www.qt.io/) >= 5.10
-- [meson](https://github.com/mesonbuild/meson) >= 0.55
+- [meson](https://github.com/mesonbuild/meson) >= 0.55 and a suitable backend
 
 ## Soft Dependencies
 Downloaded automatically if needed:
@@ -17,17 +17,7 @@ Downloaded automatically if needed:
 
 Firstly you are going to need to install the dependencies.
 
-To install meson you need a backend such as ninja or whatever MSVC uses
-and also python3, then you run
-```
-$ python3 -m pip install meson
-```
-
-> *On most distros you __CAN__ also do*
-> ```
-> $ sudo apt install meson
-> ```
-> *But you really should install it using pip if you want to avoid problems.*
+To install meson you should follow [the Quickstart Guide](https://mesonbuild.com/Quick-guide.html)
 
 Qt is a whole can of worms i won't get into but just go to the [official
 site](https://qt.io) and follow the instructions.
