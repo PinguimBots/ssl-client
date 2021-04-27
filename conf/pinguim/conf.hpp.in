@@ -1,0 +1,10 @@
+#pragma once
+
+namespace pinguim::conf
+{
+    constexpr bool opencv_with_opengl = @opencv_with_opengl@;
+
+    constexpr bool team_size_fixed = @team_size_fixed@;
+    // Only considered if team_size_fixed = true.
+    constexpr long long fixed_team_size = @fixed_team_size@;
+}

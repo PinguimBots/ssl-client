@@ -13,6 +13,7 @@
 #include "pbts/parse.hpp"
 #include "pbts/qol.hpp"
 
+
 static const constexpr char usage[] = R"(pbssl ver 0.0.
 
     Usage:
@@ -174,12 +175,12 @@ int main(int argc, char *argv[])
             {
                 auto [blue_robots, yellow_robots, ball] = environment.frame();
                 auto [ball_x, ball_y, ball_z, ball_vx, ball_vy, ball_vz] = ball;
-                
-                
+
+
                 auto& allied_team = is_yellow ? yellow_robots : blue_robots;
 
-                auto& enemy_team  = is_yellow ? blue_robots   : yellow_robots; 
-                
+                auto& enemy_team  = is_yellow ? blue_robots   : yellow_robots;
+
 
                 std::vector<pbts::point> pb_enemies = {{
                     {enemy_team[0].x(), enemy_team[0].y()},
@@ -190,7 +191,7 @@ int main(int argc, char *argv[])
                 for (const auto &robot : allied_team)
                 {
                     pbts::robot pb_robot;
-                    pbts::ball  pb_ball; 
+                    pbts::ball  pb_ball;
 
                     pb_robot.id = robot.robot_id();
                     pb_robot.position = {robot.x(), robot.y()};
@@ -207,7 +208,7 @@ int main(int argc, char *argv[])
                     auto [new_point, rotation] = strategy.actions(pb_robot,
                                                                   pb_ball,
                                                                   pb_enemies);
-              
+
                     auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, rotation));
 
                     auto command = packet.mutable_cmd()->add_robot_commands();
@@ -216,7 +217,7 @@ int main(int argc, char *argv[])
                     command->set_wheel_left(left);
                     command->set_wheel_right(right);
                     VSSS.simulator_send(packet);
-                
+
                 }
 
             }
@@ -231,14 +232,14 @@ int main(int argc, char *argv[])
                     command->set_wheel_right(0.0);
                     VSSS.simulator_send(packet);
                 }
-            } 
+            }
         },
         /* referee_in_params= */ {ref_addr, ref_port},
         /* replacer_out_params= */ {ref_addr, rep_port},
         /* on_referee_receive= */ [&](auto command) {
             auto [foul, teamcolor, foul_quadrant, timestamp, game_half] = command;
             // foul => {
-            //    VSSRef::Foul::FREE_KICK, ...::PENALTY_KICK, ...::GOAL_KICK, 
+            //    VSSRef::Foul::FREE_KICK, ...::PENALTY_KICK, ...::GOAL_KICK,
             //    ...::FREE_BALL, ...::KICKOFF , ...::STOP , ...::GAME_ON}
             // color => {
             //    VSSRef::Color::BLUE, ...::YELLOW, ...::NONE (que ?)}
@@ -274,7 +275,7 @@ int main(int argc, char *argv[])
 
             switch (teamcolor)
             {
-                
+
             case VSSRef::Color::NONE:
                 break;
             case VSSRef::Color::BLUE:

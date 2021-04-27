@@ -6,9 +6,9 @@
 
 #include <QtNetwork>
 
-#include "pb/packet.pb.h"
-#include "pb/vssref_command.pb.h"
-#include "pb/vssref_placement.pb.h"
+#include "proto/packet.pb.h"
+#include "proto/vssref_command.pb.h"
+#include "proto/vssref_placement.pb.h"
 
 namespace pbts {
 
@@ -20,7 +20,7 @@ namespace pbts {
             std::string_view ip;
             std::uint16_t port;
         };
-    
+
         explicit simulator_connection(
             connection_params simulator_in_params,
             connection_params simulator_out_params,
@@ -34,7 +34,7 @@ namespace pbts {
 
         auto simulator_send(const fira_message::sim_to_ref::Packet& packet) -> bool;
         auto replacer_send(const VSSRef::team_to_ref::VSSRef_Placement& placement) -> bool;
-    
+
     private:
         QUdpSocket simulator_out_socket;
         QHostAddress simulator_out_addr;

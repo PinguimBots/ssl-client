@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "pb/vssref_common.proto";
+import "proto/vssref_common.proto";
 
 package VSSRef.team_to_ref;
 

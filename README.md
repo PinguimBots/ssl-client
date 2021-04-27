@@ -1,5 +1,5 @@
 # pbssl
-> PinguimBots client for the 2020 online #robocub competition 
+> PinguimBots client for the 2020 online #robocub competition
 
 ## Hard Dependencies
 Needed to run the project:

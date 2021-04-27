@@ -3,8 +3,8 @@
 
 #include <array>
 
-#include "pb/common.pb.h"
-#include "pb/vssref_command.pb.h"
+#include "proto/common.pb.h"
+#include "proto/vssref_command.pb.h"
 
 /// Structured binding support for protobuf types.
 // Macro for automating boilerplate.
@@ -74,7 +74,7 @@ namespace fira_message {
 
             #ifdef PBTS_FIXED_TEAM_SIZE_OF
 
-                auto robots = std::array<Robot, 
+                auto robots = std::array<Robot,
                     PBTS_FIXED_TEAM_SIZE_OF
                 >{};
 
@@ -86,7 +86,7 @@ namespace fira_message {
             #else
 
                 const auto robot_count = [&]{
-                    if constexpr(I == 0) 
+                    if constexpr(I == 0)
                         return f.robots_blue_size();
                     else return f.robots_yellow_size();
                 }();
@@ -97,7 +97,7 @@ namespace fira_message {
                     robot_vec.push_back(robot_getter(f, i));
                 }
                 return robot_vec;
-    
+
             #endif
         }
         else if constexpr(I == 2) {
