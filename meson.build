@@ -46,6 +46,9 @@ subdir('conf')
 sources = files(
     'src/pinguim/app/main.cpp',
 
+    'src/pinguim/imgui/plumber.cpp',
+    'src/pinguim/imgui/opencv.cpp',
+
     'src/pinguim/control.cpp',
     'src/pinguim/strategy_r.cpp',
     'src/pinguim/strategy_d.cpp',
@@ -59,7 +62,7 @@ pbssl_exe = executable(
     'pbssl',
     sources,
     include_directories: [include_directories('src'), conf_inc],
-    dependencies: [gui_deps, utils_deps, proto_gen_dep],
+    dependencies: [opencv_dep, gui_deps, utils_deps, proto_gen_dep],
     cpp_args: cpp_warnings,
     cpp_pch: 'src/pch.hpp',
 )
