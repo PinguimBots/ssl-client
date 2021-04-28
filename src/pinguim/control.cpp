@@ -1,4 +1,4 @@
-#include "pbts/control.hpp"
+#include "pinguim/control.hpp"
 
 #include <cmath>
 #include <algorithm>
@@ -8,7 +8,7 @@
 
 #include <fmt/core.h>
 
-auto pbts::control::rotate(pbts::robot robot, double angle) -> pbts::point
+auto pinguim::control::rotate(pinguim::robot robot, double angle) -> pinguim::point
 {
     auto angle_error = robot.orientation - angle;
     const double kap = 1.0, kad = 0.2, velmax = 1.0, velmin = -1.0;
@@ -18,20 +18,20 @@ auto pbts::control::rotate(pbts::robot robot, double angle) -> pbts::point
 }
 
 
-auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int rotation) -> pbts::point
+auto pinguim::control::generate_vels(pinguim::robot robot, pinguim::point target_pos, int rotation) -> pinguim::point
 {
     // NOTE: atan  returns the angle value between -pi/2 (-90deg) and pi/2 (90deg)
     // while atan2 returns the angle value between -pi (-180deg) and pi (180deg).
 
     static const constexpr auto pi = glm::pi<double>();
 
-    auto [x, y] = pbts::to_pair(robot.position);
-    
+    auto [x, y] = pinguim::to_pair(robot.position);
+
     auto orientation = robot.orientation;
 
 
-    auto [target_x, target_y] = pbts::to_pair(target_pos);
-    auto [xDif, yDif] = pbts::to_pair(target_pos - robot.position);
+    auto [target_x, target_y] = pinguim::to_pair(target_pos);
+    auto [xDif, yDif] = pinguim::to_pair(target_pos - robot.position);
 
     double ballAngle = atan2(yDif, xDif); // Angulo robô -> bola
 
@@ -40,7 +40,7 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
     double angleError = 0.0, target_angle = 0.0;
 
     double epsilon = 1e-18;
-    
+
     if(x < target_x){
         target_angle = atan((target_y - y)/(target_x - x + epsilon));
     } else {
@@ -69,7 +69,7 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
 
     // Esse ou o outro comentado abaixo
     // Comenta o que não for testar
-    if (robot.id == 1) { 
+    if (robot.id == 1) {
         vel_front = std::clamp(100.0 * cos(angleError), velmin, velmax);
     }
     else {
@@ -91,13 +91,13 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
     if(linvel_left > velmax) {
         linvel_left = velmax;
     }
-    else if(linvel_left < velmin) {  
+    else if(linvel_left < velmin) {
         linvel_left = velmin;
     }
     if(linvel_right > velmax) {
         linvel_right = velmax;
     }
-    else if(linvel_right < velmin) {    
+    else if(linvel_right < velmin) {
         linvel_right = velmin;
     }
 
@@ -108,7 +108,7 @@ auto pbts::control::generate_vels(pbts::robot robot, pbts::point target_pos, int
                 Linvel Left: {}\n \
                 Linvel Right: {}\n\n", \
                 positionError, (angleError*180)/pi, vel_front, vel_side, linvel_left, linvel_right); */
-    
+
     double vell, velr;
     if(rotation == 0)
     { vell = linvel_left; velr = linvel_right;}

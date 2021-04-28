@@ -46,13 +46,13 @@ subdir('conf')
 sources = files(
     'src/main.cpp',
 
-    'src/pbts/control.cpp',
-    'src/pbts/strategy_r.cpp',
-    'src/pbts/strategy_d.cpp',
-    'src/pbts/utility.cpp',
-    'src/pbts/simulator_connection.cpp',
-    'src/pbts/common.cpp',
-    'src/pbts/parse.cpp',
+    'src/pinguim/control.cpp',
+    'src/pinguim/strategy_r.cpp',
+    'src/pinguim/strategy_d.cpp',
+    'src/pinguim/utility.cpp',
+    'src/pinguim/simulator_connection.cpp',
+    'src/pinguim/common.cpp',
+    'src/pinguim/parse.cpp',
 )
 
 pbssl_exe = executable(

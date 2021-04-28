@@ -1,8 +1,8 @@
-#include "pbts/simulator_connection.hpp"
+#include "pinguim/simulator_connection.hpp"
 
 #include <QObject> // QObject::connect.
 
-pbts::simulator_connection::simulator_connection
+pinguim::simulator_connection::simulator_connection
 (
     connection_params simulator_in_params,
     connection_params simulator_out_params,
@@ -59,7 +59,7 @@ pbts::simulator_connection::simulator_connection
     );
 }
 
-auto pbts::simulator_connection::simulator_send(const fira_message::sim_to_ref::Packet& packet) -> bool
+auto pinguim::simulator_connection::simulator_send(const fira_message::sim_to_ref::Packet& packet) -> bool
 {
     QByteArray dg;
     dg.resize(packet.ByteSize());
@@ -70,7 +70,7 @@ auto pbts::simulator_connection::simulator_send(const fira_message::sim_to_ref::
     return bytes_sent == dg.size();
 }
 
-auto pbts::simulator_connection::replacer_send(const VSSRef::team_to_ref::VSSRef_Placement& placement) -> bool
+auto pinguim::simulator_connection::replacer_send(const VSSRef::team_to_ref::VSSRef_Placement& placement) -> bool
 {
     QByteArray dg;
     dg.resize(placement.ByteSize());

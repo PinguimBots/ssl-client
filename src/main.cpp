@@ -7,11 +7,11 @@
 #include <complex>
 #include <csignal>
 
-#include "pbts/simulator_connection.hpp"
-#include "pbts/strategy.hpp"
-#include "pbts/control.hpp"
-#include "pbts/parse.hpp"
-#include "pbts/qol.hpp"
+#include "pinguim/simulator_connection.hpp"
+#include "pinguim/strategy.hpp"
+#include "pinguim/control.hpp"
+#include "pinguim/parse.hpp"
+#include "pinguim/qol.hpp"
 
 
 static const constexpr char usage[] = R"(pbssl ver 0.0.
@@ -53,14 +53,14 @@ int main(int argc, char *argv[])
         "pbssl ver 0.0" // version string
     );
 
-    auto maybe_in_port = pbts::parse::port(args["--in-port"].asString());
-    auto maybe_in_addr = pbts::parse::ipv4(args["--in-address"].asString());
-    auto maybe_out_port = pbts::parse::port(args["--out-port"].asString());
-    auto maybe_out_addr = pbts::parse::ipv4(args["--out-address"].asString());
+    auto maybe_in_port = pinguim::parse::port(args["--in-port"].asString());
+    auto maybe_in_addr = pinguim::parse::ipv4(args["--in-address"].asString());
+    auto maybe_out_port = pinguim::parse::port(args["--out-port"].asString());
+    auto maybe_out_addr = pinguim::parse::ipv4(args["--out-address"].asString());
 
-    auto maybe_ref_addr = pbts::parse::ipv4(args["--ref-address"].asString());
-    auto maybe_ref_port = pbts::parse::port(args["--ref-port"].asString());
-    auto maybe_rep_port = pbts::parse::port(args["--rep-port"].asString());
+    auto maybe_ref_addr = pinguim::parse::ipv4(args["--ref-address"].asString());
+    auto maybe_ref_port = pinguim::parse::port(args["--ref-port"].asString());
+    auto maybe_rep_port = pinguim::parse::port(args["--rep-port"].asString());
 
     if (!maybe_in_port)
     {
@@ -109,15 +109,15 @@ int main(int argc, char *argv[])
 
     const auto is_yellow = args["--team"].asString() == "yellow";
 
-    auto bounds = std::optional<pbts::field_geometry>{};
+    auto bounds = std::optional<pinguim::field_geometry>{};
 
-    auto strategy = pbts::Strategy();
+    auto strategy = pinguim::Strategy();
 
     strategy.setTeam(is_yellow);
 
     bool game_on = true;
 
-    pbts::simulator_connection VSSS{
+    pinguim::simulator_connection VSSS{
         {in_addr, in_port},
         {out_addr, out_port},
         /* on_simulator_receive= */ [&](auto environment) {
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
                 auto& enemy_team  = is_yellow ? blue_robots   : yellow_robots;
 
 
-                std::vector<pbts::point> pb_enemies = {{
+                std::vector<pinguim::point> pb_enemies = {{
                     {enemy_team[0].x(), enemy_team[0].y()},
                     {enemy_team[1].x(), enemy_team[1].y()},
                     {enemy_team[2].x(), enemy_team[2].y()}
@@ -190,17 +190,17 @@ int main(int argc, char *argv[])
 
                 for (const auto &robot : allied_team)
                 {
-                    pbts::robot pb_robot;
-                    pbts::ball  pb_ball;
+                    pinguim::robot pb_robot;
+                    pinguim::ball  pb_ball;
 
                     pb_robot.id = robot.robot_id();
                     pb_robot.position = {robot.x(), robot.y()};
                     pb_robot.orientation = robot.orientation();
-                    pb_ball.position = pbts::point{ball.x(), ball.y()};
-                    pb_ball.velocity = pbts::point{ball.vx(), ball.vy()};
+                    pb_ball.position = pinguim::point{ball.x(), ball.y()};
+                    pb_ball.velocity = pinguim::point{ball.vx(), ball.vy()};
 
                     for (const auto &other_robot : allied_team) {
-                        if (other_robot.robot_id() != pbts::Roles::ATTACKER) {
+                        if (other_robot.robot_id() != pinguim::Roles::ATTACKER) {
                             pb_enemies.push_back({other_robot.x(), other_robot.y()});
                         }
                     }
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
                                                                   pb_ball,
                                                                   pb_enemies);
 
-                    auto [left, right] = pbts::to_pair( pbts::control::generate_vels(pb_robot, new_point, rotation));
+                    auto [left, right] = pinguim::to_pair( pinguim::control::generate_vels(pb_robot, new_point, rotation));
 
                     auto command = packet.mutable_cmd()->add_robot_commands();
                     command->set_id(robot.robot_id());

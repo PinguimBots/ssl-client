@@ -8,7 +8,7 @@
 
 /// Structured binding support for protobuf types.
 // Macro for automating boilerplate.
-#define PBTS_QOL_TUPLIFY(classname, tuplesize)                      \
+#define PINGUIM_QOL_TUPLIFY(classname, tuplesize)                      \
     template <>                                                     \
     struct std::tuple_size< classname >                             \
     {                                                               \
@@ -32,7 +32,7 @@ namespace fira_message {
         else if constexpr(I == 3) {return f.goal_depth();}
     }
 }
-PBTS_QOL_TUPLIFY(fira_message::Field, 4);
+PINGUIM_QOL_TUPLIFY(fira_message::Field, 4);
 
 namespace fira_message {
     template <std::size_t I>
@@ -46,7 +46,7 @@ namespace fira_message {
         else if constexpr(I == 5) {return b.vz();}
     }
 }
-PBTS_QOL_TUPLIFY(fira_message::Ball, 6);
+PINGUIM_QOL_TUPLIFY(fira_message::Ball, 6);
 
 namespace fira_message {
     template <std::size_t I>
@@ -61,7 +61,7 @@ namespace fira_message {
         else if constexpr(I == 6) {return r.vorientation();}
     }
 }
-PBTS_QOL_TUPLIFY(fira_message::Robot, 7);
+PINGUIM_QOL_TUPLIFY(fira_message::Robot, 7);
 
 namespace fira_message {
     template <std::size_t I>
@@ -72,6 +72,7 @@ namespace fira_message {
                 else return f.robots_yellow(i);
             };
 
+            /// TODO: integrate with pinguim/conf.hpp
             #ifdef PBTS_FIXED_TEAM_SIZE_OF
 
                 auto robots = std::array<Robot,
@@ -105,7 +106,7 @@ namespace fira_message {
         }
     }
 }
-PBTS_QOL_TUPLIFY(fira_message::Frame, 3);
+PINGUIM_QOL_TUPLIFY(fira_message::Frame, 3);
 
 namespace VSSRef::ref_to_team {
     template <std::size_t I>
@@ -117,6 +118,6 @@ namespace VSSRef::ref_to_team {
         else if constexpr(I == 4) {return c.gamehalf();}
     }
 }
-PBTS_QOL_TUPLIFY(VSSRef::ref_to_team::VSSRef_Command, 5);
+PINGUIM_QOL_TUPLIFY(VSSRef::ref_to_team::VSSRef_Command, 5);
 
-#undef PBTS_QOL_TUPLIFY
+#undef PINGUIM_QOL_TUPLIFY

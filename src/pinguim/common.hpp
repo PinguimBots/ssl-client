@@ -4,15 +4,15 @@
 #include <utility>
 #include <array>
 
-namespace pbts
+namespace pinguim
 {
     using point = std::complex<double>;
     // Ponto usado pelo wavefront planner (cordenada discreta).
     using wpoint = std::complex<int>;
 
-    // auto [x, y] = pbts::to_pair( ponto );
-    auto to_pair(const pbts::point &p) -> std::pair<double, double>;
-    auto to_pair(const pbts::wpoint &p) -> std::pair<int, int>;
+    // auto [x, y] = pinguim::to_pair( ponto );
+    auto to_pair(const pinguim::point &p) -> std::pair<double, double>;
+    auto to_pair(const pinguim::wpoint &p) -> std::pair<int, int>;
     using rect = std::array<point, 4>;
 
     struct field_geometry
@@ -45,5 +45,5 @@ namespace pbts
         ATTACKER,
         DEFENDER
     };
-    
-} // namespace pbts
+
+} // namespace pinguim

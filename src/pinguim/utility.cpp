@@ -1,9 +1,9 @@
-#include <pbts/strategy.hpp>
+#include <pinguim/strategy.hpp>
 
-auto pbts::Strategy::discreet_to_real(pbts::wpoint wpoint) -> pbts::point
+auto pinguim::Strategy::discreet_to_real(pinguim::wpoint wpoint) -> pinguim::point
 {
 
-    auto [iin, jin] = pbts::to_pair(wpoint);
+    auto [iin, jin] = pinguim::to_pair(wpoint);
 
     double xout = iin * dx - imin * dx + xmin;
     double yout = jin * dy - jmin * dy + ymin;
@@ -29,9 +29,9 @@ auto pbts::Strategy::discreet_to_real(pbts::wpoint wpoint) -> pbts::point
     return {xout, yout};
 }
 
-auto pbts::Strategy::real_to_discreet(pbts::point point) -> pbts::wpoint
+auto pinguim::Strategy::real_to_discreet(pinguim::point point) -> pinguim::wpoint
 {
-    auto [xin, yin] = pbts::to_pair(point);
+    auto [xin, yin] = pinguim::to_pair(point);
 
     int iout = std::round((imax-1)*((xin-xmin)/xT)) + imin;
     int jout = std::round((jmax-1)*((yin-ymin)/yT)) + jmin;
