@@ -167,7 +167,7 @@ auto pinguim::Strategy::lin_pred(pinguim::point point1, pinguim::point point2, d
     return {x, y};
 }
 
-auto pinguim::Strategy::rotate(const pinguim::robot &robot, const pinguim::ball &ball) -> std::tuple<pinguim::point, int>
+auto pinguim::Strategy::rotate([[maybe_unused]] const pinguim::robot &robot, const pinguim::ball &ball) -> std::tuple<pinguim::point, int>
 {
     // auto angle_error = robot.orientation - angle;
     // auto point = pinguim::point(cos(angle_error)*6.0e-1 + robot.position.real(),
@@ -225,7 +225,7 @@ auto pinguim::Strategy::trackBallYAxix(const pinguim::robot &robot, const pingui
             0};
 }
 
-auto pinguim::Strategy::towardGoal( const pinguim::robot &robot) -> std::tuple<pinguim::point, int>
+auto pinguim::Strategy::towardGoal([[maybe_unused]] const pinguim::robot &robot) -> std::tuple<pinguim::point, int>
 {
     auto point = [&](pinguim::rect bound) { return (bound[0] + bound[1] + bound[2] + bound[3]) / 4.; };
 
@@ -240,7 +240,7 @@ auto pinguim::Strategy::towardGoal( const pinguim::robot &robot) -> std::tuple<p
 }
 
 auto pinguim::Strategy::moveOntoBall(
-    const pinguim::robot &robot,
+    [[maybe_unused]] const pinguim::robot &robot,
     const pinguim::ball &ball)
     -> std::tuple<pinguim::point, int>
 {
@@ -260,11 +260,11 @@ auto pinguim::Strategy::moveOntoBall(
             0};
 }
 
-auto pinguim::Strategy::setTeam(bool is_yellow) -> void
+auto pinguim::Strategy::setTeam(bool is_yellow_) -> void
 {
-    this->is_yellow = is_yellow;
+    this->is_yellow = is_yellow_;
 
-    this->team = is_yellow ? -1.0 : 1.0;
+    this->team = is_yellow_ ? -1.0 : 1.0;
 
     init_border_obstacle_field();
 }

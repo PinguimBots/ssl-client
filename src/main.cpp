@@ -12,6 +12,7 @@
 #include "pinguim/control.hpp"
 #include "pinguim/parse.hpp"
 #include "pinguim/qol.hpp"
+#include "pinguim/cvt.hpp"
 
 
 static const constexpr char usage[] = R"(pbssl ver 0.0.
@@ -32,6 +33,9 @@ static const constexpr char usage[] = R"(pbssl ver 0.0.
         --rep-port REPPORT     Port to send replacement information to the Referee [default: 10004].
 )";
 
+
+using pinguim::cvt::to_expected;
+
 int main(int argc, char *argv[])
 {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -41,7 +45,7 @@ int main(int argc, char *argv[])
     // Also, why doesn't it take an int but an int&, nonsense.
     auto fake_arg_count = 1;
     auto app = QCoreApplication{fake_arg_count, argv};
-    std::signal(SIGINT, [](int signal) {
+    std::signal(SIGINT, []([[maybe_unused]] int signal) {
         fmt::print("SIGINT Received, calling QCoreApplication::exit()\n");
         QCoreApplication::exit(0);
     });
@@ -193,7 +197,7 @@ int main(int argc, char *argv[])
                     pinguim::robot pb_robot;
                     pinguim::ball  pb_ball;
 
-                    pb_robot.id = robot.robot_id();
+                    pb_robot.id = to_expected << robot.robot_id();
                     pb_robot.position = {robot.x(), robot.y()};
                     pb_robot.orientation = robot.orientation();
                     pb_ball.position = pinguim::point{ball.x(), ball.y()};
@@ -226,7 +230,7 @@ int main(int argc, char *argv[])
                 for (int i = 0; i < 3; ++i)
                 {
                     auto command = packet.mutable_cmd()->add_robot_commands();
-                    command->set_id(i);
+                    command->set_id( to_expected << i );
                     command->set_yellowteam(is_yellow);
                     command->set_wheel_left(0.0);
                     command->set_wheel_right(0.0);

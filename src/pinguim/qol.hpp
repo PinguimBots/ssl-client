@@ -2,6 +2,7 @@
 #pragma once
 
 #include "pinguim/conf.hpp"
+#include "pinguim/cvt.hpp"
 
 #include <array>
 
@@ -69,9 +70,9 @@ namespace fira_message {
     template <std::size_t I>
     auto get(const Frame& f) {
         if constexpr(I == 0 || I == 1) {
-            constexpr const auto robot_getter = [](auto f, auto i) {
-                if constexpr(I == 0) return f.robots_blue(i);
-                else return f.robots_yellow(i);
+            constexpr const auto robot_getter = [](auto frame, auto i) {
+                if constexpr(I == 0) return frame.robots_blue(pinguim::cvt::to_expected << i);
+                else return frame.robots_yellow(pinguim::cvt::to_expected << i);
             };
 
             if constexpr( pinguim::conf::team_size_fixed && pinguim::conf::fixed_team_size > 0 )

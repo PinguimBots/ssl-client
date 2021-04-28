@@ -2,6 +2,10 @@
 #include <queue>
 #include <omp.h>
 
+#include "pinguim/cvt.hpp"
+
+using pinguim::cvt::to_expected;
+
 auto pinguim::Strategy::wave_planner(
     const pinguim::wpoint goal_position,
     const pinguim::wpoint allied_robot,
@@ -91,8 +95,8 @@ auto pinguim::Strategy::add_clearance(int (&field)[imax][jmax], const pinguim::w
     auto [hx, hy] = pinguim::to_pair(goal_position);
 
     while (theta <= 360) {
-        int x = round(hx + raio * cos(theta));
-        int y = round(hy + raio * sin(theta));
+        int x = to_expected << round(hx + raio * cos(theta));
+        int y = to_expected << round(hy + raio * sin(theta));
 
         field[x][y] = 0;
         theta += step;
@@ -108,14 +112,14 @@ auto pinguim::Strategy::next_point(const pinguim::wpoint pos_now, const pinguim:
     #pragma omp parallel for
     for (int i = imin; i < imax; i++) {
         for (int j = jmin; j < jmax; j++) {
-            if (cost[i][j] == 0) cost[i][j] = 10000;
+            if (cost[to_expected << i][to_expected << j] == 0) cost[to_expected << i][to_expected << j] = 10000;
         }
     }
 
-    auto [i_goal, j_goal] = pinguim::to_pair(goal);
+    [[maybe_unused]] auto [i_goal, j_goal] = pinguim::to_pair(goal);
     auto [i_now, j_now] = pinguim::to_pair(pos_now);
 
-    int cost_ij = cost[i_now][j_now];
+    int cost_ij = cost[to_expected << i_now][to_expected << j_now];
 
     // printf("COST IJ %d\n", cost_ij);
 
@@ -130,10 +134,10 @@ auto pinguim::Strategy::next_point(const pinguim::wpoint pos_now, const pinguim:
         for (const auto &neighbour : neighbours) {
             auto [new_i, new_j] = pinguim::to_pair(neighbour);
 
-            if (cost[new_i][new_j] < cost_ij) {
+            if (cost[to_expected << new_i][to_expected << new_j] < cost_ij) {
                 i_next = new_i;
                 j_next = new_j;
-                cost_ij = cost[new_i][new_j];
+                cost_ij = cost[to_expected << new_i][to_expected << new_j];
             }
 
             /* if (i_next == i_goal && j_next == j_goal) {
@@ -161,7 +165,7 @@ auto pinguim::Strategy::wave_path(int (&field)[imax][jmax], const pinguim::wpoin
 
     auto [igoal, jgoal] = pinguim::to_pair(goal);
 
-    cost[igoal][jgoal] = 1;
+    cost[to_expected << igoal][to_expected << jgoal] = 1;
 
     auto open = std::queue<pinguim::wpoint>();
     open.push({igoal, jgoal});
@@ -177,9 +181,9 @@ auto pinguim::Strategy::wave_path(int (&field)[imax][jmax], const pinguim::wpoin
 
             if (occ[looking_x][looking_y] == 1) continue;
 
-            if (cost[looking_x][looking_y] != 0) continue;
+            if (cost[to_expected << looking_x][to_expected << looking_y] != 0) continue;
 
-            cost[looking_x][looking_y] = cost[curr_x][curr_y] + 1;
+            cost[to_expected << looking_x][to_expected << looking_y] = cost[to_expected << curr_x][to_expected << curr_y] + 1;
 
             open.push(neighbour);
 
@@ -201,8 +205,8 @@ auto pinguim::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::v
         auto [hx, hy] = pinguim::to_pair(robot);
 
         while (theta <= 360) {
-            int x = round(hx + raio * cos(theta));
-            int y = round(hy + raio * sin(theta));
+            int x = to_expected << round(hx + raio * cos(theta));
+            int y = to_expected << round(hy + raio * sin(theta));
 
             field[x][y] = 1;
             theta += step;

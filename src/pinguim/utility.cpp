@@ -1,5 +1,7 @@
 #include <pinguim/strategy.hpp>
 
+#include "pinguim/cvt.hpp"
+
 auto pinguim::Strategy::discreet_to_real(pinguim::wpoint wpoint) -> pinguim::point
 {
 
@@ -33,8 +35,8 @@ auto pinguim::Strategy::real_to_discreet(pinguim::point point) -> pinguim::wpoin
 {
     auto [xin, yin] = pinguim::to_pair(point);
 
-    int iout = std::round((imax-1)*((xin-xmin)/xT)) + imin;
-    int jout = std::round((jmax-1)*((yin-ymin)/yT)) + jmin;
+    int iout = cvt::to_expected << std::round((imax-1)*((xin-xmin)/xT)) + imin;
+    int jout = cvt::to_expected << std::round((jmax-1)*((yin-ymin)/yT)) + jmin;
 
     if (iout < imin)
     {

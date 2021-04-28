@@ -11,7 +11,7 @@
 auto pinguim::control::rotate(pinguim::robot robot, double angle) -> pinguim::point
 {
     auto angle_error = robot.orientation - angle;
-    const double kap = 1.0, kad = 0.2, velmax = 1.0, velmin = -1.0;
+    [[maybe_unused]] const double kap = 1.0, kad = 0.2, velmax = 1.0, velmin = -1.0;
 
     return {angle_error*velmin,
             angle_error*velmax};
@@ -33,7 +33,7 @@ auto pinguim::control::generate_vels(pinguim::robot robot, pinguim::point target
     auto [target_x, target_y] = pinguim::to_pair(target_pos);
     auto [xDif, yDif] = pinguim::to_pair(target_pos - robot.position);
 
-    double ballAngle = atan2(yDif, xDif); // Angulo robô -> bola
+    [[maybe_unused]] double ballAngle = atan2(yDif, xDif); // Angulo robô -> bola
 
     double positionError = glm::length(glm::vec2{xDif, yDif}); //Distancia linha reta robo -> bola
 
@@ -61,7 +61,7 @@ auto pinguim::control::generate_vels(pinguim::robot robot, pinguim::point target
         angleError = +(angleError + 2 * pi);
     }
 
-    double robot_angle_error = 0.0, linvel_left = 0.0, linvel_right = 0.0;
+    [[maybe_unused]] double robot_angle_error = 0.0, linvel_left = 0.0, linvel_right = 0.0;
     const double velmax = 100.0, velmin = -100.0; //kap = 1.0, kad = 0.2
 
     double vel_front;
@@ -109,7 +109,7 @@ auto pinguim::control::generate_vels(pinguim::robot robot, pinguim::point target
                 Linvel Right: {}\n\n", \
                 positionError, (angleError*180)/pi, vel_front, vel_side, linvel_left, linvel_right); */
 
-    double vell, velr;
+    double vell = 0, velr = 0;
     if(rotation == 0)
     { vell = linvel_left; velr = linvel_right;}
     else if(rotation == 1) {vell = 10*velmin; velr = 9.7*velmax;}

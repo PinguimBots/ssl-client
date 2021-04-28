@@ -2,6 +2,10 @@
 
 #include <QObject> // QObject::connect.
 
+#include "pinguim/cvt.hpp"
+
+using pinguim::cvt::to_expected;
+
 pinguim::simulator_connection::simulator_connection
 (
     connection_params simulator_in_params,
@@ -62,7 +66,7 @@ pinguim::simulator_connection::simulator_connection
 auto pinguim::simulator_connection::simulator_send(const fira_message::sim_to_ref::Packet& packet) -> bool
 {
     QByteArray dg;
-    dg.resize(packet.ByteSize());
+    dg.resize(to_expected << packet.ByteSizeLong());
     bool success = packet.SerializeToArray(dg.data(), dg.size());
     if(!success) {return false;}
 
@@ -73,7 +77,7 @@ auto pinguim::simulator_connection::simulator_send(const fira_message::sim_to_re
 auto pinguim::simulator_connection::replacer_send(const VSSRef::team_to_ref::VSSRef_Placement& placement) -> bool
 {
     QByteArray dg;
-    dg.resize(placement.ByteSize());
+    dg.resize(to_expected << placement.ByteSizeLong());
     bool success = placement.SerializeToArray(dg.data(), dg.size());
     if(!success) {return false;}
 
