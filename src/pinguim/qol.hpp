@@ -1,6 +1,8 @@
 /// General quality of life stuff.
 #pragma once
 
+#include "pinguim/conf.hpp"
+
 #include <array>
 
 #include "proto/common.pb.h"
@@ -72,23 +74,19 @@ namespace fira_message {
                 else return f.robots_yellow(i);
             };
 
-            /// TODO: integrate with pinguim/conf.hpp
-            #ifdef PBTS_FIXED_TEAM_SIZE_OF
-
-                auto robots = std::array<Robot,
-                    PBTS_FIXED_TEAM_SIZE_OF
-                >{};
+            if constexpr( pinguim::conf::team_size_fixed && pinguim::conf::fixed_team_size > 0 )
+            {
+                auto robots = std::array<Robot, pinguim::conf::fixed_team_size>{};
 
                 for(std::size_t i = 0; i < robots.size(); ++i) {
                     robots[i] = robot_getter(f, i);
                 }
                 return robots;
-
-            #else
-
+            }
+            else
+            {
                 const auto robot_count = [&]{
-                    if constexpr(I == 0)
-                        return f.robots_blue_size();
+                    if constexpr(I == 0) return f.robots_blue_size();
                     else return f.robots_yellow_size();
                 }();
 
@@ -98,8 +96,7 @@ namespace fira_message {
                     robot_vec.push_back(robot_getter(f, i));
                 }
                 return robot_vec;
-
-            #endif
+            }
         }
         else if constexpr(I == 2) {
             return f.ball();
