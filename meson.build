@@ -44,7 +44,7 @@ subdir('tests')
 subdir('conf')
 
 sources = files(
-    'src/main.cpp',
+    'src/pinguim/app/main.cpp',
 
     'src/pinguim/control.cpp',
     'src/pinguim/strategy_r.cpp',
