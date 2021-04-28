@@ -1,10 +1,28 @@
 // General utilities and shorthands for converting between types.
 #pragma once
 
+#include <type_traits>
+#include <cstring> // For std::memcpy.
+
 /// TODO: summarize.
 
 namespace pinguim::cvt
 {
+    template <typename Integer>
+    inline auto pun_signedness(Integer t) {
+        static_assert(std::is_integral_v<Integer>);
+
+        using punned = std::conditional_t<
+            std::is_signed_v<Integer>,
+            std::make_unsigned_t<Integer>,
+            std::make_signed_t<Integer>
+        >;
+
+        punned u;
+        std::memcpy(reinterpret_cast<void*>(&u), &t, sizeof(Integer));
+        return u;
+    }
+
     // Curried static_cast.
     template <typename To>
     struct static_cast_to {
