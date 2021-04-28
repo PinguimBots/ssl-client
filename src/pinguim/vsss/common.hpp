@@ -4,15 +4,15 @@
 #include <utility>
 #include <array>
 
-namespace pinguim
+namespace pinguim::vsss
 {
     using point = std::complex<double>;
     // Ponto usado pelo wavefront planner (cordenada discreta).
     using wpoint = std::complex<int>;
 
-    // auto [x, y] = pinguim::to_pair( ponto );
-    auto to_pair(const pinguim::point &p) -> std::pair<double, double>;
-    auto to_pair(const pinguim::wpoint &p) -> std::pair<int, int>;
+    // auto [x, y] = pinguim::vsss::to_pair( ponto );
+    auto to_pair(const pinguim::vsss::point &p) -> std::pair<double, double>;
+    auto to_pair(const pinguim::vsss::wpoint &p) -> std::pair<int, int>;
     using rect = std::array<point, 4>;
 
     struct field_geometry
@@ -39,7 +39,7 @@ namespace pinguim
         point velocity;
     };
 
-    enum Roles
+    enum class Roles
     {
         GOALKEEPER,
         ATTACKER,

@@ -60,6 +60,15 @@ namespace pinguim::cvt
     >
     constexpr auto to = to_t<To, Converter>{};
 
+    constexpr struct
+    {
+        template <typename From>
+        constexpr auto operator<<(From&& v) const
+        {
+            return to< std::underlying_type_t<From> > << std::forward<From>(v);
+        }
+    } to_underlying;
+    constexpr auto tou = to_underlying;
 
     template <typename From>
     struct to_expected_t
@@ -82,13 +91,12 @@ namespace pinguim::cvt
 
     // This is *duct tape* meant to make things *just work*, PLEASE take the
     // time to remove it's use later.
-    /// TODO: investigate, link errors may occur here (multiple definition).
-    [[maybe_unused]] struct {
+    constexpr struct {
         template <typename From>
-        constexpr auto operator<<(From&& v)
+        constexpr auto operator<<(From&& v) const
         {
             return to_expected_t<From>{ std::forward<From>(v) };
         }
     } to_expected;
-
+    constexpr auto toe = to_expected;
 }

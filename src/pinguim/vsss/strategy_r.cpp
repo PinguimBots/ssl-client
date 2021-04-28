@@ -1,10 +1,15 @@
-#include "pinguim/strategy.hpp"
+#include "pinguim/vsss/strategy.hpp"
+
 #include <iostream>
 
-auto pinguim::Strategy::actions(
-    const pinguim::robot &robot,
-    const pinguim::ball &ball,
-    const std::vector<pinguim::point> &enemy_robots) -> std::tuple<pinguim::point, int>
+#include "pinguim/cvt.hpp"
+
+using pinguim::cvt::tou;
+
+auto pinguim::vsss::Strategy::actions(
+    const pinguim::vsss::robot &robot,
+    const pinguim::vsss::ball &ball,
+    const std::vector<pinguim::vsss::point> &enemy_robots) -> std::tuple<pinguim::vsss::point, int>
 {
     /*
     * Each role has limited actions
@@ -12,20 +17,20 @@ auto pinguim::Strategy::actions(
     * -> defenser: moves along the first half of the field, stay quiet if the attacker holds the ball
     * -> attacker: moves onto the ball and carries it toward the goal
     */
-    std::tuple<pinguim::point, int> action;
+    std::tuple<pinguim::vsss::point, int> action;
     //printf("\n\nRobot id: %d  |  Orientation: %f\n\n ", robot.id, robot.orientation);
 
     switch (robot.id)
     {
-    case pinguim::Roles::GOALKEEPER:
+    case tou << pinguim::vsss::Roles::GOALKEEPER:
         action = goalkeeper_action(robot, ball);
         break;
 
-    case pinguim::Roles::DEFENDER:
+    case tou << pinguim::vsss::Roles::DEFENDER:
         action = defender_action(robot, ball);
         break;
 
-    case pinguim::Roles::ATTACKER:
+    case tou << pinguim::vsss::Roles::ATTACKER:
         action = attacker_action(robot, ball, enemy_robots);
         break;
     }
@@ -33,12 +38,12 @@ auto pinguim::Strategy::actions(
     return action;
 }
 
-auto pinguim::Strategy::defender_action(
-    const pinguim::robot &robot,
-    const pinguim::ball &ball)
-    -> std::tuple<pinguim::point, int>
+auto pinguim::vsss::Strategy::defender_action(
+    const pinguim::vsss::robot &robot,
+    const pinguim::vsss::ball &ball)
+    -> std::tuple<pinguim::vsss::point, int>
 {
-    std::tuple<pinguim::point, int> action;
+    std::tuple<pinguim::vsss::point, int> action;
 
     isNear(robot.position, ball.position, 7.0e-2)
         ? action = kick(robot, ball)
@@ -47,12 +52,12 @@ auto pinguim::Strategy::defender_action(
     return action;
 }
 
-auto pinguim::Strategy::goalkeeper_action(
-    const pinguim::robot &robot,
-    const pinguim::ball &ball)
-    -> std::tuple<pinguim::point, int>
+auto pinguim::vsss::Strategy::goalkeeper_action(
+    const pinguim::vsss::robot &robot,
+    const pinguim::vsss::ball &ball)
+    -> std::tuple<pinguim::vsss::point, int>
 {
-    std::tuple<pinguim::point, int> action;
+    std::tuple<pinguim::vsss::point, int> action;
 
     isNear(robot.position, ball.position, 7.0e-2)
         ? action = kick(robot, ball)
@@ -61,22 +66,22 @@ auto pinguim::Strategy::goalkeeper_action(
     return action;
 }
 
-auto pinguim::Strategy::attacker_action(
-    const pinguim::robot &robot,
-    const pinguim::ball &ball,
-    const std::vector<pinguim::point> &enemy_robots)
-    -> std::tuple<pinguim::point, int>
+auto pinguim::vsss::Strategy::attacker_action(
+    const pinguim::vsss::robot &robot,
+    const pinguim::vsss::ball &ball,
+    const std::vector<pinguim::vsss::point> &enemy_robots)
+    -> std::tuple<pinguim::vsss::point, int>
 {
-    std::tuple<pinguim::point, int> action;
+    std::tuple<pinguim::vsss::point, int> action;
 
-    auto point = [&](pinguim::rect bound) { return (bound[0] + bound[1] + bound[2] + bound[3]) / 4.; };
+    auto point = [&](pinguim::vsss::rect bound) { return (bound[0] + bound[1] + bound[2] + bound[3]) / 4.; };
 
     ActionType actionType;
 
     if (!is_yellow)
     {
         if (robot.position.real() > ball.position.real())
-            action = {pinguim::point(DEFENDER_std_X + .225, robot.position.imag()), 0};
+            action = {pinguim::vsss::point(DEFENDER_std_X + .225, robot.position.imag()), 0};
         else
         {
             isNear(robot.position, ball.position, 6e-2)
@@ -116,7 +121,7 @@ auto pinguim::Strategy::attacker_action(
     {
         if (robot.position.real() < ball.position.real())
         {
-            action = {pinguim::point(-DEFENDER_std_X - .225, robot.position.imag()), 0};
+            action = {pinguim::vsss::point(-DEFENDER_std_X - .225, robot.position.imag()), 0};
         }
         else
         {
@@ -154,10 +159,10 @@ auto pinguim::Strategy::attacker_action(
     return action;
 }
 
-auto pinguim::Strategy::lin_pred(pinguim::point point1, pinguim::point point2, double x) -> pinguim::point
+auto pinguim::vsss::Strategy::lin_pred(pinguim::vsss::point point1, pinguim::vsss::point point2, double x) -> pinguim::vsss::point
 {
-    auto [x1, y1] = pinguim::to_pair(point1);
-    auto [x2, y2] = pinguim::to_pair(point2);
+    auto [x1, y1] = pinguim::vsss::to_pair(point1);
+    auto [x2, y2] = pinguim::vsss::to_pair(point2);
 
     double k, y;
 
@@ -167,10 +172,10 @@ auto pinguim::Strategy::lin_pred(pinguim::point point1, pinguim::point point2, d
     return {x, y};
 }
 
-auto pinguim::Strategy::rotate([[maybe_unused]] const pinguim::robot &robot, const pinguim::ball &ball) -> std::tuple<pinguim::point, int>
+auto pinguim::vsss::Strategy::rotate([[maybe_unused]] const pinguim::vsss::robot &robot, const pinguim::vsss::ball &ball) -> std::tuple<pinguim::vsss::point, int>
 {
     // auto angle_error = robot.orientation - angle;
-    // auto point = pinguim::point(cos(angle_error)*6.0e-1 + robot.position.real(),
+    // auto point = pinguim::vsss::point(cos(angle_error)*6.0e-1 + robot.position.real(),
     //                          sin(angle_error)*6.0e-1 + robot.position.imag());
 
     if (ball.position.imag() < 0)
@@ -179,34 +184,34 @@ auto pinguim::Strategy::rotate([[maybe_unused]] const pinguim::robot &robot, con
         return {ball.position, 2};
 }
 
-auto pinguim::Strategy::kick(const pinguim::robot &robot, const pinguim::ball &ball) -> std::tuple<pinguim::point, int>
+auto pinguim::vsss::Strategy::kick(const pinguim::vsss::robot &robot, const pinguim::vsss::ball &ball) -> std::tuple<pinguim::vsss::point, int>
 {
     //printf("%d kicking\n", robot.id);
     return rotate(robot, ball);
 }
 
-bool pinguim::Strategy::isNear(pinguim::point point1, pinguim::point point2, double tol)
+bool pinguim::vsss::Strategy::isNear(pinguim::vsss::point point1, pinguim::vsss::point point2, double tol)
 {
     //printf("%lf \n ", std::abs((point2 - point1)));
     return (std::abs((point2 - point1)) < tol);
 }
 
-auto pinguim::Strategy::trackBallYAxix(const pinguim::robot &robot, const pinguim::ball &ball) -> std::tuple<pinguim::point, int>
+auto pinguim::vsss::Strategy::trackBallYAxix(const pinguim::vsss::robot &robot, const pinguim::vsss::ball &ball) -> std::tuple<pinguim::vsss::point, int>
 {
     /*
     *Need to limit the goalkeeper's area
     */
     //printf("%d Tracking\n", robot.id);
 
-    pinguim::point position;
+    pinguim::vsss::point position;
 
-    pinguim::point predicted_position = lin_pred(old_point,
+    pinguim::vsss::point predicted_position = lin_pred(old_point,
                                               ball.position,
-                                              robot.id == pinguim::Roles::DEFENDER
+                                              robot.id == tou << pinguim::vsss::Roles::DEFENDER
                                                   ? team * DEFENDER_std_X
                                                   : team * GOALKEEPER_std_X);
 
-    if ((predicted_position.imag() > GOAL_AREA_MIN && predicted_position.imag() <= GOAL_AREA_MAX) && robot.id == pinguim::GOALKEEPER)
+    if ((predicted_position.imag() > GOAL_AREA_MIN && predicted_position.imag() <= GOAL_AREA_MAX) && robot.id == tou << pinguim::vsss::Roles::GOALKEEPER)
 
     {
         position = predicted_position;
@@ -214,9 +219,9 @@ auto pinguim::Strategy::trackBallYAxix(const pinguim::robot &robot, const pingui
 
     else
     {
-        position = robot.id == pinguim::Roles::DEFENDER
-                       ? predicted_position //pinguim::point(team*DEFENDER_std_X, new_y)
-                       : pinguim::point(team * GOALKEEPER_std_X, std::clamp(ball.position.imag(), GOAL_AREA_MIN, GOAL_AREA_MAX));
+        position = robot.id == tou << pinguim::vsss::Roles::DEFENDER
+                       ? predicted_position //pinguim::vsss::point(team*DEFENDER_std_X, new_y)
+                       : pinguim::vsss::point(team * GOALKEEPER_std_X, std::clamp(ball.position.imag(), GOAL_AREA_MIN, GOAL_AREA_MAX));
     }
 
     old_point = ball.position;
@@ -225,11 +230,11 @@ auto pinguim::Strategy::trackBallYAxix(const pinguim::robot &robot, const pingui
             0};
 }
 
-auto pinguim::Strategy::towardGoal([[maybe_unused]] const pinguim::robot &robot) -> std::tuple<pinguim::point, int>
+auto pinguim::vsss::Strategy::towardGoal([[maybe_unused]] const pinguim::vsss::robot &robot) -> std::tuple<pinguim::vsss::point, int>
 {
-    auto point = [&](pinguim::rect bound) { return (bound[0] + bound[1] + bound[2] + bound[3]) / 4.; };
+    auto point = [&](pinguim::vsss::rect bound) { return (bound[0] + bound[1] + bound[2] + bound[3]) / 4.; };
 
-    pinguim::point new_point;
+    pinguim::vsss::point new_point;
 
     //printf("%d Toward Goal\n", robot.id);
     team == 1.0
@@ -239,15 +244,15 @@ auto pinguim::Strategy::towardGoal([[maybe_unused]] const pinguim::robot &robot)
     return {new_point, 0};
 }
 
-auto pinguim::Strategy::moveOntoBall(
-    [[maybe_unused]] const pinguim::robot &robot,
-    const pinguim::ball &ball)
-    -> std::tuple<pinguim::point, int>
+auto pinguim::vsss::Strategy::moveOntoBall(
+    [[maybe_unused]] const pinguim::vsss::robot &robot,
+    const pinguim::vsss::ball &ball)
+    -> std::tuple<pinguim::vsss::point, int>
 {
 
     auto ball_diff = ball.position - old_point;
     double dt_ahead = 3;
-    pinguim::point new_position;
+    pinguim::vsss::point new_position;
 
     if (ball_diff.real() < 0)
     {
@@ -260,7 +265,7 @@ auto pinguim::Strategy::moveOntoBall(
             0};
 }
 
-auto pinguim::Strategy::setTeam(bool is_yellow_) -> void
+auto pinguim::vsss::Strategy::setTeam(bool is_yellow_) -> void
 {
     this->is_yellow = is_yellow_;
 
@@ -269,7 +274,7 @@ auto pinguim::Strategy::setTeam(bool is_yellow_) -> void
     init_border_obstacle_field();
 }
 
-auto pinguim::Strategy::setBounds(pinguim::field_geometry bounds) -> void
+auto pinguim::vsss::Strategy::setBounds(pinguim::vsss::field_geometry bounds) -> void
 {
     field_bounds = bounds;
 

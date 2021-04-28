@@ -49,12 +49,13 @@ sources = files(
     'src/pinguim/imgui/plumber.cpp',
     'src/pinguim/imgui/opencv.cpp',
 
-    'src/pinguim/control.cpp',
-    'src/pinguim/strategy_r.cpp',
-    'src/pinguim/strategy_d.cpp',
-    'src/pinguim/utility.cpp',
-    'src/pinguim/simulator_connection.cpp',
-    'src/pinguim/common.cpp',
+    'src/pinguim/vsss/simulator_connection.cpp',
+    'src/pinguim/vsss/strategy_d.cpp',
+    'src/pinguim/vsss/strategy_r.cpp',
+    'src/pinguim/vsss/control.cpp',
+    'src/pinguim/vsss/common.cpp',
+    'src/pinguim/vsss/utility.cpp',
+
     'src/pinguim/parse.cpp',
 )
 
@@ -64,5 +65,5 @@ pbssl_exe = executable(
     include_directories: [include_directories('src'), conf_inc],
     dependencies: [opencv_dep, gui_deps, utils_deps, proto_gen_dep],
     cpp_args: cpp_warnings,
-    cpp_pch: 'src/pch.hpp',
+    cpp_pch: 'src/pinguim/app/pch.hpp',
 )

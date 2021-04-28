@@ -7,9 +7,9 @@
 #include <complex>
 #include <csignal>
 
-#include "pinguim/simulator_connection.hpp"
-#include "pinguim/strategy.hpp"
-#include "pinguim/control.hpp"
+#include "pinguim/vsss/simulator_connection.hpp"
+#include "pinguim/vsss/strategy.hpp"
+#include "pinguim/vsss/control.hpp"
 #include "pinguim/parse.hpp"
 #include "pinguim/qol.hpp"
 #include "pinguim/cvt.hpp"
@@ -35,6 +35,7 @@ static const constexpr char usage[] = R"(pbssl ver 0.0.
 
 
 using pinguim::cvt::to_expected;
+using pinguim::cvt::tou;
 
 int main(int argc, char *argv[])
 {
@@ -113,15 +114,15 @@ int main(int argc, char *argv[])
 
     const auto is_yellow = args["--team"].asString() == "yellow";
 
-    auto bounds = std::optional<pinguim::field_geometry>{};
+    auto bounds = std::optional<pinguim::vsss::field_geometry>{};
 
-    auto strategy = pinguim::Strategy();
+    auto strategy = pinguim::vsss::Strategy();
 
     strategy.setTeam(is_yellow);
 
     bool game_on = true;
 
-    pinguim::simulator_connection VSSS{
+    pinguim::vsss::simulator_connection VSSS{
         {in_addr, in_port},
         {out_addr, out_port},
         /* on_simulator_receive= */ [&](auto environment) {
@@ -186,7 +187,7 @@ int main(int argc, char *argv[])
                 auto& enemy_team  = is_yellow ? blue_robots   : yellow_robots;
 
 
-                std::vector<pinguim::point> pb_enemies = {{
+                std::vector<pinguim::vsss::point> pb_enemies = {{
                     {enemy_team[0].x(), enemy_team[0].y()},
                     {enemy_team[1].x(), enemy_team[1].y()},
                     {enemy_team[2].x(), enemy_team[2].y()}
@@ -194,17 +195,17 @@ int main(int argc, char *argv[])
 
                 for (const auto &robot : allied_team)
                 {
-                    pinguim::robot pb_robot;
-                    pinguim::ball  pb_ball;
+                    pinguim::vsss::robot pb_robot;
+                    pinguim::vsss::ball  pb_ball;
 
                     pb_robot.id = to_expected << robot.robot_id();
                     pb_robot.position = {robot.x(), robot.y()};
                     pb_robot.orientation = robot.orientation();
-                    pb_ball.position = pinguim::point{ball.x(), ball.y()};
-                    pb_ball.velocity = pinguim::point{ball.vx(), ball.vy()};
+                    pb_ball.position = pinguim::vsss::point{ball.x(), ball.y()};
+                    pb_ball.velocity = pinguim::vsss::point{ball.vx(), ball.vy()};
 
                     for (const auto &other_robot : allied_team) {
-                        if (other_robot.robot_id() != pinguim::Roles::ATTACKER) {
+                        if (other_robot.robot_id() != tou << pinguim::vsss::Roles::ATTACKER) {
                             pb_enemies.push_back({other_robot.x(), other_robot.y()});
                         }
                     }
@@ -213,7 +214,7 @@ int main(int argc, char *argv[])
                                                                   pb_ball,
                                                                   pb_enemies);
 
-                    auto [left, right] = pinguim::to_pair( pinguim::control::generate_vels(pb_robot, new_point, rotation));
+                    auto [left, right] = pinguim::vsss::to_pair( pinguim::vsss::control::generate_vels(pb_robot, new_point, rotation));
 
                     auto command = packet.mutable_cmd()->add_robot_commands();
                     command->set_id(robot.robot_id());

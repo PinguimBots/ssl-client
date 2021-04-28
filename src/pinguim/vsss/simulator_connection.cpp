@@ -1,4 +1,4 @@
-#include "pinguim/simulator_connection.hpp"
+#include "pinguim/vsss/simulator_connection.hpp"
 
 #include <QObject> // QObject::connect.
 
@@ -6,7 +6,7 @@
 
 using pinguim::cvt::to_expected;
 
-pinguim::simulator_connection::simulator_connection
+pinguim::vsss::simulator_connection::simulator_connection
 (
     connection_params simulator_in_params,
     connection_params simulator_out_params,
@@ -63,7 +63,7 @@ pinguim::simulator_connection::simulator_connection
     );
 }
 
-auto pinguim::simulator_connection::simulator_send(const fira_message::sim_to_ref::Packet& packet) -> bool
+auto pinguim::vsss::simulator_connection::simulator_send(const fira_message::sim_to_ref::Packet& packet) -> bool
 {
     QByteArray dg;
     dg.resize(to_expected << packet.ByteSizeLong());
@@ -74,7 +74,7 @@ auto pinguim::simulator_connection::simulator_send(const fira_message::sim_to_re
     return bytes_sent == dg.size();
 }
 
-auto pinguim::simulator_connection::replacer_send(const VSSRef::team_to_ref::VSSRef_Placement& placement) -> bool
+auto pinguim::vsss::simulator_connection::replacer_send(const VSSRef::team_to_ref::VSSRef_Placement& placement) -> bool
 {
     QByteArray dg;
     dg.resize(to_expected << placement.ByteSizeLong());

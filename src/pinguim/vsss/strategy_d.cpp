@@ -1,4 +1,4 @@
-#include <pinguim/strategy.hpp>
+#include <pinguim/vsss/strategy.hpp>
 #include <queue>
 #include <omp.h>
 
@@ -6,16 +6,16 @@
 
 using pinguim::cvt::to_expected;
 
-auto pinguim::Strategy::wave_planner(
-    const pinguim::wpoint goal_position,
-    const pinguim::wpoint allied_robot,
-    const std::vector<pinguim::wpoint> &enemy_robots)
-    -> pinguim::wpoint
+auto pinguim::vsss::Strategy::wave_planner(
+    const pinguim::vsss::wpoint goal_position,
+    const pinguim::vsss::wpoint allied_robot,
+    const std::vector<pinguim::vsss::wpoint> &enemy_robots)
+    -> pinguim::vsss::wpoint
 {
     int discreet_field[imax][jmax];
     std::vector<std::vector<int>> cost(imax, std::vector<int> (jmax, 0));
-    //auto [goal_x, goal_y] = pinguim::to_pair(goal_position);
-    //auto [robot_x, robot_y] = pinguim::to_pair(allied_robot);
+    //auto [goal_x, goal_y] = pinguim::vsss::to_pair(goal_position);
+    //auto [robot_x, robot_y] = pinguim::vsss::to_pair(allied_robot);
 
     #pragma omp parallel for
     for (int i = 0; i < imax; i++)
@@ -79,20 +79,20 @@ auto pinguim::Strategy::wave_planner(
 
     c = getchar(); */
 
-    auto [goal_i, goal_j] = pinguim::to_pair(goal_position);
+    auto [goal_i, goal_j] = pinguim::vsss::to_pair(goal_position);
 
     return next_point(allied_robot, {goal_i, goal_j}, cost);
 }
 
-auto pinguim::Strategy::add_clearance(int (&field)[imax][jmax], const pinguim::wpoint goal_position) -> void
+auto pinguim::vsss::Strategy::add_clearance(int (&field)[imax][jmax], const pinguim::vsss::wpoint goal_position) -> void
 {
-    //auto [icle, jcle] = pinguim::to_pair(goal_position);
+    //auto [icle, jcle] = pinguim::vsss::to_pair(goal_position);
 
     int theta = 0;
     const int raio = 2;
     const int step = 10;
 
-    auto [hx, hy] = pinguim::to_pair(goal_position);
+    auto [hx, hy] = pinguim::vsss::to_pair(goal_position);
 
     while (theta <= 360) {
         int x = to_expected << round(hx + raio * cos(theta));
@@ -106,7 +106,7 @@ auto pinguim::Strategy::add_clearance(int (&field)[imax][jmax], const pinguim::w
 
 }
 
-auto pinguim::Strategy::next_point(const pinguim::wpoint pos_now, const pinguim::wpoint goal, std::vector<std::vector<int>> &cost) -> pinguim::wpoint
+auto pinguim::vsss::Strategy::next_point(const pinguim::vsss::wpoint pos_now, const pinguim::vsss::wpoint goal, std::vector<std::vector<int>> &cost) -> pinguim::vsss::wpoint
 {
     // Onde custo = 0 -> custo = 10mil
     #pragma omp parallel for
@@ -116,8 +116,8 @@ auto pinguim::Strategy::next_point(const pinguim::wpoint pos_now, const pinguim:
         }
     }
 
-    [[maybe_unused]] auto [i_goal, j_goal] = pinguim::to_pair(goal);
-    auto [i_now, j_now] = pinguim::to_pair(pos_now);
+    [[maybe_unused]] auto [i_goal, j_goal] = pinguim::vsss::to_pair(goal);
+    auto [i_now, j_now] = pinguim::vsss::to_pair(pos_now);
 
     int cost_ij = cost[to_expected << i_now][to_expected << j_now];
 
@@ -132,7 +132,7 @@ auto pinguim::Strategy::next_point(const pinguim::wpoint pos_now, const pinguim:
         auto neighbours = valid_neighbours({i_next,j_next}, 1, 1);
 
         for (const auto &neighbour : neighbours) {
-            auto [new_i, new_j] = pinguim::to_pair(neighbour);
+            auto [new_i, new_j] = pinguim::vsss::to_pair(neighbour);
 
             if (cost[to_expected << new_i][to_expected << new_j] < cost_ij) {
                 i_next = new_i;
@@ -151,7 +151,7 @@ auto pinguim::Strategy::next_point(const pinguim::wpoint pos_now, const pinguim:
     /*end:*/ return {i_next, j_next};
 }
 
-auto pinguim::Strategy::wave_path(int (&field)[imax][jmax], const pinguim::wpoint goal, std::vector<std::vector<int>> &cost) -> void
+auto pinguim::vsss::Strategy::wave_path(int (&field)[imax][jmax], const pinguim::vsss::wpoint goal, std::vector<std::vector<int>> &cost) -> void
 {
 
     int occ[imax][jmax];
@@ -163,21 +163,21 @@ auto pinguim::Strategy::wave_path(int (&field)[imax][jmax], const pinguim::wpoin
         }
     }
 
-    auto [igoal, jgoal] = pinguim::to_pair(goal);
+    auto [igoal, jgoal] = pinguim::vsss::to_pair(goal);
 
     cost[to_expected << igoal][to_expected << jgoal] = 1;
 
-    auto open = std::queue<pinguim::wpoint>();
+    auto open = std::queue<pinguim::vsss::wpoint>();
     open.push({igoal, jgoal});
 
     while(!open.empty()) {
         auto current_pos = open.front();
-        auto [curr_x, curr_y] = pinguim::to_pair(current_pos);
+        auto [curr_x, curr_y] = pinguim::vsss::to_pair(current_pos);
 
         auto neighbours = valid_neighbours(current_pos, 0, 1);
 
         for (const auto& neighbour : neighbours) {
-            auto [looking_x, looking_y] = pinguim::to_pair(neighbour);
+            auto [looking_x, looking_y] = pinguim::vsss::to_pair(neighbour);
 
             if (occ[looking_x][looking_y] == 1) continue;
 
@@ -194,7 +194,7 @@ auto pinguim::Strategy::wave_path(int (&field)[imax][jmax], const pinguim::wpoin
 
 }
 
-auto pinguim::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vector<pinguim::wpoint> &enemy_robots) -> void
+auto pinguim::vsss::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::vector<pinguim::vsss::wpoint> &enemy_robots) -> void
 {
 
     int theta = 0;
@@ -202,7 +202,7 @@ auto pinguim::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::v
     const int step = 10;
 
     for (const auto &robot : enemy_robots) {
-        auto [hx, hy] = pinguim::to_pair(robot);
+        auto [hx, hy] = pinguim::vsss::to_pair(robot);
 
         while (theta <= 360) {
             int x = to_expected << round(hx + raio * cos(theta));
@@ -216,9 +216,9 @@ auto pinguim::Strategy::generate_obstacle(int (&field)[imax][jmax], const std::v
     }
 }
 
-auto pinguim::Strategy::add_shield_ball(int (&field)[imax][jmax], const pinguim::wpoint ball) -> void
+auto pinguim::vsss::Strategy::add_shield_ball(int (&field)[imax][jmax], const pinguim::vsss::wpoint ball) -> void
 {
-    auto [i_ball, j_ball] = pinguim::to_pair(ball);
+    auto [i_ball, j_ball] = pinguim::vsss::to_pair(ball);
 
     /* for (int i = iini; i <= ifin; i++){
         for (int j = jini; j <= jfin; j++){
@@ -267,10 +267,10 @@ auto pinguim::Strategy::add_shield_ball(int (&field)[imax][jmax], const pinguim:
     }
 }
 
-auto pinguim::Strategy::valid_neighbours(pinguim::wpoint point, int ntype, int radius) -> std::vector<pinguim::wpoint>
+auto pinguim::vsss::Strategy::valid_neighbours(pinguim::vsss::wpoint point, int ntype, int radius) -> std::vector<pinguim::vsss::wpoint>
 {
-    std::vector<pinguim::wpoint> fourNB;
-    std::vector<pinguim::wpoint> dNB;
+    std::vector<pinguim::vsss::wpoint> fourNB;
+    std::vector<pinguim::vsss::wpoint> dNB;
 
     fourNB = four_neighborhood(point, radius);
 
@@ -283,16 +283,16 @@ auto pinguim::Strategy::valid_neighbours(pinguim::wpoint point, int ntype, int r
     return fourNB;
 }
 
-auto pinguim::Strategy::four_neighborhood(pinguim::wpoint point, int radius) -> std::vector<pinguim::wpoint>
+auto pinguim::vsss::Strategy::four_neighborhood(pinguim::vsss::wpoint point, int radius) -> std::vector<pinguim::vsss::wpoint>
 {
-    auto [x, y] = pinguim::to_pair(point);
+    auto [x, y] = pinguim::vsss::to_pair(point);
 
-    std::vector<pinguim::wpoint> possibleMoves = {{x + radius, y}, {x - radius, y}, {x, y + radius}, {x, y - radius}};
-    std::vector<pinguim::wpoint> validMoves;
+    std::vector<pinguim::vsss::wpoint> possibleMoves = {{x + radius, y}, {x - radius, y}, {x, y + radius}, {x, y - radius}};
+    std::vector<pinguim::vsss::wpoint> validMoves;
 
     for (auto move : possibleMoves)
     {
-        auto [mx, my] = pinguim::to_pair(move);
+        auto [mx, my] = pinguim::vsss::to_pair(move);
 
         if ((mx < imax && mx >= imin) && (my < jmax && my >= jmin))
         {
@@ -304,16 +304,16 @@ auto pinguim::Strategy::four_neighborhood(pinguim::wpoint point, int radius) -> 
     return validMoves;
 }
 
-auto pinguim::Strategy::d_neighborhood(pinguim::wpoint point, int radius) -> std::vector<pinguim::wpoint>
+auto pinguim::vsss::Strategy::d_neighborhood(pinguim::vsss::wpoint point, int radius) -> std::vector<pinguim::vsss::wpoint>
 {
-    auto [x, y] = pinguim::to_pair(point);
+    auto [x, y] = pinguim::vsss::to_pair(point);
 
-    std::vector<pinguim::wpoint> possibleMoves = {{x + radius, y + radius}, {x + radius, y - radius}, {x - radius, y + radius}, {x - radius, y - radius}};
-    std::vector<pinguim::wpoint> validMoves;
+    std::vector<pinguim::vsss::wpoint> possibleMoves = {{x + radius, y + radius}, {x + radius, y - radius}, {x - radius, y + radius}, {x - radius, y - radius}};
+    std::vector<pinguim::vsss::wpoint> validMoves;
 
     for (auto move : possibleMoves)
     {
-        auto [mx, my] = pinguim::to_pair(move);
+        auto [mx, my] = pinguim::vsss::to_pair(move);
 
         if ((mx < imax && mx >= imin) && (my < jmax && my >= jmin))
         {
@@ -325,16 +325,16 @@ auto pinguim::Strategy::d_neighborhood(pinguim::wpoint point, int radius) -> std
     return validMoves;
 }
 
-auto pinguim::Strategy::create_path(
-    const pinguim::point goal_position,
-    const pinguim::robot &allied_robot,
-    const std::vector<pinguim::point> &enemy_robots)
-    -> pinguim::point
+auto pinguim::vsss::Strategy::create_path(
+    const pinguim::vsss::point goal_position,
+    const pinguim::vsss::robot &allied_robot,
+    const std::vector<pinguim::vsss::point> &enemy_robots)
+    -> pinguim::vsss::point
 {
     //Correspondestes Discretas
-    pinguim::wpoint wgoal_position;
-    pinguim::wpoint wallied_robot, wnew_position;
-    std::vector<pinguim::wpoint> wenemy_robots;
+    pinguim::vsss::wpoint wgoal_position;
+    pinguim::vsss::wpoint wallied_robot, wnew_position;
+    std::vector<pinguim::vsss::wpoint> wenemy_robots;
 
     // Transformação
     wgoal_position = real_to_discreet(goal_position);
@@ -350,24 +350,24 @@ auto pinguim::Strategy::create_path(
     wnew_position = wave_planner(wgoal_position, wallied_robot, wenemy_robots);
 
 
-    /* auto [currx, curry] = pinguim::to_pair(allied_robot.position);
+    /* auto [currx, curry] = pinguim::vsss::to_pair(allied_robot.position);
     printf("Real Robot Current: Pos[x] = %f | Pos[y] = %f\n", currx, curry);
 
-    auto [wcurri, wcurrj] = pinguim::to_pair(wallied_robot);
+    auto [wcurri, wcurrj] = pinguim::vsss::to_pair(wallied_robot);
     printf("Discreet Robot Current: Pos[i] = %d | Pos[j] = %d\n\n", wcurri, wcurrj);
 
 
-    auto [newx, newy] = pinguim::to_pair(discreet_to_real(wnew_position));
+    auto [newx, newy] = pinguim::vsss::to_pair(discreet_to_real(wnew_position));
     printf("Real Robot New: Pos[x] = %f | Pos[y] = %f\n", newx, newy);
 
-    auto [wni, wnj] = pinguim::to_pair(wnew_position);
+    auto [wni, wnj] = pinguim::vsss::to_pair(wnew_position);
     printf("Discreet Robot New: Pos[i] = %d | Pos[j] = %d\n\n", wni, wnj);
 
 
-    auto [goal_x, goal_y] = pinguim::to_pair(goal_position);
+    auto [goal_x, goal_y] = pinguim::vsss::to_pair(goal_position);
     printf("Real Goal: Pos[x] = %f | Pos[y] = %f\n", goal_x, goal_y);
 
-    auto [wgi, wgj] = pinguim::to_pair(wgoal_position);
+    auto [wgi, wgj] = pinguim::vsss::to_pair(wgoal_position);
     printf("Discreet Goal: Pos[i] = %d | Pos[j] = %d\n\n", wgi, wgj); */
 
 
@@ -376,7 +376,7 @@ auto pinguim::Strategy::create_path(
     return {discreet_to_real(wnew_position)};
 }
 
-auto pinguim::Strategy::init_border_obstacle_field() -> void
+auto pinguim::vsss::Strategy::init_border_obstacle_field() -> void
 {
     #pragma omp parallel for
     for (int i = imin; i < imax; i++)
@@ -388,10 +388,10 @@ auto pinguim::Strategy::init_border_obstacle_field() -> void
     }
 }
 
-auto pinguim::Strategy::add_border_field_obstacle() -> void
+auto pinguim::vsss::Strategy::add_border_field_obstacle() -> void
 {
 
-    pinguim::point enemy_point1, enemy_point2;
+    pinguim::vsss::point enemy_point1, enemy_point2;
 
     if (is_yellow) {
         enemy_point1 = field_bounds.left_goal_bounds[1];
@@ -401,18 +401,18 @@ auto pinguim::Strategy::add_border_field_obstacle() -> void
         enemy_point2 = field_bounds.right_goal_bounds[3];
     }
 
-    pinguim::wpoint wenemy_point1, wenemy_point2;
+    pinguim::vsss::wpoint wenemy_point1, wenemy_point2;
 
     wenemy_point1 = real_to_discreet(enemy_point1);
     wenemy_point2 = real_to_discreet(enemy_point2);
 
-    auto [e_1_i, e_1_j] = pinguim::to_pair(wenemy_point1);
-    auto [e_2_i, e_2_j] = pinguim::to_pair(wenemy_point2);
+    auto [e_1_i, e_1_j] = pinguim::vsss::to_pair(wenemy_point1);
+    auto [e_2_i, e_2_j] = pinguim::vsss::to_pair(wenemy_point2);
 
-    auto [f_0_i, f_0_j] = pinguim::to_pair(real_to_discreet(field_bounds.field_bounds[0]));
-    auto [f_1_i, f_1_j] = pinguim::to_pair(real_to_discreet(field_bounds.field_bounds[1]));
-    auto [f_2_i, f_2_j] = pinguim::to_pair(real_to_discreet(field_bounds.field_bounds[2]));
-    auto [f_3_i, f_3_j] = pinguim::to_pair(real_to_discreet(field_bounds.field_bounds[3]));
+    auto [f_0_i, f_0_j] = pinguim::vsss::to_pair(real_to_discreet(field_bounds.field_bounds[0]));
+    auto [f_1_i, f_1_j] = pinguim::vsss::to_pair(real_to_discreet(field_bounds.field_bounds[1]));
+    auto [f_2_i, f_2_j] = pinguim::vsss::to_pair(real_to_discreet(field_bounds.field_bounds[2]));
+    auto [f_3_i, f_3_j] = pinguim::vsss::to_pair(real_to_discreet(field_bounds.field_bounds[3]));
 
     #pragma omp parallel for
     for (int i = 0; i < imax; i++)

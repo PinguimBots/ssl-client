@@ -1,4 +1,4 @@
-#include "pinguim/control.hpp"
+#include "pinguim/vsss/control.hpp"
 
 #include <cmath>
 #include <algorithm>
@@ -8,7 +8,7 @@
 
 #include <fmt/core.h>
 
-auto pinguim::control::rotate(pinguim::robot robot, double angle) -> pinguim::point
+auto pinguim::vsss::control::rotate(pinguim::vsss::robot robot, double angle) -> pinguim::vsss::point
 {
     auto angle_error = robot.orientation - angle;
     [[maybe_unused]] const double kap = 1.0, kad = 0.2, velmax = 1.0, velmin = -1.0;
@@ -18,20 +18,20 @@ auto pinguim::control::rotate(pinguim::robot robot, double angle) -> pinguim::po
 }
 
 
-auto pinguim::control::generate_vels(pinguim::robot robot, pinguim::point target_pos, int rotation) -> pinguim::point
+auto pinguim::vsss::control::generate_vels(pinguim::vsss::robot robot, pinguim::vsss::point target_pos, int rotation) -> pinguim::vsss::point
 {
     // NOTE: atan  returns the angle value between -pi/2 (-90deg) and pi/2 (90deg)
     // while atan2 returns the angle value between -pi (-180deg) and pi (180deg).
 
     static const constexpr auto pi = glm::pi<double>();
 
-    auto [x, y] = pinguim::to_pair(robot.position);
+    auto [x, y] = pinguim::vsss::to_pair(robot.position);
 
     auto orientation = robot.orientation;
 
 
-    auto [target_x, target_y] = pinguim::to_pair(target_pos);
-    auto [xDif, yDif] = pinguim::to_pair(target_pos - robot.position);
+    auto [target_x, target_y] = pinguim::vsss::to_pair(target_pos);
+    auto [xDif, yDif] = pinguim::vsss::to_pair(target_pos - robot.position);
 
     [[maybe_unused]] double ballAngle = atan2(yDif, xDif); // Angulo robô -> bola
 

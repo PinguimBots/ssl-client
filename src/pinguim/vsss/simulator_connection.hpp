@@ -10,8 +10,8 @@
 #include "proto/vssref_command.pb.h"
 #include "proto/vssref_placement.pb.h"
 
-namespace pinguim {
-
+namespace pinguim::vsss
+{
     class simulator_connection
     {
     public:
