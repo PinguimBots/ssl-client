@@ -1,5 +1,3 @@
-#include <docopt.h>
-
 #include <QCoreApplication>
 
 #include <fmt/core.h>
@@ -14,25 +12,7 @@
 #include "pinguim/qol.hpp"
 #include "pinguim/cvt.hpp"
 
-
-static const constexpr char usage[] = R"(pbssl ver 0.0.
-
-    Usage:
-        pbssl [(--team=TEAM | -t=TEAM)] [--in-port=INPORT] [--in-address=INADDR] [--out-port=OUTPORT] [--out-address=OUTADDR] [--ref-address=ADDREF] [--ref-port=REFPORT] [--rep-port=REPPORT]
-
-    Options:
-        -h --help              Show this screen.
-        --version              Show version.
-        --team TEAM, -t TEAM   Set team color [default: blue].
-        --in-port INPORT       Multicast group port    used to listen for fira_sim::sim_to_ref::Environment [default: 10002].
-        --in-address INADDR    Multicast group address used to listen for fira_sim::sim_to_ref::Environment [default: 224.0.0.1].
-        --out-port OUTPORT     Port    used to send fira_sim::sim_to_ref::Packet [default: 20011].
-        --out-address OUTADDR  Address used to send fira_sim::sim_to_ref::Packet [default: 127.0.0.1].
-        --ref-address ADDREF   Address used to communicate with the VSSRef [default: 224.0.0.1].
-        --ref-port REFPORT     Port to receive information from the Referee [default: 10003].
-        --rep-port REPPORT     Port to send replacement information to the Referee [default: 10004].
-)";
-
+#include "pinguim/app/cmdline.hpp"
 
 using pinguim::cvt::to_expected;
 using pinguim::cvt::tou;
@@ -51,68 +31,19 @@ int main(int argc, char *argv[])
         QCoreApplication::exit(0);
     });
 
-    auto args = docopt::docopt(
-        usage,
-        {argv + 1, argv + argc},
-        true,           // show help if requested
-        "pbssl ver 0.0" // version string
-    );
+    auto unsafe_args = pinguim::app::cmdline::parse_argv(argc, const_cast<const char**>(argv) );
 
-    auto maybe_in_port = pinguim::parse::port(args["--in-port"].asString());
-    auto maybe_in_addr = pinguim::parse::ipv4(args["--in-address"].asString());
-    auto maybe_out_port = pinguim::parse::port(args["--out-port"].asString());
-    auto maybe_out_addr = pinguim::parse::ipv4(args["--out-address"].asString());
+    if(!unsafe_args.in_address)       { fmt::print("ARG_ERROR: invalid in_address");      return 1; }
+    if(!unsafe_args.in_port)          { fmt::print("ARG_ERROR: invalid in_port");         return 1; }
+    if(!unsafe_args.out_address)      { fmt::print("ARG_ERROR: invalid out_address");     return 1; }
+    if(!unsafe_args.out_port)         { fmt::print("ARG_ERROR: invalid out_port");        return 1; }
+    if(!unsafe_args.referee_address)  { fmt::print("ARG_ERROR: invalid referee_address"); return 1; }
+    if(!unsafe_args.referee_port)     { fmt::print("ARG_ERROR: invalid referee_port");    return 1; }
+    if(!unsafe_args.rep_port)         { fmt::print("ARG_ERROR: invalid rep_port");        return 1; }
 
-    auto maybe_ref_addr = pinguim::parse::ipv4(args["--ref-address"].asString());
-    auto maybe_ref_port = pinguim::parse::port(args["--ref-port"].asString());
-    auto maybe_rep_port = pinguim::parse::port(args["--rep-port"].asString());
+    const auto args = pinguim::app::cmdline::unwrapped_parsed_args{ unsafe_args };
 
-    if (!maybe_in_port)
-    {
-        fmt::print("PARSE_ERROR: invalid in-port\n");
-        return 1;
-    }
-    if (!maybe_in_addr)
-    {
-        fmt::print("PARSE_ERROR: invalid in-address\n");
-        return 1;
-    }
-    if (!maybe_out_port)
-    {
-        fmt::print("PARSE_ERROR: invalid out-port\n");
-        return 1;
-    }
-    if (!maybe_out_addr)
-    {
-        fmt::print("PARSE_ERROR: invalid out-address\n");
-        return 1;
-    }
-    if (!maybe_ref_addr)
-    {
-        fmt::print("PARSE_ERROR: invalid ref-address\n");
-        return 1;
-    }
-    if (!maybe_ref_port)
-    {
-        fmt::print("PARSE_ERROR: invalid ref-port\n");
-        return 1;
-    }
-    if (!maybe_rep_port)
-    {
-        fmt::print("PARSE_ERROR: invalid rep-port\n");
-        return 1;
-    }
-
-    const auto in_addr = maybe_in_addr.value();
-    const auto in_port = static_cast<std::uint16_t>(maybe_in_port.value());
-    const auto out_addr = maybe_out_addr.value();
-    const auto out_port = static_cast<std::uint16_t>(maybe_out_port.value());
-
-    const auto ref_addr = maybe_ref_addr.value();
-    const auto ref_port = static_cast<std::uint16_t>(maybe_ref_port.value());
-    const auto rep_port = static_cast<std::uint16_t>(maybe_rep_port.value());
-
-    const auto is_yellow = args["--team"].asString() == "yellow";
+    const auto is_yellow = args.team == "yellow";
 
     auto bounds = std::optional<pinguim::vsss::field_geometry>{};
 
@@ -123,8 +54,8 @@ int main(int argc, char *argv[])
     bool game_on = true;
 
     pinguim::vsss::simulator_connection VSSS{
-        {in_addr, in_port},
-        {out_addr, out_port},
+        {args.in_address,  args.in_port},
+        {args.out_address, args.out_port},
         /* on_simulator_receive= */ [&](auto environment) {
             /// TODO: measure timing
 
@@ -239,8 +170,8 @@ int main(int argc, char *argv[])
                 }
             }
         },
-        /* referee_in_params= */ {ref_addr, ref_port},
-        /* replacer_out_params= */ {ref_addr, rep_port},
+        /* referee_in_params= */ {args.referee_address,   args.referee_port},
+        /* replacer_out_params= */ {args.referee_address, args.rep_port},
         /* on_referee_receive= */ [&](auto command) {
             auto [foul, teamcolor, foul_quadrant, timestamp, game_half] = command;
             // foul => {

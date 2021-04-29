@@ -55,8 +55,6 @@ sources = files(
     'src/pinguim/vsss/control.cpp',
     'src/pinguim/vsss/common.cpp',
     'src/pinguim/vsss/utility.cpp',
-
-    'src/pinguim/parse.cpp',
 )
 
 pbssl_exe = executable(
