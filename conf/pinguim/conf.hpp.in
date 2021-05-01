@@ -8,3 +8,14 @@ namespace pinguim::conf
     // Only considered if team_size_fixed = true.
     constexpr long long fixed_team_size = @fixed_team_size@;
 }
+
+#mesondefine PINGUIM_CONF_COMPILER_IS_GCC
+#mesondefine PINGUIM_CONF_COMPILER_IS_CLANG
+#mesondefine PINGUIM_CONF_COMPILER_IS_MSVC
+
+namespace pinguim::conf::compiler
+{
+    constexpr auto id = @cxx_id@;
+    constexpr auto version = @cxx_version@;
+}
+namespace pinguim::conf { namespace cxx = compiler; }

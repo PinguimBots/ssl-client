@@ -15,6 +15,7 @@ project('pbssl', ['cpp', 'c'],
 # add_global_arguments('-DHAVE_LIBC', language: 'c')
 
 os = host_machine.system()
+cxx = meson.get_compiler('cpp')
 
 # include_type: 'system' just means if we include a header from that dependency it will
 # not emit any warnings (which would be a nuisance since we have such a high warning level).

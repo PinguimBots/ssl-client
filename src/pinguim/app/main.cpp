@@ -6,10 +6,10 @@
 #include <csignal>
 
 #include "pinguim/vsss/simulator_connection.hpp"
+#include "pinguim/vsss/tuplified_proto.hpp"
 #include "pinguim/vsss/strategy.hpp"
 #include "pinguim/vsss/control.hpp"
 #include "pinguim/app/cmdline.hpp"
-#include "pinguim/qol.hpp"
 #include "pinguim/cvt.hpp"
 
 using pinguim::cvt::toe;
