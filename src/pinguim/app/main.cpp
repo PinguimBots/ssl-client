@@ -8,13 +8,11 @@
 #include "pinguim/vsss/simulator_connection.hpp"
 #include "pinguim/vsss/strategy.hpp"
 #include "pinguim/vsss/control.hpp"
-#include "pinguim/parse.hpp"
+#include "pinguim/app/cmdline.hpp"
 #include "pinguim/qol.hpp"
 #include "pinguim/cvt.hpp"
 
-#include "pinguim/app/cmdline.hpp"
-
-using pinguim::cvt::to_expected;
+using pinguim::cvt::toe;
 using pinguim::cvt::tou;
 
 int main(int argc, char *argv[])
@@ -129,7 +127,7 @@ int main(int argc, char *argv[])
                     pinguim::vsss::robot pb_robot;
                     pinguim::vsss::ball  pb_ball;
 
-                    pb_robot.id = to_expected << robot.robot_id();
+                    pb_robot.id = toe << robot.robot_id();
                     pb_robot.position = {robot.x(), robot.y()};
                     pb_robot.orientation = robot.orientation();
                     pb_ball.position = pinguim::vsss::point{ball.x(), ball.y()};
@@ -162,7 +160,7 @@ int main(int argc, char *argv[])
                 for (int i = 0; i < 3; ++i)
                 {
                     auto command = packet.mutable_cmd()->add_robot_commands();
-                    command->set_id( to_expected << i );
+                    command->set_id( toe << i );
                     command->set_yellowteam(is_yellow);
                     command->set_wheel_left(0.0);
                     command->set_wheel_right(0.0);
