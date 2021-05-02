@@ -10,7 +10,6 @@
 
 #include "pinguim/conf.hpp"
 
-// Type aliases for integers.
 namespace pinguim::inline integer_aliases
 {
     using u8 = std::uint8_t;
@@ -31,12 +30,27 @@ namespace pinguim::utils
     // e.g:
     //     auto arr = array_of<u8>(1, 2, 3, 4, 5); // arr is of type std::array<u8, 5>.
     template <typename T, typename... U>
-    constexpr auto array_of(U&&... u) {
+    constexpr auto array_of(U&&... u)
+    {
         return std::array<T, sizeof...(U)>{ std::forward<U>(u)... };
     }
+    template <typename... U>
+    constexpr auto array_of(U&&... u)
+    {
+        using arr_type = typename std::decay<
+            typename std::common_type<U...>::type
+        >::type;
+        return array_of<arr_type, U...>( std::forward<U>(u)... );
+    }
     template <typename T, typename... U>
-    constexpr auto arr(U&&... u) {
+    constexpr auto arr(U&&... u)
+    {
         return array_of<T>( std::forward<U>(u)... );
+    }
+    template <typename... U>
+    constexpr auto arr(U&&... u)
+    {
+        return array_of( std::forward<U>(u)... );
     }
 
     // from https://stackoverflow.com/questions/81870/is-it-possible-to-print-a-variables-type-in-standard-c/56766138#56766138
