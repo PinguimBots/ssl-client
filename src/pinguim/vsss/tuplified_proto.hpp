@@ -1,8 +1,8 @@
 // Provides structured binding support for firasim protobuf types.
 #pragma once
 
+#include "pinguim/utils.hpp"
 #include "pinguim/conf.hpp"
-#include "pinguim/qol.hpp"
 #include "pinguim/cvt.hpp"
 
 #include <array>
@@ -20,7 +20,7 @@ namespace fira_message {
         else if constexpr(I == 3) {return f.goal_depth();}
     }
 }
-PINGUIM_QOL_TUPLIFY(fira_message::Field, 4);
+PINGUIM_UTILS_TUPLIFY(fira_message::Field, 4);
 
 namespace fira_message {
     template <std::size_t I>
@@ -34,7 +34,7 @@ namespace fira_message {
         else if constexpr(I == 5) {return b.vz();}
     }
 }
-PINGUIM_QOL_TUPLIFY(fira_message::Ball, 6);
+PINGUIM_UTILS_TUPLIFY(fira_message::Ball, 6);
 
 namespace fira_message {
     template <std::size_t I>
@@ -49,7 +49,7 @@ namespace fira_message {
         else if constexpr(I == 6) {return r.vorientation();}
     }
 }
-PINGUIM_QOL_TUPLIFY(fira_message::Robot, 7);
+PINGUIM_UTILS_TUPLIFY(fira_message::Robot, 7);
 
 namespace fira_message {
     template <std::size_t I>
@@ -89,7 +89,7 @@ namespace fira_message {
         }
     }
 }
-PINGUIM_QOL_TUPLIFY(fira_message::Frame, 3);
+PINGUIM_UTILS_TUPLIFY(fira_message::Frame, 3);
 
 namespace VSSRef::ref_to_team {
     template <std::size_t I>
@@ -101,4 +101,4 @@ namespace VSSRef::ref_to_team {
         else if constexpr(I == 4) {return c.gamehalf();}
     }
 }
-PINGUIM_QOL_TUPLIFY(VSSRef::ref_to_team::VSSRef_Command, 5);
+PINGUIM_UTILS_TUPLIFY(VSSRef::ref_to_team::VSSRef_Command, 5);
