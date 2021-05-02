@@ -66,17 +66,18 @@ namespace pinguim::utils
             if constexpr (std::is_signed_v<T>){return signed_atlas[sizeof(T) - 1];}
             else return unsigned_atlas[sizeof(T) - 1];
         }
-
         std::string_view name, prefix, suffix;
-        #if defined(PINGUIM_IS_CLANG)
+        #if defined(PINGUIM_CONF_COMPILER_IS_CLANG)
             name   = __PRETTY_FUNCTION__;
             prefix = "std::string_view pinguim::utils::type_name() [T = ";
-            suffix = "]";
-        #elif defined(PINGUIM_IS_GCC)
+            if constexpr (EnableShortInts) { suffix = ", EnableShortInts = true]"; }
+            else                           { suffix = ", EnableShortInts = false]"; }
+        #elif defined(PINGUIM_CONF_COMPILER_IS_GCC)
             name   = __PRETTY_FUNCTION__;
             prefix = "constexpr std::string_view pinguim::utils::type_name() [with T = ";
-            suffix = "; std::string_view = std::basic_string_view<char>]";
-        #elif defined(PINGUIM_IS_MSVC)
+            if constexpr (EnableShortInts) { suffix = "; bool EnableShortInts = true; std::string_view = std::basic_string_view<char>]"; }
+            else                           { suffix = "; bool EnableShortInts = false; std::string_view = std::basic_string_view<char>]"; }
+        #elif defined(PINGUIM_CONF_COMPILER_IS_MSVC)
             name   = __FUNCSIG__;
             prefix = "class std::basic_string_view<char,struct "
                     "std::char_traits<char> > __cdecl pinguim::utils::type_name<";
