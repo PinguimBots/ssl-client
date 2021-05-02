@@ -40,9 +40,11 @@ glm_dep =    dependency('glm',    version: '>= 0.9.8', fallback: ['glm', 'glm_de
 openmp_dep = dependency('openmp')
 utils_deps = [qt_dep, fmt_dep, docopt_dep, glm_dep, openmp_dep]
 
+app_inc = include_directories('src')
+
 subdir('proto')
-subdir('tests')
 subdir('conf')
+subdir('tests')
 
 sources = files(
     'src/pinguim/app/main.cpp',
@@ -61,7 +63,7 @@ sources = files(
 pbssl_exe = executable(
     'pbssl',
     sources,
-    include_directories: [include_directories('src'), conf_inc],
+    include_directories: [app_inc, conf_inc],
     dependencies: [opencv_dep, gui_deps, utils_deps, proto_gen_dep],
     cpp_args: cpp_warnings,
     cpp_pch: 'src/pinguim/app/pch.hpp',
