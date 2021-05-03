@@ -2,15 +2,17 @@
 
 #include <docopt.h>
 
+#include <fmt/core.h>
+
 #include <string_view>
 #include <optional>
 #include <charconv>
+#include <cstdlib> // For std::abort;
 #include <regex>
 
 #include "pinguim/cvt.hpp"
 
 /// Summary.
-
 namespace pinguim::app::cmdline
 {
     static const constexpr char default_usage[] = R"(pbssl ver 0.0.
@@ -81,6 +83,14 @@ namespace pinguim::app::cmdline
         const char* usage = default_usage
     ) -> parsed_args;
 
+    // Prints whatever argument has a bad format aswell.
+    inline auto validate_argv_or_abort(
+        int argc,
+        const char* argv[],
+        const char* version_string = "pbssl ver 0.0",
+        const char* usage = default_usage
+    ) -> unwrapped_parsed_args;
+
     namespace parse
     {
         inline auto port(std::string_view input) -> std::optional<unsigned>;
@@ -118,6 +128,29 @@ inline auto pinguim::app::cmdline::parse_argv(
 
         .team = docopt_args["--team"].asString()
     };
+}
+
+inline auto pinguim::app::cmdline::validate_argv_or_abort(
+    int argc,
+    const char* argv[],
+    const char* version_string,
+    const char* usage
+) -> unwrapped_parsed_args
+{
+    const auto unsafe_args = parse_argv(argc, argv, version_string, usage);
+
+    auto any_arg_bad = false;
+    if(!unsafe_args.in_address)       { fmt::print("ARG_ERROR: invalid in_address\n");      any_arg_bad = true; }
+    if(!unsafe_args.in_port)          { fmt::print("ARG_ERROR: invalid in_port\n");         any_arg_bad = true; }
+    if(!unsafe_args.out_address)      { fmt::print("ARG_ERROR: invalid out_address\n");     any_arg_bad = true; }
+    if(!unsafe_args.out_port)         { fmt::print("ARG_ERROR: invalid out_port\n");        any_arg_bad = true; }
+    if(!unsafe_args.referee_address)  { fmt::print("ARG_ERROR: invalid referee_address\n"); any_arg_bad = true; }
+    if(!unsafe_args.referee_port)     { fmt::print("ARG_ERROR: invalid referee_port\n");    any_arg_bad = true; }
+    if(!unsafe_args.rep_port)         { fmt::print("ARG_ERROR: invalid rep_port\n");        any_arg_bad = true; }
+
+    if (any_arg_bad == true) { std::abort(); }
+
+    return pinguim::app::cmdline::unwrapped_parsed_args{ unsafe_args };
 }
 
 inline auto pinguim::app::cmdline::parse::port(std::string_view input) -> std::optional<unsigned>

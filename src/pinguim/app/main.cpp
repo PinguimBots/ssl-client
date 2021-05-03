@@ -4,6 +4,7 @@
 
 #include <complex>
 #include <csignal>
+#include <cstdlib> // For std::exit;
 
 #include "pinguim/vsss/simulator_connection.hpp"
 #include "pinguim/vsss/tuplified_proto.hpp"
@@ -25,21 +26,19 @@ int main(int argc, char *argv[])
     auto fake_arg_count = 1;
     auto app = QCoreApplication{fake_arg_count, argv};
     std::signal(SIGINT, []([[maybe_unused]] int signal) {
-        fmt::print("SIGINT Received, calling QCoreApplication::exit()\n");
+        fmt::print("SIGINT Received, Closing\n");
         QCoreApplication::exit(0);
     });
+    std::signal(SIGABRT, []([[maybe_unused]] int signal) {
+        fmt::print("SIGABRT Received. Something went bad!\n");
+        QCoreApplication::exit(1);
+        std::exit(1);
+    });
 
-    auto unsafe_args = pinguim::app::cmdline::parse_argv(argc, const_cast<const char**>(argv) );
-
-    if(!unsafe_args.in_address)       { fmt::print("ARG_ERROR: invalid in_address");      return 1; }
-    if(!unsafe_args.in_port)          { fmt::print("ARG_ERROR: invalid in_port");         return 1; }
-    if(!unsafe_args.out_address)      { fmt::print("ARG_ERROR: invalid out_address");     return 1; }
-    if(!unsafe_args.out_port)         { fmt::print("ARG_ERROR: invalid out_port");        return 1; }
-    if(!unsafe_args.referee_address)  { fmt::print("ARG_ERROR: invalid referee_address"); return 1; }
-    if(!unsafe_args.referee_port)     { fmt::print("ARG_ERROR: invalid referee_port");    return 1; }
-    if(!unsafe_args.rep_port)         { fmt::print("ARG_ERROR: invalid rep_port");        return 1; }
-
-    const auto args = pinguim::app::cmdline::unwrapped_parsed_args{ unsafe_args };
+    auto args = pinguim::app::cmdline::validate_argv_or_abort(
+        argc,
+        const_cast<const char**>(argv)
+    );
 
     const auto is_yellow = args.team == "yellow";
 
