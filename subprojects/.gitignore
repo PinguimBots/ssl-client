@@ -1,13 +1,13 @@
-packagecache
+/*
 
-/docopt*
+!packagefiles
 !docopt.wrap
-
-/fmt*
 !fmt.wrap
-
-/protobuf*
-!protobuf.wrap
-
-/glm*
+!glew.wrap
 !glm.wrap
+!imgui.wrap
+!protobuf.wrap
+!sdl2.wrap
+!xext.wrap
+!xfixes.wrap
+!xi.wrap

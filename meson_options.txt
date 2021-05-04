@@ -1,3 +1,10 @@
 option('fixed-team-size-of', type: 'integer', min: 0, value: 3,
-        description: 'When fixed-team-size-of > 0 destructuring of fira_message::Frame will return the' +
-                     'robots as an array of size fixed-team-size-of else will return using a vector')
+    description:
+        'When fixed-team-size-of > 0, destructuring of fira_message::Frame will return the ' +
+        'robots as an array of size fixed-team-size-of else will return using a vector')
+
+option('force-opencv-without-opengl', type: 'boolean', value: false,
+    description:
+        'When true, will force pinguim::imgui::opencv::img to use ' +
+        'opengl, when false pinguim::imgui::opencv::img will use ' +
+        'either cv::ogl::Texture2D or opengl, with preference for opencv')

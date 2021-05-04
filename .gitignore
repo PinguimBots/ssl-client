@@ -5,9 +5,6 @@
 *.autosave*
 *~
 
-build*
-bin
-
 .vscode
 
 matlab

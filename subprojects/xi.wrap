@@ -1,0 +1,7 @@
+[wrap-git]
+directory = xi
+
+url = https://gitlab.freedesktop.org/xorg/lib/libxi.git
+revision = libXi-1.7.10
+
+patch_directory = xi
