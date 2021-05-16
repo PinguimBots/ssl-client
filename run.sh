@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-if [ ! -d "/builddir" ]
+if [ ! -d "builddir" ]
 then
     ./configure.sh
 fi
