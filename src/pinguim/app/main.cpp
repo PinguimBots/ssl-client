@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
         std::exit(1);
     });
 
-    auto args = pinguim::app::cmdline::validate_argv_or_abort(
+    auto args = pinguim::app::cmdline::parse_argv_or_abort(
         argc,
         const_cast<const char**>(argv)
     );

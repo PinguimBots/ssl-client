@@ -24,7 +24,7 @@ namespace pinguim::app::cmdline
         -h --help              Show this screen.
         --version              Show version.
         --team TEAM, -t TEAM   Set team color [default: blue].
-        --in-port INPORT       Multicast group port    used to listen for fira_sim::sim_to_ref::Environment [default: 10002].
+        --in-port INPORT       Multicast group port    used to listen for fira_sim::sim_to_ref::Environment [default: 10020].
         --in-address INADDR    Multicast group address used to listen for fira_sim::sim_to_ref::Environment [default: 224.0.0.1].
         --out-port OUTPORT     Port    used to send fira_sim::sim_to_ref::Packet [default: 20011].
         --out-address OUTADDR  Address used to send fira_sim::sim_to_ref::Packet [default: 127.0.0.1].
@@ -33,7 +33,7 @@ namespace pinguim::app::cmdline
         --rep-port REPPORT     Port to send replacement information to the Referee [default: 10004].
 )";
 
-    struct parsed_args
+    struct program_args
     {
         std::optional<std::string_view> in_address;
         std::optional<unsigned> in_port;
@@ -49,7 +49,7 @@ namespace pinguim::app::cmdline
         std::string_view team;
     };
 
-    struct unwrapped_parsed_args
+    struct parsed_args
     {
         std::string in_address;
         std::uint16_t in_port;
@@ -64,7 +64,7 @@ namespace pinguim::app::cmdline
 
         std::string team;
 
-        inline unwrapped_parsed_args(const parsed_args& args)
+        inline parsed_args(const program_args& args)
             : in_address{ args.in_address.value() }
             , in_port{ cvt::toe << args.in_port.value() }
             , out_address{ args.out_address.value() }
@@ -76,20 +76,20 @@ namespace pinguim::app::cmdline
         {}
     };
 
-    inline auto parse_argv(
+    inline auto read_argv(
+        int argc,
+        const char* argv[],
+        const char* version_string = "pbssl ver 0.0",
+        const char* usage = default_usage
+    ) -> program_args;
+
+    // Prints whatever argument has a bad format aswell.
+    inline auto parse_argv_or_abort(
         int argc,
         const char* argv[],
         const char* version_string = "pbssl ver 0.0",
         const char* usage = default_usage
     ) -> parsed_args;
-
-    // Prints whatever argument has a bad format aswell.
-    inline auto validate_argv_or_abort(
-        int argc,
-        const char* argv[],
-        const char* version_string = "pbssl ver 0.0",
-        const char* usage = default_usage
-    ) -> unwrapped_parsed_args;
 
     namespace parse
     {
@@ -99,12 +99,12 @@ namespace pinguim::app::cmdline
 }
 
 /// Implementations.
-inline auto pinguim::app::cmdline::parse_argv(
+inline auto pinguim::app::cmdline::read_argv(
     int argc,
     const char* argv[],
     const char* version_string,
     const char* usage
-) -> parsed_args
+) -> program_args
 {
     auto docopt_args = docopt::docopt(
         usage,
@@ -130,14 +130,14 @@ inline auto pinguim::app::cmdline::parse_argv(
     };
 }
 
-inline auto pinguim::app::cmdline::validate_argv_or_abort(
+inline auto pinguim::app::cmdline::parse_argv_or_abort(
     int argc,
     const char* argv[],
     const char* version_string,
     const char* usage
-) -> unwrapped_parsed_args
+) -> parsed_args
 {
-    const auto unsafe_args = parse_argv(argc, argv, version_string, usage);
+    const auto unsafe_args = read_argv(argc, argv, version_string, usage);
 
     auto any_arg_bad = false;
     if(!unsafe_args.in_address)       { fmt::print("ARG_ERROR: invalid in_address\n");      any_arg_bad = true; }
@@ -150,7 +150,7 @@ inline auto pinguim::app::cmdline::validate_argv_or_abort(
 
     if (any_arg_bad == true) { std::abort(); }
 
-    return pinguim::app::cmdline::unwrapped_parsed_args{ unsafe_args };
+    return pinguim::app::cmdline::parsed_args{ unsafe_args };
 }
 
 inline auto pinguim::app::cmdline::parse::port(std::string_view input) -> std::optional<unsigned>
