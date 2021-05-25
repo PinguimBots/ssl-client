@@ -7,4 +7,4 @@ revision = libXi-1.7.10
 patch_directory = xi
 
 [provide]
-xi=xi_dep
+xi = xi_dep

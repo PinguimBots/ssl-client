@@ -35,6 +35,8 @@ namespace pinguim::imgui
 
         struct {float x, y, z, w;} clear_color = {0.45f, 0.55f, 0.60f, 1.00f};
 
+        // Returns true if you need to quit (close button pressed)
+        auto handle_event()                     -> bool;
         auto handle_event(event_handler&)       -> void;
         auto handle_event(event_handler&&)      -> void;
         auto handle_event(const event_handler&) -> void;
@@ -43,5 +45,5 @@ namespace pinguim::imgui
         auto draw_frame() -> void;
     };
 
-    auto make_plumber() -> std::optional<plumber>;
+    auto make_plumber(const char* windowname = "pinguimbots") -> std::optional<plumber>;
 }

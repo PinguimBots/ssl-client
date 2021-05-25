@@ -18,8 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Taken from wrapdb, `c_args =` on line 83 was modified to `c_args +=`,
-# was breaking builds on some systems before. Also comented lines 70-73
+# Taken from wrapdb, made some changes to fix some broken builds.
 
 project(
   'glew',
@@ -32,9 +31,10 @@ project(
 cc = meson.get_compiler('c')
 host_system = host_machine.system()
 
-c_args = [
+interface_c_args = [
   '-DGLEW_NO_GLU',
 ]
+private_c_args = []
 ld_args = []
 glew_sources = [
   'include/GL/wglew.h',
@@ -44,9 +44,9 @@ glew_sources = [
 ]
 
 if get_option('default_library') == 'shared'
-  c_args += '-DGLEW_BUILD'
+  interface_c_args += '-DGLEW_BUILD'
 else
-  c_args += '-DGLEW_STATIC'
+  interface_c_args += '-DGLEW_STATIC'
 endif
 
 if host_system == 'windows'
@@ -62,7 +62,7 @@ if host_system == 'windows'
   name = 'glew32'
 
   if cc.get_id() == 'msvc'
-    c_args += [
+    private_c_args += [
       '-DVC_EXTRALEAN',
       '-GS-',
     ]
@@ -72,7 +72,7 @@ if host_system == 'windows'
       #'-noentry',
     ]
   else
-    c_args += [
+    private_c_args += [
       '-fno-builtin',
       '-fno-stack-protector',
     ]
@@ -80,12 +80,12 @@ if host_system == 'windows'
   endif
 else
   name = 'GLEW'
-  c_args += cc.get_supported_arguments(['-ansi', '-W', '-Wcast-qual', '-fno-stack-protector'])
+  private_c_args += cc.get_supported_arguments(['-ansi', '-W', '-Wcast-qual', '-fno-stack-protector'])
 endif
 
 if get_option('egl')
   dep_egl = dependency('egl')
-  c_args += '-DGLEW_EGL'
+  interface_c_args += '-DGLEW_EGL'
 else
   dep_egl = []
 endif
@@ -96,7 +96,7 @@ glew_include = include_directories('include')
 libglew = library(
   name,
   glew_sources,
-  c_args : c_args,
+  c_args : private_c_args + interface_c_args,
   link_args : ld_args,
   include_directories : glew_include,
   dependencies : [dep_gl, dep_egl],
@@ -113,5 +113,5 @@ install_headers(
 glew_dep = declare_dependency(
   link_with : libglew,
   include_directories : glew_include,
-  link_args: c_args,
+  compile_args: interface_c_args,
 )

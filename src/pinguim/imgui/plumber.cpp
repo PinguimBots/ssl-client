@@ -9,7 +9,7 @@
 #include <imgui_impl_opengl3.h>
 
 // TODO: return info about what errored out (nonstd::expected<plumber, error_type>)
-auto pinguim::imgui::make_plumber() -> std::optional<plumber>
+auto pinguim::imgui::make_plumber(const char* windowname) -> std::optional<plumber>
 {
     static bool is_initialized = false;
 
@@ -29,7 +29,7 @@ auto pinguim::imgui::make_plumber() -> std::optional<plumber>
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     auto window = SDL_CreateWindow(
-        "pssim",
+        windowname,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720,
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     if(window == nullptr) {return std::nullopt;}
@@ -62,6 +62,23 @@ auto pinguim::imgui::make_plumber() -> std::optional<plumber>
 
     is_initialized = true;
     return mario;
+}
+
+auto pinguim::imgui::plumber::handle_event() -> bool
+{
+    auto quit = false;
+    const auto quit_handler = [&](auto event){
+        if (event.type == SDL_QUIT) {quit = true;}
+        if (event.type == SDL_WINDOWEVENT &&
+            event.window.event == SDL_WINDOWEVENT_CLOSE &&
+            event.window.windowID == SDL_GetWindowID(sdl_window.get()))
+        {
+            quit = true;
+        }
+    };
+    handle_event(quit_handler);
+
+    return quit;
 }
 
 auto pinguim::imgui::plumber::handle_event(event_handler& handler) -> void

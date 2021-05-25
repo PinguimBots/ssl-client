@@ -7,8 +7,8 @@
 
 #include <array>
 
-#include "proto/common.pb.h"
-#include "proto/vssref_command.pb.h"
+#include "simproto/common.pb.h"
+#include "simproto/vssref_command.pb.h"
 
 namespace fira_message {
     template <std::size_t I>

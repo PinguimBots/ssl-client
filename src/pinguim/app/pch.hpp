@@ -2,6 +2,8 @@
 #define HAVE_STRUCT_TIMESPEC
 #include <fmt/core.h>
 
+#include <asio.hpp>
+
 #include <functional>
 #include <algorithm>
 #include <iostream>
@@ -14,4 +16,4 @@
 #include <array>
 #include <map>
 
-#include <QObject>
+#include <simproto.hpp>

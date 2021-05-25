@@ -1,37 +1,43 @@
-#include <QCoreApplication>
-
 #include <fmt/core.h>
 
 #include <complex>
 #include <csignal>
 #include <cstdlib> // For std::exit;
 
-#include "pinguim/vsss/simulator_connection.hpp"
-#include "pinguim/vsss/tuplified_proto.hpp"
+// Networking stuff.
+#include <simproto.hpp>
+
+#include "pinguim/vsss/net/decoders/sim.hpp"
+#include "pinguim/vsss/net/multicast_udp_receiver.hpp"
+
+// Gui stuff.
+#include "pinguim/imgui/plumber.hpp"
+
+#include <imgui.h>
+
+// Strategy stuff.
 #include "pinguim/vsss/strategy.hpp"
 #include "pinguim/vsss/control.hpp"
+
+// Misc.
 #include "pinguim/app/cmdline.hpp"
 #include "pinguim/cvt.hpp"
 
 using pinguim::cvt::toe;
 using pinguim::cvt::tou;
 
+auto quit = false;
+
 int main(int argc, char *argv[])
 {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-    // We dont want Qt to hijack the command line arguments
-    // so we'll just lie saying that there were none.
-    // Also, why doesn't it take an int but an int&, nonsense.
-    auto fake_arg_count = 1;
-    auto app = QCoreApplication{fake_arg_count, argv};
     std::signal(SIGINT, []([[maybe_unused]] int signal) {
         fmt::print("SIGINT Received, Closing\n");
-        QCoreApplication::exit(0);
+        quit = true;
     });
     std::signal(SIGABRT, []([[maybe_unused]] int signal) {
         fmt::print("SIGABRT Received. Something went bad!\n");
-        QCoreApplication::exit(1);
         std::exit(1);
     });
 
@@ -40,6 +46,37 @@ int main(int argc, char *argv[])
         const_cast<const char**>(argv)
     );
 
+    auto env_receiver     = pinguim::vsss::net::multicast_udp_receiver<512>{args.in_address,      args.in_port};
+    auto referee_receiver = pinguim::vsss::net::multicast_udp_receiver<512>{args.referee_address, args.referee_port};
+
+    using env_t     = fira_message::sim_to_ref::Environment;
+    using command_t = VSSRef::ref_to_team::VSSRef_Command;
+
+    auto env_packet     = env_t{};
+    auto referee_packet = command_t{};
+
+    auto mario = pinguim::imgui::make_plumber().value();
+
+    while(!quit){
+        quit = mario.handle_event();
+        mario.begin_frame();
+
+        auto new_data_received = false;
+        new_data_received = env_receiver.sync< env_t >( [](auto){}, env_packet )             || new_data_received;
+        new_data_received = referee_receiver.sync< command_t >( [](auto){}, referee_packet ) || new_data_received;
+        if(new_data_received) {
+            ImGui::Text("NEW DATA");
+        }
+
+        mario.draw_frame();
+    }
+
+    google::protobuf::ShutdownProtobufLibrary();
+    return 0;
+
+// Commented out for now.
+// Working on converting to asio.
+#if 0
     const auto is_yellow = args.team == "yellow";
 
     auto bounds = std::optional<pinguim::vsss::field_geometry>{};
@@ -241,10 +278,8 @@ int main(int argc, char *argv[])
             //VSSS.replacer_send(placement)
         }};
 
-    // Start the event loop (needed to be able to send and receive messages).
-    app.exec();
-
     google::protobuf::ShutdownProtobufLibrary();
 
     return 0;
+#endif
 }
