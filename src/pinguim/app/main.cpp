@@ -9,6 +9,8 @@
 
 #include "pinguim/vsss/net/decoders/sim.hpp"
 #include "pinguim/vsss/net/multicast_udp_receiver.hpp"
+#include "pinguim/vsss/net/udp_sender.hpp"
+#include "pinguim/vsss/net/encoders/sim.hpp"
 
 // Gui stuff.
 #include "pinguim/imgui/plumber.hpp"
@@ -46,8 +48,9 @@ int main(int argc, char *argv[])
         const_cast<const char**>(argv)
     );
 
-    auto env_receiver     = pinguim::vsss::net::multicast_udp_receiver<512>{args.in_address,      args.in_port};
-    auto referee_receiver = pinguim::vsss::net::multicast_udp_receiver<512>{args.referee_address, args.referee_port};
+    auto env_receiver     = pinguim::vsss::net::multicast_udp_receiver{args.in_address,      args.in_port};
+    auto referee_receiver = pinguim::vsss::net::multicast_udp_receiver{args.referee_address, args.referee_port};
+    auto sim_sender       = pinguim::vsss::net::udp_sender{args.out_address, args.out_port};
 
     using env_t     = fira_message::sim_to_ref::Environment;
     using command_t = VSSRef::ref_to_team::VSSRef_Command;
@@ -67,6 +70,14 @@ int main(int argc, char *argv[])
         if(new_data_received) {
             ImGui::Text("NEW DATA");
         }
+
+        auto data_out = fira_message::sim_to_ref::Packet{};
+        auto command = data_out.mutable_cmd()->add_robot_commands();
+        command->set_id( 1 );
+        command->set_yellowteam(true);
+        command->set_wheel_left(20.0);
+        command->set_wheel_right(20.0);
+        sim_sender.send(data_out);
 
         mario.draw_frame();
     }

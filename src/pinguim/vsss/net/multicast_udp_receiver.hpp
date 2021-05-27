@@ -24,7 +24,9 @@ namespace pinguim::vsss::net
         constexpr auto decode(decoded_t& buf) -> decoded_t& { return buf; }
     };
 
-    template<std::size_t BufferSize>
+    constexpr auto default_receiver_buffer_size = 512;
+
+    template<std::size_t BufferSize = default_receiver_buffer_size>
     class multicast_udp_receiver
     {
     public:

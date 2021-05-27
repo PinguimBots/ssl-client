@@ -21,7 +21,7 @@ struct pinguim::vsss::net::decoder<
     }
 
     template<std::size_t BufferSize>
-    constexpr auto decode(std::array<std::byte, BufferSize>& buf) -> decoded_t
+    inline auto decode(std::array<std::byte, BufferSize>& buf) -> decoded_t
     {
         auto d = decoded_t{};
         return decode(buf, d);
@@ -43,7 +43,7 @@ struct pinguim::vsss::net::decoder<
     }
 
     template<std::size_t BufferSize>
-    constexpr auto decode(std::array<std::byte, BufferSize>& buf) -> decoded_t
+    inline auto decode(std::array<std::byte, BufferSize>& buf) -> decoded_t
     {
         auto d = decoded_t{};
         return decode(buf, d);
