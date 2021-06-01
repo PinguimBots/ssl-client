@@ -9,13 +9,18 @@ project('pbssl', ['cpp', 'c'],
     #license: ['???'],
 )
 
-# # MSVC not supported yet.
-# # Needed by SDL2 in msvc, since i don't want to rewrite
-# # the wrapfile i'll just add it here instead.
-# add_global_arguments('-DHAVE_LIBC', language: 'c')
-
 os = host_machine.system()
 cxx = meson.get_compiler('cpp')
+
+## Needed by SDL2 in msvc, since i don't want to rewrite
+## the wrapfile i'll just add it here instead.
+if os == 'windows'
+    #add_global_arguments('-DHAVE_LIBC', language: 'c')
+    add_global_arguments('-DSDL_VIDEO_RENDER_OGL_ES2=0', language: 'c')
+    add_global_arguments('-DSDL_VIDEO_RENDER_D3D=0', language: 'c')
+    add_global_arguments('-DSDL_VIDEO_RENDER_OGL_ES=0', language: 'c')
+    add_global_arguments('-DSDL_VIDEO_OPENGL_EGL=0', language: 'c')
+endif
 
 # Depenency KWargs.
 # include_type: 'system' just means if we include a header from that dependency it will
