@@ -3,7 +3,6 @@
 #include <string_view>
 #include <type_traits> // For std::remove_cvref_t.
 #include <cstddef> // For std::byte.
-#include <span>
 
 #include <asio.hpp>
 

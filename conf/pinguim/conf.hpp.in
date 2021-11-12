@@ -5,6 +5,8 @@ namespace pinguim::conf
     constexpr bool team_size_fixed = @team_size_fixed@;
     // Only considered if team_size_fixed = true.
     constexpr long long fixed_team_size = @fixed_team_size@;
+
+    constexpr bool opencv_with_opengl = @opencv_with_opengl@;
 }
 
 #mesondefine PINGUIM_CONF_COMPILER_IS_GCC

@@ -414,7 +414,7 @@ auto pinguim::vsss::Strategy::add_border_field_obstacle() -> void
     auto [f_2_i, f_2_j] = pinguim::vsss::to_pair(real_to_discreet(field_bounds.field_bounds[2]));
     auto [f_3_i, f_3_j] = pinguim::vsss::to_pair(real_to_discreet(field_bounds.field_bounds[3]));
 
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (int i = 0; i < imax; i++)
     {
         for (int j = 0; j < jmax; j++)

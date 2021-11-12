@@ -3,6 +3,7 @@
 #include <condition_variable>
 #include <string_view>
 #include <type_traits> // For std::remove_cvref_t.
+#include <thread>
 #include <atomic>
 #include <array>
 
@@ -56,6 +57,11 @@ namespace pinguim::vsss::net
             worker_thread = std::jthread{ [&]{ io.run(); }};
         }
 
+        template<typename ExpectedType>
+        auto sync(ExpectedType&& v) {
+            return syncf<ExpectedType>([](auto){}, std::forward<ExpectedType>(v));
+        }
+
         // Read into the last received data.
         // Returns whether or not there was new data since last sync.
         // Accessing the buffer is only safe inside Functor, otherwise
@@ -65,7 +71,7 @@ namespace pinguim::vsss::net
             typename Functor,
             typename... DecoderForwardedArgs
         >
-        auto sync(Functor&& f, DecoderForwardedArgs&&... fargs) -> bool
+        auto syncf(Functor&& f, DecoderForwardedArgs&&... fargs) -> bool
         {
             using decoded_t = std::remove_cvref_t< ExpectedType >;
 

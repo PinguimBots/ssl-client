@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "pinguim/vsss/common.hpp"
+#include "pinguim/cvt.hpp"
 
 #define GOALKEEPER_std_Y 0
 #define GOALKEEPER_std_X -0.682
@@ -50,8 +51,8 @@ namespace pinguim::vsss
         static const constexpr auto imin = 0;
         static const constexpr auto jmin = 0;
 
-        static const constexpr int imax = std::round(xT / dx) + imin;
-        static const constexpr int jmax = std::round(yT / dy) + jmin;
+        static const int imax = 50;// Hardcoded for now. old => cvt::to<int> << std::round(xT / dx) + imin;
+        static const int jmax = 38;// Hardcoded for now. old => cvt::to<int> << std::round(yT / dy) + jmin;
 
         int border_obstacle[imax][jmax];
 

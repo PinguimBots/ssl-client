@@ -2,96 +2,83 @@
 
 #include <type_traits>
 #include <string_view>
+#include <concepts>
 #include <utility> // For std::forward.
 #include <array>
 
-#include <cstddef> // For std::size_t.
-#include <cstdint> // For std::*int*_t.
-
 #include "pinguim/conf.hpp"
+#include "pinguim/aliases.hpp"
 
-namespace pinguim::inline integer_aliases
+namespace pinguim::inline utils
 {
-    using u8 = std::uint8_t;
-    using u16 = std::uint16_t;
-    using u32 = std::uint32_t;
-    using u64 = std::uint64_t;
+    // Useful for templated static_asserts.
+    template<typename...Ts>
+    struct always_false : std::false_type {};
 
-    using i8 = std::int8_t;
-    using i16 = std::int16_t;
-    using i32 = std::int32_t;
-    using i64 = std::int64_t;
-}
-
-namespace pinguim::utils
-{
     // When you need to make a std::array of some type but want to
     // decide the size by the amount of arguments.
     // e.g:
     //     auto arr = array_of<u8>(1, 2, 3, 4, 5); // arr is of type std::array<u8, 5>.
     template <typename T, typename... U>
+    requires (std::convertible_to<T, U> && ...)
     constexpr auto array_of(U&&... u)
-    {
-        return std::array<T, sizeof...(U)>{ std::forward<U>(u)... };
-    }
+    { return std::array<T, sizeof...(U)>{ static_cast<T>(std::forward<U>(u))... }; }
     template <typename... U>
     constexpr auto array_of(U&&... u)
-    {
-        using arr_type = typename std::decay<
-            typename std::common_type<U...>::type
-        >::type;
-        return array_of<arr_type, U...>( std::forward<U>(u)... );
-    }
+    { return array_of< std::decay_t<std::common_type_t<U...>>, U... >( std::forward<U>(u)... ); }
     template <typename T, typename... U>
+    requires (std::convertible_to<T, U> && ...)
     constexpr auto arr(U&&... u)
-    {
-        return array_of<T>( std::forward<U>(u)... );
-    }
+    { return array_of<T>( std::forward<U>(u)... ); }
     template <typename... U>
     constexpr auto arr(U&&... u)
-    {
-        return array_of( std::forward<U>(u)... );
-    }
+    { return array_of( std::forward<U>(u)... ); }
 
     // from https://stackoverflow.com/questions/81870/is-it-possible-to-print-a-variables-type-in-standard-c/56766138#56766138
     // Thanks!
-    template<typename T, bool EnableShortInts = true>
+    template<typename T, bool EnableShortInts = true, bool EnableShortFloats = true>
     constexpr auto type_name() -> std::string_view
     {
         if constexpr (EnableShortInts && std::is_integral_v<T> && sizeof(T) <= sizeof(u64))
         {
-            constexpr const char* unsigned_atlas[] = {"u8", "u16", "u32", "u64"};
-            constexpr const char* signed_atlas[] = {"i8", "i16", "i32", "i64"};
+            constexpr const char* unsigned_atlas[] = {"u8", "u16", "dummy", "u32", "dummy", "dummy", "dummy", "u64"};
+            constexpr const char* signed_atlas[]   = {"i8", "i16", "dummy", "i32", "dummy", "dummy", "dummy", "i64"};
 
             if constexpr (std::is_signed_v<T>){return signed_atlas[sizeof(T) - 1];}
             else return unsigned_atlas[sizeof(T) - 1];
         }
-        std::string_view name, prefix, suffix;
+        if constexpr (EnableShortFloats && std::is_floating_point_v<T> && sizeof(T) <= sizeof(f64))
+        {
+            constexpr const char* float_atlas[] = {"dummy", "dummy", "dummy", "f32", "dummy", "dummy", "dummy", "f64"};
+            return float_atlas[sizeof(T) - 1];
+        }
+        std::string_view name, prefix, suffix, suffix2;
         #if defined(PINGUIM_CONF_COMPILER_IS_CLANG)
             name   = __PRETTY_FUNCTION__;
-            prefix = "std::string_view pinguim::utils::type_name() [T = ";
-            if constexpr (EnableShortInts) { suffix = ", EnableShortInts = true]"; }
-            else                           { suffix = ", EnableShortInts = false]"; }
+            prefix = "std::string_view pinguim::type_name() [T = ";
+            if constexpr (EnableShortInts) { suffix = ", EnableShortInts = true"; }
+            else                           { suffix = ", EnableShortInts = false"; }
+            if constexpr (EnableShortFloats) { suffix2 = ", EnableShortFloats = true]"; }
+            else                             { suffix2 = ", EnableShortFloats = false]"; }
         #elif defined(PINGUIM_CONF_COMPILER_IS_GCC)
             name   = __PRETTY_FUNCTION__;
-            prefix = "constexpr std::string_view pinguim::utils::type_name() [with T = ";
-            if constexpr (EnableShortInts) { suffix = "; bool EnableShortInts = true; std::string_view = std::basic_string_view<char>]"; }
-            else                           { suffix = "; bool EnableShortInts = false; std::string_view = std::basic_string_view<char>]"; }
-        #elif defined(PINGUIM_CONF_COMPILER_IS_MSVC)
-            name   = __FUNCSIG__;
-            prefix = "class std::basic_string_view<char,struct "
-                    "std::char_traits<char> > __cdecl pinguim::utils::type_name<";
-            suffix = ">(void)";
+            prefix = "constexpr std::string_view pinguim::type_name() [with T = ";
+            if constexpr (EnableShortInts) { suffix = "; bool EnableShortInts = true"; }
+            else                           { suffix = "; bool EnableShortInts = false"; }
+            if constexpr (EnableShortFloats) { suffix2 = "; bool EnableShortFloats = true; std::string_view = std::basic_string_view<char>]"; }
+            else                             { suffix2 = "; bool EnableShortFloats = false; std::string_view = std::basic_string_view<char>]"; }
+        #else
+            static_assert(std::always_false<T>, "Please implement type_name() for this compiler");
         #endif
         name.remove_prefix(prefix.size());
         name.remove_suffix(suffix.size());
+        name.remove_suffix(suffix2.size());
         return name;
     }
-    template <typename T>
+
+    template <typename T, bool EnableShortInts = true, bool EnableShortFloats = true>
     constexpr auto type_name(T&&) -> std::string_view
-    {
-        return type_name< T >();
-    }
+    { return type_name< T, EnableShortInts, EnableShortFloats >(); }
 }
 
 // Macro for automating structured binding boilerplate.
@@ -111,15 +98,10 @@ namespace pinguim::utils
 //     PINGUIM_UTILS_TUPLIFY(fira_message::Field, 4);
 // And now you can do:
 //     auto [len, width, gwidth, gdepth] = fira_message::field();
-
-#define PINGUIM_UTILS_TUPLIFY(classname, tuplesize)                   \
+#define PINGUIM_UTILS_TUPLIFY(classname, tuplesize)                 \
     template <>                                                     \
     struct std::tuple_size< classname >                             \
-    {                                                               \
-        static const std::size_t value = tuplesize;                 \
-    };                                                              \
+    { static const std::size_t value = tuplesize; };                \
     template <std::size_t I>                                        \
     struct std::tuple_element< I, classname >                       \
-    {                                                               \
-        using type = decltype(get<I>(std::declval< classname >())); \
-    }
+    { using type = decltype(get<I>(std::declval< classname >())); }

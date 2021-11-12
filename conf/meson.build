@@ -1,7 +1,7 @@
 conf_data = configuration_data()
 
 # Keep in mind that the folder structure is replicated, thats why
-# conf.h.in must be in that separate folder.
+# conf.hpp.in must be in that separate folder.
 
 ## Compiler stuff.
 cxxid = cxx.get_id()
@@ -18,6 +18,13 @@ else
     conf_data.set10('team_size_fixed', false)
     conf_data.set('fixed_team_size', 0)
 endif
+
+has_opencv_with_opengl = meson.get_compiler('cpp').run(
+    files('detect_opencv_with_opengl.cpp'),
+    name: 'has_opencv_with_opengl',
+    dependencies: [opencv_dep],
+).returncode() == 0
+conf_data.set10('opencv_with_opengl', has_opencv_with_opengl)
 
 # For now, meson doesn't allow path separators in configure_file(output: 'file_here'),
 # which is why we need this wonky folder structure.

@@ -27,6 +27,7 @@ endif
 # not emit any warnings (which would be a nuisance since we have such a high warning level).
 dkw = {'include_type': 'system', 'default_options': 'warning_level=0'}
 
+opencv_dep = dependency('opencv4', version: '>= 4.0.0', include_type: 'system')
 # Gui stuff
 opengl_dep = os == 'windows' ? meson.get_compiler('c').find_library('opengl32') : dependency('gl', include_type: 'system')
 sdl2_intrinsic_deps = os in ['windows', 'darwin'] ? [] : [
@@ -57,6 +58,7 @@ sources = files(
 
     'src/pinguim/imgui/plumber.cpp',
     'src/pinguim/imgui/img.cpp',
+    'src/pinguim/imgui/widgets/group_panel.cpp',
 
     'src/pinguim/vsss/strategy_d.cpp',
     'src/pinguim/vsss/strategy_r.cpp',
@@ -69,7 +71,7 @@ pbssl_exe = executable(
     'pbssl',
     sources,
     include_directories: [app_inc, conf_inc],
-    dependencies: [gui_deps, utils_deps],
+    dependencies: [opencv_dep, gui_deps, utils_deps],
     cpp_args: cpp_warnings,
     cpp_pch: 'src/pinguim/app/pch.hpp',
 )

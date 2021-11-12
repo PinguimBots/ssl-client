@@ -2,101 +2,74 @@
 #pragma once
 
 #include <type_traits>
-#include <cstring> // For std::memcpy.
+#include <concepts>
 
 /// TODO: summarize.
 
-namespace pinguim::cvt
+namespace pinguim::cvt::converters
 {
-    template <typename Integer>
-    inline auto pun_signedness(Integer t) {
-        static_assert(std::is_integral_v<Integer>);
-
-        using punned = std::conditional_t<
-            std::is_signed_v<Integer>,
-            std::make_unsigned_t<Integer>,
-            std::make_signed_t<Integer>
-        >;
-
-        punned u;
-        std::memcpy(reinterpret_cast<void*>(&u), &t, sizeof(Integer));
-        return u;
-    }
-
-    // Curried static_cast.
     template <typename To>
     struct static_cast_to {
         template <typename From>
-        static constexpr auto from(From&& v) {
-            return static_cast<To>( std::forward<From>(v) );
-        }
-
-        // The function above wrapped in a class, to be used for passing as a template parameter.
-        template <typename From>
-        struct from_t
-        {
-            template <typename From_ = From>
-            constexpr auto operator()(From_&& v) { return from( std::forward<From_>(v) ); }
-        };
+        constexpr auto operator()(From&& v) const { return static_cast<To>( std::forward<From>(v) ); }
     };
+}
 
-    // To be used like: to_t<type, converter>() << some_value;
-    template <
-        typename To,
-        template <typename> typename Converter
-    >
+namespace pinguim::cvt
+{
+    template <typename To, typename Converter>
     struct to_t
     {
         template <typename From>
-        constexpr auto operator<<(From&& v) const { return Converter<From>{}( std::forward<From>(v) ); }
+        constexpr auto operator<<(From&& v) const
+        { return Converter{}( std::forward<From>(v) ); }
     };
-
+    // Just a template variable to keep things neat and short(er).
     // Enables writing: to<type> << some_value;
     // Instead of:      to_t<type, converter>() << some_value;
     // Assumes converter is static_cast_to<To>.
     template <
         typename To,
-        template <typename> typename Converter = static_cast_to<To>::template from_t
+        typename Converter = converters::static_cast_to<To>
     >
-    constexpr auto to = to_t<To, Converter>{};
+    inline constexpr auto to = to_t<To, Converter>{};
 
-    constexpr struct
+    struct to_underlying_t
     {
         template <typename From>
         constexpr auto operator<<(From&& v) const
-        {
-            return to< std::underlying_type_t<From> > << std::forward<From>(v);
-        }
-    } to_underlying;
-    constexpr auto tou = to_underlying;
+        { return to< std::underlying_type_t<From> > << std::forward<From>(v); }
+    };
+    inline constexpr auto to_underlying = to_underlying_t{};
+    inline constexpr auto tou           = to_underlying_t{};
 
-    template <typename From>
+    // Warning, this is highly magical.
     struct to_expected_t
     {
-        /// TODO: investigate, copying may occur here.
-        From v;
-
-        template< class ExpectedType >
-        constexpr operator ExpectedType() const &
-        {
-            return to<ExpectedType> << v;
-        }
-
-        template < class ExpectedType>
-        constexpr operator ExpectedType() &&
-        {
-            return to<ExpectedType> << std::move(v);
-        }
-    };
-
-    // This is *duct tape* meant to make things *just work*, PLEASE take the
-    // time to remove it's use later.
-    constexpr struct {
+        // Forward declaration, not necessary but helps understand what's going on.
         template <typename From>
+        struct implicitly_convertible_to_anything;
+
+        template<typename From>
         constexpr auto operator<<(From&& v) const
+        { return implicitly_convertible_to_anything<From>{ std::forward<From>(v) }; }
+
+        // Magic happens here!
+        template <typename From>
+        struct implicitly_convertible_to_anything
         {
-            return to_expected_t<From>{ std::forward<From>(v) };
-        }
-    } to_expected;
-    constexpr auto toe = to_expected;
+            /// TODO: investigate, copying may occur here.
+            From v;
+
+            template<typename ExpectedType>
+            constexpr operator ExpectedType() const &
+            { return to<ExpectedType> << v; }
+
+            template <typename ExpectedType>
+            constexpr operator ExpectedType() &&
+            { return to<ExpectedType> << std::move(v); }
+        };
+    };
+    inline constexpr auto to_expected = to_expected_t{};
+    inline constexpr auto toe         = to_expected_t{};
 }
