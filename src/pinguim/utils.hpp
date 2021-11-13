@@ -62,7 +62,7 @@ namespace pinguim::inline utils
             else                             { suffix2 = ", EnableShortFloats = false]"; }
         #elif defined(PINGUIM_CONF_COMPILER_IS_GCC)
             name   = __PRETTY_FUNCTION__;
-            prefix = "constexpr std::string_view pinguim::type_name() [with T = ";
+            prefix = "constexpr std::string_view pinguim::utils::type_name() [with T = ";
             if constexpr (EnableShortInts) { suffix = "; bool EnableShortInts = true"; }
             else                           { suffix = "; bool EnableShortInts = false"; }
             if constexpr (EnableShortFloats) { suffix2 = "; bool EnableShortFloats = true; std::string_view = std::basic_string_view<char>]"; }
