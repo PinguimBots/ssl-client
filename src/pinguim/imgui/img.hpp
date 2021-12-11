@@ -41,13 +41,13 @@ namespace pinguim::imgui
         // NOTE: If opencv is built WITH_OPENGL=OFF, expects mat to be BGR.
         img(cv::InputArray);
         img(GLuint handle, int cols, int rows);
+        img(img&&);
+        auto operator=(img&&) -> img&;
         ~img();
 
         // Make it non-copyable and non-moveable.
         img()                              = delete;
-        img(img&&)                         = delete;
         img(const img&)                    = delete;
-        auto operator=(img&&) -> img&      = delete;
         auto operator=(const img&) -> img& = delete;
 
     private:

@@ -43,7 +43,7 @@ auto ImGui::Image(
         );
     }
 }
-#include "fmt/core.h"
+
 pinguim::imgui::img::img(cv::InputArray mat)
 {
     if constexpr(pinguim::conf::opencv_with_opengl)
@@ -87,19 +87,14 @@ pinguim::imgui::img::img(GLuint handle, int cols, int rows)
     : texture{ gl_texture{handle, cols, rows} }
 {}
 
-// pinguim::imgui::ocv::img::img(img&& other)
-// { *this = std::move(other); }
-// auto pinguim::imgui::ocv::img::operator=(img&& other) -> img&
-// {
-//     if constexpr(pinguim::conf::opencv_with_opengl) {
-//         cv_handle = std::move(other.cv_handle);
-//     } else {
-//         std::swap(gl.handle, other.gl.handle);
-//         std::swap(gl.size,   other.gl.size);
-//     }
+pinguim::imgui::img::img(img&& other)
+{  *this = std::move(other); }
 
-//     return *this;
-// }
+auto pinguim::imgui::img::operator=(img&& other) -> img&
+{
+    std::swap( texture, other.texture );
+    return *this;
+}
 
 pinguim::imgui::img::~img()
 {
