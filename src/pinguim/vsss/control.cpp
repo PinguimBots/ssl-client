@@ -8,6 +8,8 @@
 
 #include <fmt/core.h>
 
+constexpr auto sign(auto v) { return v >= 0 ? 1 : -1; }
+
 auto pinguim::vsss::control::rotate(pinguim::vsss::robot robot, double angle) -> pinguim::vsss::point
 {
     auto angle_error = robot.orientation - angle;
@@ -20,8 +22,17 @@ auto pinguim::vsss::control::rotate(pinguim::vsss::robot robot, double angle) ->
 
 auto pinguim::vsss::control::generate_vels(pinguim::vsss::robot robot, pinguim::vsss::point target_pos, int rotation) -> pinguim::vsss::point
 {
+    const auto velmax = 100.0, velmin = -100.0; //kap = 1.0, kad = 0.2
+
     // NOTE: atan  returns the angle value between -pi/2 (-90deg) and pi/2 (90deg)
     // while atan2 returns the angle value between -pi (-180deg) and pi (180deg).
+    switch(rotation) {
+        case 1: return {10.0*velmin, 9.70*velmax};
+        case 2: return {9.70*velmax, 10.0*velmin};
+        case 3: return {0, 0.1*velmin};
+        case 4: return {10*velmax, 0};
+        default: break;
+    }
 
     static const constexpr auto pi = glm::pi<double>();
 
@@ -29,11 +40,8 @@ auto pinguim::vsss::control::generate_vels(pinguim::vsss::robot robot, pinguim::
 
     auto orientation = robot.orientation;
 
-
     auto [target_x, target_y] = pinguim::vsss::to_pair(target_pos);
     auto [xDif, yDif] = pinguim::vsss::to_pair(target_pos - robot.position);
-
-    [[maybe_unused]] double ballAngle = atan2(yDif, xDif); // Angulo robô -> bola
 
     double positionError = glm::length(glm::vec2{xDif, yDif}); //Distancia linha reta robo -> bola
 
@@ -61,61 +69,13 @@ auto pinguim::vsss::control::generate_vels(pinguim::vsss::robot robot, pinguim::
         angleError = +(angleError + 2 * pi);
     }
 
-    [[maybe_unused]] double robot_angle_error = 0.0, linvel_left = 0.0, linvel_right = 0.0;
-    const double velmax = 100.0, velmin = -100.0; //kap = 1.0, kad = 0.2
+    [[maybe_unused]] double robot_angle_error = 0.0;
 
-    double vel_front;
+    const auto vel_front = std::clamp(100.0 * (robot.id == 1 ? 1 : positionError) * cos(angleError), velmin, velmax);
+    const auto vel_side  = std::clamp(10.0 * sin(angleError), velmin, velmax);
+    const auto linvel_left  = std::clamp(vel_front - sign(vel_front)*vel_side, velmin, velmax);
+    const auto linvel_right = std::clamp(vel_front + sign(vel_front)*vel_side, velmin, velmax);
 
+    return {linvel_left, linvel_right};
 
-    // Esse ou o outro comentado abaixo
-    // Comenta o que não for testar
-    if (robot.id == 1) {
-        vel_front = std::clamp(100.0 * cos(angleError), velmin, velmax);
-    }
-    else {
-        vel_front = std::clamp(100.0 * (positionError)* cos(angleError), velmin, velmax);
-    }
-
-    //vel_front = std::clamp(100.0 * (positionError)* cos(angleError), velmin, velmax);
-    double vel_side  = std::clamp(10.0 * sin(angleError), velmin, velmax);
-
-    if(vel_front > 0) {
-        linvel_left = vel_front - vel_side;
-        linvel_right = vel_front + vel_side;
-    }
-    else {
-        linvel_left = vel_front + vel_side;
-        linvel_right = vel_front - vel_side;
-    }
-
-    if(linvel_left > velmax) {
-        linvel_left = velmax;
-    }
-    else if(linvel_left < velmin) {
-        linvel_left = velmin;
-    }
-    if(linvel_right > velmax) {
-        linvel_right = velmax;
-    }
-    else if(linvel_right < velmin) {
-        linvel_right = velmin;
-    }
-
-/*     fmt::print("Position Error: {}\n \
-                Angle Error: {}\n \
-                Vel Front: {}\n \
-                Vel Side: {}\n \
-                Linvel Left: {}\n \
-                Linvel Right: {}\n\n", \
-                positionError, (angleError*180)/pi, vel_front, vel_side, linvel_left, linvel_right); */
-
-    double vell = 0, velr = 0;
-    if(rotation == 0)
-    { vell = linvel_left; velr = linvel_right;}
-    else if(rotation == 1) {vell = 10*velmin; velr = 9.7*velmax;}
-    else if(rotation == 2){vell = 9.7*velmax; velr = 10*velmin;}
-    else if(rotation == 3){vell = 0; velr = 0.1*velmin;}
-    else if(rotation == 4){vell = 10*velmax; velr = 0;}
-
-    return {vell, velr};
 }
