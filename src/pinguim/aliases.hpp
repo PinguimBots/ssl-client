@@ -24,3 +24,5 @@ namespace pinguim::inline float_aliases
     //using f128 ? f80 ? fl64 = long double;
     // Different compilers have different sizes, maybe fl64 is the best name.
 }
+
+namespace pb = pinguim;

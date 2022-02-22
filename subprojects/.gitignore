@@ -2,16 +2,4 @@
 
 !packagefiles
 !simproto
-
-!asio.wrap
-!docopt.wrap
-!fmt.wrap
-!glew.wrap
-!glm.wrap
-!guarded.wrap
-!imgui.wrap
-!protobuf.wrap
-!sdl2.wrap
-!xext.wrap
-!xfixes.wrap
-!xi.wrap
+!*.wrap

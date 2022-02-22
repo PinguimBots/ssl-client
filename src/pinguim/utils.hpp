@@ -20,19 +20,24 @@ namespace pinguim::inline utils
     // e.g:
     //     auto arr = array_of<u8>(1, 2, 3, 4, 5); // arr is of type std::array<u8, 5>.
     template <typename T, typename... U>
-    requires (std::convertible_to<T, U> && ...)
     constexpr auto array_of(U&&... u)
     { return std::array<T, sizeof...(U)>{ static_cast<T>(std::forward<U>(u))... }; }
     template <typename... U>
     constexpr auto array_of(U&&... u)
     { return array_of< std::decay_t<std::common_type_t<U...>>, U... >( std::forward<U>(u)... ); }
     template <typename T, typename... U>
-    requires (std::convertible_to<T, U> && ...)
     constexpr auto arr(U&&... u)
     { return array_of<T>( std::forward<U>(u)... ); }
     template <typename... U>
     constexpr auto arr(U&&... u)
     { return array_of( std::forward<U>(u)... ); }
+
+    template <typename Collection, typename... Args>
+    constexpr auto emplace_fill_capacity(Collection& c, Args&&... args)
+    {
+        auto missing = c.capacity() - c.size();
+        while(missing--) { c.emplace_back( std::forward<Args>(args)... ); }
+    }
 
     // from https://stackoverflow.com/questions/81870/is-it-possible-to-print-a-variables-type-in-standard-c/56766138#56766138
     // Thanks!

@@ -8,3 +8,6 @@ option('force-opencv-without-opengl', type: 'boolean', value: false,
         'When true, will force pinguim::imgui::opencv::img to use ' +
         'opengl, when false pinguim::imgui::opencv::img will use ' +
         'either cv::ogl::Texture2D or opengl, with preference for opencv')
+
+option('time-trace', type: 'boolean', value: false,
+    description: 'When true, adds -ftime-trace build flag')

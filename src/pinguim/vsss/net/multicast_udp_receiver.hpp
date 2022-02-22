@@ -1,5 +1,7 @@
 #pragma once
 
+/// TODO: simplify.
+
 #include <condition_variable>
 #include <string_view>
 #include <type_traits> // For std::remove_cvref_t.

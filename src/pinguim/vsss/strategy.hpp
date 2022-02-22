@@ -100,7 +100,11 @@ namespace pinguim::vsss
         auto add_border_field_obstacle() -> void;
 
         /* Utilitários */
+        // Maps from pixel coordinates to field coordinates.
+        // e.g: {0, 0} (topl in screen space) becomes
+        //      {-1, -0.75} (topl in field space).
         auto discreet_to_real(pinguim::vsss::wpoint wpoint) -> pinguim::vsss::point;
+        // Maps from field coordinates back to real coordinates.
         auto real_to_discreet(pinguim::vsss::point point) -> pinguim::vsss::wpoint;
 
 

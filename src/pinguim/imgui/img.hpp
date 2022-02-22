@@ -38,6 +38,7 @@ namespace pinguim::imgui
     {
         friend void ImGui::Image(const img&, const ImVec2&, const ImVec2&, const ImVec4&, const ImVec4&);
 
+        img();
         // NOTE: If opencv is built WITH_OPENGL=OFF, expects mat to be BGR.
         img(cv::InputArray);
         img(GLuint handle, int cols, int rows);
@@ -45,8 +46,7 @@ namespace pinguim::imgui
         auto operator=(img&&) -> img&;
         ~img();
 
-        // Make it non-copyable and non-moveable.
-        img()                              = delete;
+        // Make it non-copyable.
         img(const img&)                    = delete;
         auto operator=(const img&) -> img& = delete;
 

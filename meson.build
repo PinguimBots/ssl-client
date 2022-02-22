@@ -11,6 +11,7 @@ project('pbssl', ['cpp', 'c'],
 
 os = host_machine.system()
 cxx = meson.get_compiler('cpp')
+cmake = import('cmake')
 
 ## Needed by SDL2 in msvc, since i don't want to rewrite
 ## the wrapfile i'll just add it here instead.
@@ -22,12 +23,23 @@ if os == 'windows'
     add_global_arguments('-DSDL_VIDEO_OPENGL_EGL=0', language: 'c')
 endif
 
+# Clang has a great compile time (not compile-time) flag.
+if get_option('time-trace') == true
+    add_project_arguments('-ftime-trace', language: 'c')
+    add_project_arguments('-ftime-trace', language: 'cpp')
+endif
+
 # Depenency KWargs.
 # include_type: 'system' just means if we include a header from that dependency it will
 # not emit any warnings (which would be a nuisance since we have such a high warning level).
 dkw = {'include_type': 'system', 'default_options': 'warning_level=0'}
 
-opencv_dep = dependency('opencv4', version: '>= 4.0.0', include_type: 'system')
+opencv_dep = dependency('opencv4', version: '>= 4.0.0', include_type: 'system', required: false)
+if not opencv_dep.found()
+    run_command('git', 'submodule', 'update', check: true)
+    opencv_options = cmake.subproject_options()
+    opencv_dep = cmake.subproject('opencv').target('opencv_core_dep')
+endif
 # Gui stuff
 opengl_dep = os == 'windows' ? meson.get_compiler('c').find_library('opengl32') : dependency('gl', include_type: 'system')
 sdl2_intrinsic_deps = os in ['windows', 'darwin'] ? [] : [
@@ -50,28 +62,30 @@ utils_deps   = [simproto_dep, asio_dep, fmt_dep, docopt_dep, glm_dep, openmp_dep
 
 app_inc = include_directories('src')
 
-subdir('conf')
-subdir('tests')
-
 sources = files(
-    'src/pinguim/app/main.cpp',
+    'src/pinguim/app/subsystems/manager.cpp',
+    'src/pinguim/app/subsystems/input/firasim.cpp',
+    'src/pinguim/app/subsystems/input/vision.cpp',
+    'src/pinguim/app/subsystems/logic/strategy.cpp',
+    'src/pinguim/app/subsystems/logic/direct_control.cpp',
 
     'src/pinguim/imgui/plumber.cpp',
     'src/pinguim/imgui/img.cpp',
     'src/pinguim/imgui/widgets/group_panel.cpp',
 
-    'src/pinguim/vsss/strategy_d.cpp',
-    'src/pinguim/vsss/strategy_r.cpp',
+    'src/pinguim/vsss/strategy.cpp',
     'src/pinguim/vsss/control.cpp',
     'src/pinguim/vsss/common.cpp',
-    'src/pinguim/vsss/utility.cpp',
 )
+
+subdir('conf')
+subdir('tests')
 
 pbssl_exe = executable(
     'pbssl',
-    sources,
+    sources + ['src/pinguim/app/main.cpp'], # Main is separate to not interfere in tests.
     include_directories: [app_inc, conf_inc],
     dependencies: [opencv_dep, gui_deps, utils_deps],
     cpp_args: cpp_warnings,
-    cpp_pch: 'src/pinguim/app/pch.hpp',
+    #cpp_pch: 'src/pinguim/app/pch.hpp',
 )

@@ -160,7 +160,7 @@ inline auto pinguim::app::cmdline::parse::port(std::string_view input) -> std::o
 
     // error == std::errc() means all is ok.
     if(error != std::errc() || ptr != input.data() + input.size() || result < 1 || result > 65535)
-        {return std::nullopt;}
+    { return std::nullopt; }
     return result;
 }
 

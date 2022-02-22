@@ -67,19 +67,23 @@ auto pinguim::imgui::make_plumber(const char* windowname) -> std::optional<plumb
 auto pinguim::imgui::plumber::handle_event() -> bool
 {
     auto quit = false;
-    const auto quit_handler = [&](auto event){
-        if (event.type == SDL_QUIT) {quit = true;}
-        if (event.type == SDL_WINDOWEVENT &&
-            event.window.event == SDL_WINDOWEVENT_CLOSE &&
-            event.window.windowID == SDL_GetWindowID(sdl_window.get()))
-        {
-            quit = true;
-        }
-    };
-    handle_event(quit_handler);
-
+    handle_event([&](auto& e){ quit = quit_handler(e); });
     return quit;
 }
+
+auto pinguim::imgui::plumber::quit_handler(SDL_Event& e) -> bool
+{
+    if (e.type == SDL_QUIT) {return true;}
+    if (e.type == SDL_WINDOWEVENT &&
+        e.window.event == SDL_WINDOWEVENT_CLOSE &&
+        e.window.windowID == SDL_GetWindowID(sdl_window.get()))
+    {
+        return true;
+    }
+
+    return false;
+};
+
 
 auto pinguim::imgui::plumber::handle_event(event_handler& handler) -> void
 {

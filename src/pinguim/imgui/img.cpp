@@ -44,6 +44,9 @@ auto ImGui::Image(
     }
 }
 
+pinguim::imgui::img::img() : pinguim::imgui::img::img(0, 0, 0)
+{}
+
 pinguim::imgui::img::img(cv::InputArray mat)
 {
     if constexpr(pinguim::conf::opencv_with_opengl)

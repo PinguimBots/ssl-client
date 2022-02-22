@@ -18,6 +18,7 @@ namespace pinguim::imgui
         using cleanup_ptr = std::unique_ptr<void, void(*)(void*)>;
         using sdl_window_cleanup_ptr = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>;
 
+        // Non copyable.
         plumber(const plumber&)                    = delete;
         auto operator=(const plumber&) -> plumber& = delete;
 
@@ -37,6 +38,8 @@ namespace pinguim::imgui
 
         // Returns true if you need to quit (close button pressed)
         auto handle_event()                     -> bool;
+        auto quit_handler(SDL_Event&)           -> bool;
+
         auto handle_event(event_handler&)       -> void;
         auto handle_event(event_handler&&)      -> void;
         auto handle_event(const event_handler&) -> void;
