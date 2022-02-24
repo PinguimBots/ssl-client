@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pinguim/vsss/net/multicast_udp_receiver.hpp"
-#include "pinguim/app/subsystem_types.hpp"
+#include "pinguim/app/subsystems/types.hpp"
 #include "pinguim/aliases.hpp"
 
 #include <simproto.hpp>

@@ -14,7 +14,7 @@ namespace pinguim::app::subsystems::input
         //, referee_receiver{"addr", "port"};
     {}
 
-    auto firasim::update_gameinfo(game_info& gi, float delta_seconds) -> bool
+    auto firasim::update_gameinfo(game_info& gi, [[maybe_unused]] float delta_seconds) -> bool
     {
         using namespace cvt;
 

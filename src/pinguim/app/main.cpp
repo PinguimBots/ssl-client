@@ -3,7 +3,7 @@
 
 #include <simproto.hpp> // Protobuf stuff.
 
-#include "pinguim/app/subsystems.hpp"
+#include "pinguim/app/subsystems/manager.hpp"
 #include "pinguim/app/cmdline.hpp"
 #include "pinguim/imgui/plumber.hpp"
 #include "pinguim/aliases.hpp"
@@ -30,8 +30,6 @@ int main(int argc, char *argv[])
     );
 
     auto sm = pb::app::subsystems::manager();
-    sm.input.reset(new pb::app::subsystems::input::vision);
-    sm.logic.reset(new pb::app::subsystems::logic::direct_control);
 
     auto dt        = 0.f;
     auto game_info = pb::app::game_info{};
@@ -45,8 +43,10 @@ int main(int argc, char *argv[])
             mario.handle_event( [&](auto& e){ if(!(quit = mario.quit_handler(e))) sm.handle_event(e); } );
             mario.begin_frame();
 
-            sm.input->update_gameinfo(game_info, dt);
-            sm.logic->run_logic(game_info, commands, dt);
+            sm.draw_selector_ui();
+            sm.update_gameinfo(game_info, dt);
+            sm.run_logic(game_info, commands, dt);
+            sm.transmit(commands, dt);
 
             mario.draw_frame();
         });

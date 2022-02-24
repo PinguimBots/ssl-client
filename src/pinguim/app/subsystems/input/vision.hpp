@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pinguim/app/subsystem_types.hpp"
+#include "pinguim/app/subsystems/types.hpp"
 
 namespace pinguim::app::subsystems::input
 {

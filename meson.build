@@ -66,8 +66,9 @@ sources = files(
     'src/pinguim/app/subsystems/manager.cpp',
     'src/pinguim/app/subsystems/input/firasim.cpp',
     'src/pinguim/app/subsystems/input/vision.cpp',
-    'src/pinguim/app/subsystems/logic/strategy.cpp',
     'src/pinguim/app/subsystems/logic/direct_control.cpp',
+    'src/pinguim/app/subsystems/logic/strategy.cpp',
+    'src/pinguim/app/subsystems/output/firasim.cpp',
 
     'src/pinguim/imgui/plumber.cpp',
     'src/pinguim/imgui/img.cpp',
