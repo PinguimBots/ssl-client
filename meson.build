@@ -3,7 +3,7 @@ project('pbssl', ['cpp', 'c'],
     default_options : [
         'buildtype=debugoptimized',
         'warning_level=3',
-        'cpp_std=c++2a',
+        'cpp_std=c++17',
     ],
     meson_version: '>= 0.56',
     #license: ['???'],
@@ -11,7 +11,6 @@ project('pbssl', ['cpp', 'c'],
 
 os = host_machine.system()
 cxx = meson.get_compiler('cpp')
-cmake = import('cmake')
 
 ## Needed by SDL2 in msvc, since i don't want to rewrite
 ## the wrapfile i'll just add it here instead.
@@ -34,12 +33,11 @@ endif
 # not emit any warnings (which would be a nuisance since we have such a high warning level).
 dkw = {'include_type': 'system', 'default_options': 'warning_level=0'}
 
+# OpenCV is special since we couldn't sucessfully wrap it using the cmake module and
+# wrapping it manually is WAY beyond the scope of this project.
+# So it's wise to make the project runnable without it, check out 'pinguim/conf.hpp' and the
+# vision input subsystem.
 opencv_dep = dependency('opencv4', version: '>= 4.0.0', include_type: 'system', required: false)
-if not opencv_dep.found()
-    run_command('git', 'submodule', 'update', check: true)
-    opencv_options = cmake.subproject_options()
-    opencv_dep = cmake.subproject('opencv').target('opencv_core_dep')
-endif
 # Gui stuff
 opengl_dep = os == 'windows' ? meson.get_compiler('c').find_library('opengl32') : dependency('gl', include_type: 'system')
 sdl2_intrinsic_deps = os in ['windows', 'darwin'] ? [] : [

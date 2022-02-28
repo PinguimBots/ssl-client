@@ -26,6 +26,9 @@ has_opencv_with_opengl = meson.get_compiler('cpp').run(
 ).returncode() == 0
 conf_data.set10('opencv_with_opengl', has_opencv_with_opengl)
 
+conf_data.set10('opencv_support', opencv_dep.found())
+conf_data.set('PINGUIM_CONF_OPENCV_SUPPORT', opencv_dep.found())
+
 # For now, meson doesn't allow path separators in configure_file(output: 'file_here'),
 # which is why we need this wonky folder structure.
 subdir('pinguim')

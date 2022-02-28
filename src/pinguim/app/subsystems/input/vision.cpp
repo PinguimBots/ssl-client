@@ -1,13 +1,7 @@
-#include "pinguim/app/subsystems/input/vision.hpp"
+#include "pinguim/conf.hpp"
 
-#include <imgui.h>
-
-namespace pinguim::app::subsystems::input
-{
-    auto vision::update_gameinfo(game_info& gi, float delta_seconds) -> bool
-    {
-
-        ImGui::Text("eu existo");
-        return false;
-    }
-}
+#if defined(PINGUIM_CONF_OPENCV_SUPPORT)
+#include "pinguim/app/subsystems/input/vision_enabled.cpp.inc"
+#else
+#include "pinguim/app/subsystems/input/vision_disabled.cpp.inc"
+#endif

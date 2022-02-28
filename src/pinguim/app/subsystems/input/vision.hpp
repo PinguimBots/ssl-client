@@ -1,11 +1,9 @@
 #pragma once
 
-#include "pinguim/app/subsystems/types.hpp"
+#include "pinguim/conf.hpp"
 
-namespace pinguim::app::subsystems::input
-{
-    struct vision : public pinguim::app::input_subsystem
-    {
-        auto update_gameinfo(game_info&, float delta_seconds) -> bool override;
-    };
-}
+#if defined(PINGUIM_CONF_OPENCV_SUPPORT)
+#include "pinguim/app/subsystems/input/vision_enabled.hpp.inc"
+#else
+#include "pinguim/app/subsystems/input/vision_disabled.hpp.inc"
+#endif
