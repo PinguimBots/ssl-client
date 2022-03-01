@@ -19,6 +19,7 @@ namespace pinguim::inline utils
     // decide the size by the amount of arguments.
     // e.g:
     //     auto arr = array_of<u8>(1, 2, 3, 4, 5); // arr is of type std::array<u8, 5>.
+    // TODO: fix these, calls with a template parameter are ambiguous.
     template <typename T, typename... U>
     constexpr auto array_of(U&&... u)
     { return std::array<T, sizeof...(U)>{ static_cast<T>(std::forward<U>(u))... }; }
