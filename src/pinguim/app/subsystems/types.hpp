@@ -21,7 +21,8 @@ union SDL_Event;
 namespace pinguim::app
 {
     using pinguim::vsss::game_info;
-    using commands = std::vector<pinguim::vsss::command>;
+    using pinguim::vsss::command;
+    using commands = std::vector<command>;
 
     struct input_subsystem
     {

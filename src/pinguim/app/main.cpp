@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 
     auto dt        = 0.f;
     auto game_info = pb::app::game_info{};
-    auto commands  = pb::app::commands{3 /* The amount of commands (robots). */};
+    auto commands  = pb::app::commands{};
 
     auto mario = pb::imgui::make_plumber().value();
 
