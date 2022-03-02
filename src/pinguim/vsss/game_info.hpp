@@ -52,6 +52,7 @@ namespace pinguim::vsss
     struct game_info
     {
         std::vector<robot> allied_team;
+        u8 allied_team_id;
         std::vector<robot> enemy_team;
         field field_info;
         ball ball_info;

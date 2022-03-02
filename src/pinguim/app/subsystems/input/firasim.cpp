@@ -34,6 +34,7 @@ namespace pinguim::app::subsystems::input
         const auto& allied_team = allied_team_color == team::yellow
             ? yellow_team
             : blue_team;
+        gi.allied_team_id = allied_team_color == team::yellow ? 0 : 1;
         const auto& enemy_team = allied_team_color == team::yellow
             ? blue_team
             : yellow_team;
