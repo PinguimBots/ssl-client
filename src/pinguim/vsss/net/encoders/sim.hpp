@@ -5,7 +5,7 @@
 
 #include "pinguim/cvt.hpp"
 
-#include <simproto.hpp>
+#include <pinguim/simproto/all>
 
 template<>
 struct pinguim::vsss::net::encoded<

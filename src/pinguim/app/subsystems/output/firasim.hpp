@@ -6,7 +6,7 @@
 
 #include <string_view>
 
-#include <simproto.hpp>
+#include <pinguim/simproto/all>
 
 namespace pinguim::app::subsystems::output
 {

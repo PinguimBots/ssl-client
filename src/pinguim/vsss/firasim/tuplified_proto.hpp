@@ -7,8 +7,8 @@
 
 #include <array>
 
-#include "simproto/common.pb.h"
-#include "simproto/vssref_command.pb.h"
+#include <pinguim/simproto/common.pb.h>
+#include <pinguim/simproto/vssref_command.pb.h>
 
 namespace fira_message {
     template <std::size_t I>

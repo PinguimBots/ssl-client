@@ -4,7 +4,7 @@
 #include "pinguim/app/subsystems/types.hpp"
 #include "pinguim/aliases.hpp"
 
-#include <simproto.hpp>
+#include <pinguim/simproto/all>
 
 #include <string_view>
 

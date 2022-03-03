@@ -1,6 +1,6 @@
 #include "pinguim/app/subsystems/manager.hpp"
 
-#include "pinguim/app/subsystems/all.hpp"
+#include "pinguim/app/subsystems/all"
 
 #include <imgui.h>
 

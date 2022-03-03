@@ -1,0 +1,9 @@
+#pragma once
+
+#include "pinguim/simproto/command.pb.h"
+#include "pinguim/simproto/command.pb.h"
+#include "pinguim/simproto/packet.pb.h"
+#include "pinguim/simproto/replacement.pb.h"
+#include "pinguim/simproto/vssref_command.pb.h"
+#include "pinguim/simproto/vssref_common.pb.h"
+#include "pinguim/simproto/vssref_placement.pb.h"

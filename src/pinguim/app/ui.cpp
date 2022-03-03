@@ -5,7 +5,7 @@
 #include "pinguim/imgui/img.hpp"
 #include "pinguim/aliases.hpp"
 
-#include <simproto.hpp>
+#include <pinguim/simproto/all>
 
 #include <imgui.h>
 

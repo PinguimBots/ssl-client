@@ -5,7 +5,7 @@
 #include <cstdlib> // For std::exit;
 
 // Networking stuff.
-#include <simproto.hpp>
+#include <pinguim/simproto/all>
 
 #include "pinguim/vsss/net/decoders/sim.hpp"
 #include "pinguim/vsss/net/multicast_udp_receiver.hpp"

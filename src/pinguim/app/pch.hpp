@@ -16,4 +16,4 @@
 #include <array>
 #include <map>
 
-#include <simproto.hpp>
+#include <pinguim/simproto/all>

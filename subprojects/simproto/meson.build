@@ -21,7 +21,7 @@ protofiles = [
 protofiles_in  = []
 protofiles_out = []
 foreach file : protofiles
-    protofiles_in  += 'simproto' / file + '.proto'
+    protofiles_in  += 'pinguim' / 'simproto' / file + '.proto'
     protofiles_out += file + '.pb.h'
     protofiles_out += file + '.pb.cc'
 endforeach
@@ -31,7 +31,7 @@ incdir = include_directories('.')
 
 # The custom_target() must be defined in that folder
 # for folder mirroring reasons.
-subdir('simproto')
+subdir('pinguim/simproto')
 
 simproto_lib = library(
     'simproto',

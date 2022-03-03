@@ -1,7 +1,7 @@
 #include <csignal>
 #include <cstdlib> // For std::exit;
 
-#include <simproto.hpp> // Protobuf stuff.
+#include <pinguim/simproto/all> // Protobuf stuff.
 
 #include "pinguim/app/subsystems/manager.hpp"
 #include "pinguim/app/cmdline.hpp"
