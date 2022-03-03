@@ -16,7 +16,7 @@ struct pinguim::vsss::net::decoder<
     template<std::size_t BufferSize>
     constexpr auto decode(std::array<std::byte, BufferSize>& buf, decoded_t& packet) -> decoded_t&
     {
-        packet.ParseFromArray(buf.data(), cvt::toe << buf.size());
+        packet.ParseFromArray(buf.data(), buf.size() * cvt::toe);
         return packet;
     }
 
@@ -38,7 +38,7 @@ struct pinguim::vsss::net::decoder<
     template<std::size_t BufferSize>
     constexpr auto decode(std::array<std::byte, BufferSize>& buf, decoded_t& packet) -> decoded_t&
     {
-        packet.ParseFromArray(buf.data(), cvt::toe << buf.size());
+        packet.ParseFromArray(buf.data(), buf.size() * cvt::toe);
         return packet;
     }
 

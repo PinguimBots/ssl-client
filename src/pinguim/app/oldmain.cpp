@@ -33,8 +33,7 @@
 
 #include "pinguim/utils.hpp"
 
-using pinguim::cvt::toe;
-using pinguim::cvt::tou;
+namespace cvt = pinguim::cvt
 
 auto do_strategy(auto& is_yellow, auto& game_on, auto& bounds, auto& strategy, auto& lerp_coords, auto& env_packet, auto& out_packet, auto& strategy_vis, auto& sim_sender)
 {
@@ -107,7 +106,7 @@ auto do_strategy(auto& is_yellow, auto& game_on, auto& bounds, auto& strategy, a
             pinguim::vsss::robot pb_robot;
             pinguim::vsss::ball  pb_ball;
 
-            pb_robot.id = toe << robot.robot_id();
+            pb_robot.id = robot.robot_id() * cvt::toe;
             pb_robot.position = {robot.x(), robot.y()};
             const auto [lerped_x, lerped_y] = lerp_coords(robot.x(), robot.y());
             cv::circle(strategy_vis, {lerped_x, lerped_y}, 8, {255, 0, 255}, cv::FILLED);
@@ -116,7 +115,7 @@ auto do_strategy(auto& is_yellow, auto& game_on, auto& bounds, auto& strategy, a
             pb_ball.velocity = pinguim::vsss::point{ball.vx(), ball.vy()};
 
             for (const auto &other_robot : allied_team) {
-                if (other_robot.robot_id() != tou << pinguim::vsss::Roles::ATTACKER) {
+                if (other_robot.robot_id() != cvt::tou * pinguim::vsss::Roles::ATTACKER) {
                     pb_enemies.push_back({other_robot.x(), other_robot.y()});
                 }
             }
@@ -139,7 +138,7 @@ auto do_strategy(auto& is_yellow, auto& game_on, auto& bounds, auto& strategy, a
         for (int i = 0; i < 3; ++i)
         {
             auto command = out_packet.mutable_cmd()->add_robot_commands();
-            command->set_id( toe << i );
+            command->set_id( i * cvt::toe );
             command->set_yellowteam(is_yellow);
             command->set_wheel_left(0.0);
             command->set_wheel_right(0.0);
@@ -240,7 +239,7 @@ int main(int argc, char *argv[])
         auto x = strategy_vis.cols * (x_irl + total_d/2)/total_d;
         auto y = strategy_vis.rows * (y_irl + total_w/2)/total_w;
 
-        return {toe<<x, toe<<y};
+        return {x * cvt::toe, y * cvt::toe};
     };
 
     while(!quit){

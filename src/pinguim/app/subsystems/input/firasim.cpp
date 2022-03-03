@@ -16,19 +16,17 @@ namespace pinguim::app::subsystems::input
 
     auto firasim::update_gameinfo(game_info& gi, [[maybe_unused]] float delta_seconds) -> bool
     {
-        using namespace cvt;
-
         auto has_new_env = env_receiver.sync( env_packet );
         //auto has_new_referee = referee_receiver.sync( referee_packet );
 
         if(!has_new_env) { return false; }
 
         gi.allied_goals = allied_team_color == team::blue
-            ? toe << env_packet.goals_blue()
-            : toe << env_packet.goals_yellow();
+            ? env_packet.goals_blue() * cvt::toe
+            : env_packet.goals_yellow() * cvt::toe;
         gi.enemy_goals = allied_team_color == team::yellow
-            ? toe << env_packet.goals_blue()
-            : toe << env_packet.goals_yellow();
+            ? env_packet.goals_blue() * cvt::toe
+            : env_packet.goals_yellow() * cvt::toe;
 
         const auto [blue_team, yellow_team, ball] = env_packet.frame();
         const auto& allied_team = allied_team_color == team::yellow
@@ -45,44 +43,44 @@ namespace pinguim::app::subsystems::input
         pb::emplace_fill_capacity(gi.enemy_team);
         for(auto i = 0u; i < allied_team.size(); ++i)
         {
-            auto [id, x, y, orientation, vx, vy, vorientation] = allied_team[i];
+            const auto [id, x, y, orientation, vx, vy, vorientation] = allied_team[i];
             auto& robot = gi.allied_team[i];
-            robot.location = {toe << x,  toe << y};
-            robot.velocity = {toe << vx, toe << vy};
-            robot.rotation = toe << orientation;
-            robot.angular_velocity = toe << vorientation;
+            robot.location = { x * cvt::toe, y * cvt::toe};
+            robot.velocity = { vx * cvt::toe, vy * cvt::toe};
+            robot.rotation = orientation * cvt::toe;
+            robot.angular_velocity = vorientation * cvt::toe;
             robot.size = 0;
-            robot.id = toe << id;
+            robot.id = cvt::toe * id;
         }
         for(auto i = 0u; i < enemy_team.size(); ++i)
         {
-            auto [id, x, y, orientation, vx, vy, vorientation] = enemy_team[i];
+            const auto [id, x, y, orientation, vx, vy, vorientation] = enemy_team[i];
             auto& robot = gi.enemy_team[i];
-            robot.location = {toe << x,  toe << y};
-            robot.velocity = {toe << vx, toe << vy};
-            robot.rotation = toe << orientation;
-            robot.angular_velocity = toe << vorientation;
+            robot.location = { x * cvt::toe,  y * cvt::toe};
+            robot.velocity = { vx * cvt::toe, vy * cvt::toe};
+            robot.rotation = orientation * cvt::toe;
+            robot.angular_velocity = vorientation * cvt::toe;
             robot.size = 0;
-            robot.id = toe << id;
+            robot.id = cvt::toe * id;
         }
 
         const auto [x, y, z, vx, vy, vz] = ball;
-        gi.ball_info.location = {toe << x,  toe << y};
-        gi.ball_info.velocity = {toe << vx, toe << vy};
+        gi.ball_info.location = { x * cvt::toe,  y * cvt::toe};
+        gi.ball_info.velocity = { vx * cvt::toe, vy * cvt::toe};
         gi.ball_info.radius = 0.0215f;
 
         const auto [fx, fy, goaly, goalx] = env_packet.field();
         gi.field_info.bounds = {
             // Top walls.
-            {toe << -fx/2, toe << fy/2}, {toe << fx/2, toe << fy/2},
+            {cvt::toe + -fx/2, cvt::toe + fy/2}, {cvt::toe + fx/2, cvt::toe + fy/2},
             // Right side goal.
-            {toe << fx/2, toe << goaly/2}, {toe << fx/2+goalx, toe << goaly/2},
-            {toe << fx/2+goalx, toe << -goaly/2}, {toe << fx/2, toe << -goaly/2},
+            {cvt::toe + fx/2, cvt::toe + goaly/2}, {cvt::toe + (fx/2+goalx), cvt::toe + goaly/2},
+            {cvt::toe + (fx/2+goalx), cvt::toe + -goaly/2}, {cvt::toe + fx/2, cvt::toe + -goaly/2},
             // Bottom walls.
-            {toe << fx/2, toe << -fy/2}, {toe << -fx/2, toe << -fy/2},
+            {cvt::toe + fx/2, cvt::toe + -fy/2}, {cvt::toe + -fx/2, cvt::toe + -fy/2},
             // Left side goal.
-            {toe << -fx/2, toe << -goaly/2}, {toe << -fx/2-goalx, toe << -goaly/2},
-            {toe << -fx/2-goalx, toe << goaly/2}, {toe << -fx/2, toe << goaly/2},
+            {cvt::toe + -fx/2, cvt::toe + -goaly/2}, {cvt::toe + (-fx/2-goalx), cvt::toe + -goaly/2},
+            {cvt::toe + (-fx/2-goalx), cvt::toe + goaly/2}, {cvt::toe + -fx/2, cvt::toe + goaly/2},
         };
         const auto target_goal_indexes = allied_team_color == team::blue
             ? pb::arr(2, 6)

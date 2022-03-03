@@ -16,8 +16,8 @@ struct pinguim::vsss::net::encoded<
 
     inline encoded(const encoded_t& packet) : buf{}
     {
-        buf.resize(cvt::toe << packet.ByteSizeLong());
-        /*bool success = */packet.SerializeToArray(buf.data(), cvt::toe << buf.size());
+        buf.resize(packet.ByteSizeLong() * cvt::toe);
+        /*bool success = */packet.SerializeToArray(buf.data(), buf.size() * cvt::toe);
         //if(!success) {return false;}
     }
 

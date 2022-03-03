@@ -7,9 +7,6 @@
 
 #include "pinguim/cvt.hpp"
 
-using pinguim::cvt::tou;
-using pinguim::cvt::to_expected;
-
 auto pinguim::vsss::Strategy::actions(
     const pinguim::vsss::robot &robot,
     const pinguim::vsss::ball &ball,
@@ -26,15 +23,15 @@ auto pinguim::vsss::Strategy::actions(
 
     switch (robot.id)
     {
-    case tou << pinguim::vsss::Roles::GOALKEEPER:
+    case cvt::tou * pinguim::vsss::Roles::GOALKEEPER:
         action = goalkeeper_action(robot, ball);
         break;
 
-    case tou << pinguim::vsss::Roles::DEFENDER:
+    case cvt::tou * pinguim::vsss::Roles::DEFENDER:
         action = defender_action(robot, ball);
         break;
 
-    case tou << pinguim::vsss::Roles::ATTACKER:
+    case cvt::tou * pinguim::vsss::Roles::ATTACKER:
         action = attacker_action(robot, ball, enemy_robots);
         break;
     }
@@ -211,11 +208,11 @@ auto pinguim::vsss::Strategy::trackBallYAxix(const pinguim::vsss::robot &robot, 
 
     pinguim::vsss::point predicted_position = lin_pred(old_point,
                                               ball.position,
-                                              robot.id == tou << pinguim::vsss::Roles::DEFENDER
+                                              robot.id == cvt::tou * pinguim::vsss::Roles::DEFENDER
                                                   ? team * DEFENDER_std_X
                                                   : team * GOALKEEPER_std_X);
 
-    if ((predicted_position.imag() > GOAL_AREA_MIN && predicted_position.imag() <= GOAL_AREA_MAX) && robot.id == tou << pinguim::vsss::Roles::GOALKEEPER)
+    if ((predicted_position.imag() > GOAL_AREA_MIN && predicted_position.imag() <= GOAL_AREA_MAX) && robot.id == cvt::tou * pinguim::vsss::Roles::GOALKEEPER)
 
     {
         position = predicted_position;
@@ -223,7 +220,7 @@ auto pinguim::vsss::Strategy::trackBallYAxix(const pinguim::vsss::robot &robot, 
 
     else
     {
-        position = robot.id == tou << pinguim::vsss::Roles::DEFENDER
+        position = robot.id == cvt::tou * pinguim::vsss::Roles::DEFENDER
                        ? predicted_position //pinguim::vsss::point(team*DEFENDER_std_X, new_y)
                        : pinguim::vsss::point(team * GOALKEEPER_std_X, std::clamp(ball.position.imag(), GOAL_AREA_MIN, GOAL_AREA_MAX));
     }
@@ -374,8 +371,8 @@ auto pinguim::vsss::Strategy::add_clearance(int (&field)[imax][jmax], const ping
     auto [hx, hy] = pinguim::vsss::to_pair(goal_position);
 
     while (theta <= 360) {
-        int x = to_expected << round(hx + raio * cos(theta));
-        int y = to_expected << round(hy + raio * sin(theta));
+        int x = cvt::toe * round(hx + raio * cos(theta));
+        int y = cvt::toe * round(hy + raio * sin(theta));
 
         field[x][y] = 0;
         theta += step;
@@ -391,14 +388,14 @@ auto pinguim::vsss::Strategy::next_point(const pinguim::vsss::wpoint pos_now, co
     #pragma omp parallel for
     for (int i = imin; i < imax; i++) {
         for (int j = jmin; j < jmax; j++) {
-            if (cost[to_expected << i][to_expected << j] == 0) cost[to_expected << i][to_expected << j] = 10000;
+            if (cost[cvt::toe * i][cvt::toe * j] == 0) cost[cvt::toe * i][cvt::toe * j] = 10000;
         }
     }
 
     [[maybe_unused]] auto [i_goal, j_goal] = pinguim::vsss::to_pair(goal);
     auto [i_now, j_now] = pinguim::vsss::to_pair(pos_now);
 
-    int cost_ij = cost[to_expected << i_now][to_expected << j_now];
+    int cost_ij = cost[cvt::toe * i_now][cvt::toe * j_now];
 
     // printf("COST IJ %d\n", cost_ij);
 
@@ -413,10 +410,10 @@ auto pinguim::vsss::Strategy::next_point(const pinguim::vsss::wpoint pos_now, co
         for (const auto &neighbour : neighbours) {
             auto [new_i, new_j] = pinguim::vsss::to_pair(neighbour);
 
-            if (cost[to_expected << new_i][to_expected << new_j] < cost_ij) {
+            if (cost[cvt::toe * new_i][cvt::toe * new_j] < cost_ij) {
                 i_next = new_i;
                 j_next = new_j;
-                cost_ij = cost[to_expected << new_i][to_expected << new_j];
+                cost_ij = cost[cvt::toe * new_i][cvt::toe * new_j];
             }
 
             /* if (i_next == i_goal && j_next == j_goal) {
@@ -444,7 +441,7 @@ auto pinguim::vsss::Strategy::wave_path(int (&field)[imax][jmax], const pinguim:
 
     auto [igoal, jgoal] = pinguim::vsss::to_pair(goal);
 
-    cost[to_expected << igoal][to_expected << jgoal] = 1;
+    cost[cvt::toe * igoal][cvt::toe * jgoal] = 1;
 
     auto open = std::queue<pinguim::vsss::wpoint>();
     open.push({igoal, jgoal});
@@ -460,9 +457,9 @@ auto pinguim::vsss::Strategy::wave_path(int (&field)[imax][jmax], const pinguim:
 
             if (occ[looking_x][looking_y] == 1) continue;
 
-            if (cost[to_expected << looking_x][to_expected << looking_y] != 0) continue;
+            if (cost[cvt::toe * looking_x][cvt::toe * looking_y] != 0) continue;
 
-            cost[to_expected << looking_x][to_expected << looking_y] = cost[to_expected << curr_x][to_expected << curr_y] + 1;
+            cost[cvt::toe * looking_x][cvt::toe * looking_y] = cost[cvt::toe * curr_x][cvt::toe * curr_y] + 1;
 
             open.push(neighbour);
 
@@ -484,8 +481,8 @@ auto pinguim::vsss::Strategy::generate_obstacle(int (&field)[imax][jmax], const 
         auto [hx, hy] = pinguim::vsss::to_pair(robot);
 
         while (theta <= 360) {
-            int x = to_expected << round(hx + raio * cos(theta));
-            int y = to_expected << round(hy + raio * sin(theta));
+            int x = cvt::toe * round(hx + raio * cos(theta));
+            int y = cvt::toe * round(hy + raio * sin(theta));
 
             field[x][y] = 1;
             theta += step;
@@ -727,8 +724,8 @@ auto pinguim::vsss::Strategy::real_to_discreet(pinguim::vsss::point point) -> pi
 {
     const auto [xin, yin] = pinguim::vsss::to_pair(point);
 
-    int iout = cvt::to_expected << std::round((imax-1)*((xin-xmin)/xT)) + imin;
-    int jout = cvt::to_expected << std::round((jmax-1)*((yin-ymin)/yT)) + jmin;
+    int iout = cvt::toe * (std::round((imax-1)*((xin-xmin)/xT)) + imin);
+    int jout = cvt::toe * (std::round((jmax-1)*((yin-ymin)/yT)) + jmin);
 
     iout = std::clamp(iout, imin, imax);
     jout = std::clamp(jout, jmin, jmax);

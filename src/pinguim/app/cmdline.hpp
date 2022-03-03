@@ -66,12 +66,12 @@ namespace pinguim::app::cmdline
 
         inline parsed_args(const program_args& args)
             : in_address{ args.in_address.value() }
-            , in_port{ cvt::toe << args.in_port.value() }
+            , in_port{ args.in_port.value() * cvt::toe }
             , out_address{ args.out_address.value() }
-            , out_port{ cvt::toe << args.out_port.value() }
+            , out_port{ args.out_port.value() * cvt::toe }
             , referee_address{ args.referee_address.value() }
-            , referee_port{ cvt::toe << args.referee_port.value() }
-            , rep_port{ cvt::toe << args.rep_port.value() }
+            , referee_port{ args.referee_port.value() * cvt::toe }
+            , rep_port{ args.rep_port.value() * cvt::toe }
             , team{ args.team }
         {}
     };

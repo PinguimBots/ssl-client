@@ -19,3 +19,5 @@ cpp_warnings = meson.get_compiler('cpp').get_supported_arguments([
     '-Wdouble-promotion', # (GCC >= 4.6, Clang >= 3.8) warn if float is implicit promoted to double
     '-Wformat=2', # warn on security issues around functions that format output (ie printf)
 ])
+
+test('cvt', executable('cvt', 'cvt.cpp', include_directories: app_inc))

@@ -56,8 +56,8 @@ namespace fira_message {
     auto get(const Frame& f) {
         if constexpr(I == 0 || I == 1) {
             constexpr const auto robot_getter = [](auto frame, auto i) {
-                if constexpr(I == 0) return frame.robots_blue(pinguim::cvt::to_expected << i);
-                else return frame.robots_yellow(pinguim::cvt::to_expected << i);
+                if constexpr(I == 0) return frame.robots_blue(pinguim::cvt::to<int> * i);
+                else return frame.robots_yellow(pinguim::cvt::to<int> * i);
             };
 
             if constexpr( pinguim::conf::team_size_fixed && pinguim::conf::fixed_team_size > 0 )
