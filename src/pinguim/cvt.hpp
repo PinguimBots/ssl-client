@@ -4,8 +4,7 @@
 // when an arithmetic operation is exercized upon them
 // or operator() is explictly called.
 //
-// You can use them as constants that you can use in math
-// that does the specified conversion OR functions.
+// You can use them as math constants OR functions.
 //
 // E.g: `5.8f * cvt::to<int>`     will return `int{5}`.
 // E.g: `int x = 5.8f * cvt::toe` will compile and `x == 5`.
