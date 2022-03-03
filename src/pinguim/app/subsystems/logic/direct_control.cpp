@@ -4,6 +4,8 @@
 
 #include <imgui.h>
 
+#include <fmt/core.h>
+
 #include <algorithm> // For std::clamp.
 #include <cmath>     // For std::lerp.
 
@@ -32,8 +34,6 @@ namespace pinguim::app::subsystems::logic
     }
 }
 
-#include <fmt/core.h>
-
 auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_info const& gi, commands& c, float delta_seconds) -> void
 {
     const auto max_lerp_time = 0.2f;
@@ -52,18 +52,27 @@ auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_in
             auto& selected = robot_input_types[i];
             draw_input_type_combo(robot_id, selected);
 
-            auto target_input = command{gi.allied_team_id, cvt::toe << robot_id, 0, 0};
+            auto target_input = command{gi.allied_team_id, robot_id * cvt::toe, 0, 0};
             auto const [fwd, bkw, left, right] = get_input_state(selected);
-            if(fwd)
+            // TODO: refactor into function.
+            if(is_direct(selected))
             {
-                target_input.left_motor  = left;
-                target_input.right_motor = right;
+                // TODO: implement steering.
             }
-            else if(bkw)
+            else
             {
-                target_input.left_motor  = -right;
-                target_input.right_motor = -left;
+                if(fwd)
+                {
+                    target_input.left_motor  = left;
+                    target_input.right_motor = right;
+                }
+                else if(bkw)
+                {
+                    target_input.left_motor  = -right;
+                    target_input.right_motor = -left;
+                }
             }
+
 
             auto lerped_input = command{
                 target_input.team_id, target_input.robot_id,
@@ -136,11 +145,14 @@ auto pinguim::app::subsystems::logic::direct_control::get_input_state(input_type
     switch(input)
     {
         case input_types::none: return {};
-        case input_types::keyboard_WASD:
+        case input_types::keyboard_WASD: [[fallthrough]];
+        case input_types::keyboard_WASD_direct:
             return { k(SDL_SCANCODE_W), k(SDL_SCANCODE_S), k(SDL_SCANCODE_A), k(SDL_SCANCODE_D) };
-        case input_types::keyboard_IJKL:
+        case input_types::keyboard_IJKL: [[fallthrough]];
+        case input_types::keyboard_IJKL_direct:
             return { k(SDL_SCANCODE_I), k(SDL_SCANCODE_J), k(SDL_SCANCODE_L), k(SDL_SCANCODE_K) };
-        case input_types::keyboard_ARROWS:
+        case input_types::keyboard_ARROWS: [[fallthrough]];
+        case input_types::keyboard_ARROWS_direct:
             return { k(SDL_SCANCODE_UP), k(SDL_SCANCODE_DOWN), k(SDL_SCANCODE_LEFT), k(SDL_SCANCODE_RIGHT) };
     }
 
