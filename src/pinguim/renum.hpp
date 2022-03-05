@@ -6,7 +6,7 @@
 
 // Implementation details to make this magic work.
 // If you are here to learn how to use this header skip this part.
-namespace pinguim::enums::detail
+namespace pinguim::renum::detail
 {
     // Just a string view with some more operations for convenience.
     struct view
@@ -58,7 +58,7 @@ namespace pinguim::enums::detail
         #elif defined(PINGUIM_CONF_COMPILER_IS_CLANG)
         while(*(fn++) != ',');
         #else
-        static_assert(false, "Please implement pinguim::enums::detail::enum_value_view for this compiler");
+        static_assert(false, "Please implement pinguim::renum::detail::enum_value_view for this compiler");
         #endif
 
         while(*(fn++) != '=');
@@ -110,7 +110,7 @@ namespace pinguim::enums::detail
     template <typename T> using  remove_cvref_t = typename remove_cv< typename remove_reference<T>::type >::type;
 }
 
-namespace pinguim::enums
+namespace pinguim::renum
 {
     // You can use this if you know what you're doing, otherwise just use the functions below.
     // If you are the end-user then you probably want to use reflect<enum> instead of this (reflected<enum>),

@@ -3,6 +3,6 @@
 #include "pinguim/aliases.hpp"
 #include "pinguim/chrono.hpp"
 #include "pinguim/cvt.hpp"
-#include "pinguim/enums.hpp"
+#include "pinguim/renum.hpp"
 #include "pinguim/geometry.hpp"
 #include "pinguim/utils.hpp"

@@ -10,7 +10,7 @@
 #include <cmath>     // For std::lerp.
 
 #include "pinguim/imgui/widgets/group_panel.hpp"
-#include "pinguim/enums.hpp"
+#include "pinguim/renum.hpp"
 #include "pinguim/utils.hpp" // For emplace_fill_capacity.
 #include "pinguim/cvt.hpp"
 
@@ -120,7 +120,7 @@ auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_in
 
 auto pinguim::app::subsystems::logic::direct_control::draw_input_type_combo(u32 robot_id, input_types& selected) -> void
 {
-    auto selected_str = std::string{ pinguim::enums::unqualified_value_name(selected) };
+    auto selected_str = std::string{ pinguim::renum::unqualified_value_name(selected) };
 
     ImGui::BeginGroup();
     ImGui::Indent(10);
@@ -128,7 +128,7 @@ auto pinguim::app::subsystems::logic::direct_control::draw_input_type_combo(u32 
     ImGui::SetNextItemWidth(160);
     if(ImGui::BeginCombo(fmt::format("##input type for robot {}", robot_id).c_str(), selected_str.c_str()))
     {
-        for(const auto& [enum_value, view] : pinguim::enums::reflect<input_types>::enum_iterator())
+        for(const auto& [enum_value, view] : pinguim::renum::reflect<input_types>::enum_iterator())
         {
             if( ImGui::Selectable(std::string{ view.unqualified() }.c_str(), enum_value == selected) ) { selected = enum_value; }
         }
