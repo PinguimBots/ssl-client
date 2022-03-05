@@ -1,23 +1,20 @@
-# Taken from wrapdb, removed what i don't use, added project arguments and gl dependency.
 project('imgui', 'cpp',
-    version: '1.78',
+    version: '1.87',
     license: 'MIT',
 )
 
 add_project_arguments('-DIMGUI_IMPL_OPENGL_LOADER_GLEW', language: 'cpp')
 
-# Folder `examples` is needed, as it includes
-# the implementations for different rendering backends and
-# context creation APIs
-include_dirs = include_directories('.', 'examples')
+include_dirs = include_directories('.')
 
 sources = [
     'imgui_demo.cpp',
     'imgui_draw.cpp',
+    'imgui_tables.cpp',
     'imgui_widgets.cpp',
     'imgui.cpp',
-    'examples/imgui_impl_sdl.cpp',
-    'examples/imgui_impl_opengl3.cpp'
+    'backends/imgui_impl_sdl.cpp',
+    'backends/imgui_impl_opengl3.cpp'
 ]
 
 imgui = static_library('imgui',

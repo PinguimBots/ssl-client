@@ -5,8 +5,8 @@
 #include <SDL.h>
 
 #include <imgui.h>
-#include <imgui_impl_sdl.h>
-#include <imgui_impl_opengl3.h>
+#include <backends/imgui_impl_sdl.h>
+#include <backends/imgui_impl_opengl3.h>
 
 // TODO: return info about what errored out (nonstd::expected<plumber, error_type>)
 auto pinguim::imgui::make_plumber(const char* windowname) -> std::optional<plumber>

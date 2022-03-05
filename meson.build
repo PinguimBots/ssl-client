@@ -45,8 +45,9 @@ sdl2_intrinsic_deps = os in ['windows', 'darwin'] ? [] : [
 glew_dep  = dependency('glew',  version: '>= 2.0.0', fallback: ['glew', 'glew_dep'],   include_type: 'system')
 sdl2_dep  = dependency('sdl2',  version: '>= 2.0.9', fallback: ['sdl2', 'sdl2_dep'],   include_type: 'system')
 imgui_dep = dependency('imgui', version: '>= 1.7.6', fallback: ['imgui', 'imgui_dep'], include_type: 'system')
+imgui_file_dialog_dep = subproject('imgui_file_dialog').get_variable('imgui_file_dialog_dep').as_system('system')
 sdl2_deps = [sdl2_intrinsic_deps, sdl2_dep]
-gui_deps  = [opengl_dep, glew_dep, sdl2_deps, imgui_dep]
+gui_deps  = [opengl_dep, glew_dep, sdl2_deps, imgui_dep, imgui_file_dialog_dep]
 # Utils and other stuff.
 simproto_dep = subproject('simproto').get_variable('simproto_dep').as_system('system')
 asio_dep     = dependency('asio',   version: '>= 1.18.1', fallback: ['asio', 'asio_dep'],     include_type: 'system')

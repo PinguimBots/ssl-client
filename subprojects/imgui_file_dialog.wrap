@@ -1,0 +1,6 @@
+[wrap-git]
+
+url = https://github.com/aiekick/ImGuiFileDialog.git
+revision = v0.6.4
+
+patch_directory = imgui_file_dialog
