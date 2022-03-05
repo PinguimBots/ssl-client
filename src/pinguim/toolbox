@@ -4,5 +4,6 @@
 #include "pinguim/chrono.hpp"
 #include "pinguim/cvt.hpp"
 #include "pinguim/renum.hpp"
+#include "pinguim/scoped.hpp"
 #include "pinguim/geometry.hpp"
 #include "pinguim/utils.hpp"

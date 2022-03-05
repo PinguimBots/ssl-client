@@ -60,6 +60,8 @@ utils_deps   = [simproto_dep, asio_dep, fmt_dep, docopt_dep, glm_dep, openmp_dep
 app_inc = include_directories('src')
 
 sources = files(
+    'src/pinguim/scoped.cpp',
+
     'src/pinguim/app/subsystems/manager.cpp',
     'src/pinguim/app/subsystems/input/firasim.cpp',
     'src/pinguim/app/subsystems/input/vision.cpp',

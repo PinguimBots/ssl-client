@@ -21,3 +21,4 @@ cpp_warnings = meson.get_compiler('cpp').get_supported_arguments([
 ])
 
 test('cvt', executable('cvt', 'cvt.cpp', include_directories: app_inc))
+test('scoped', executable('scoped', ['../src/pinguim/scoped.cpp', 'scoped.cpp'], include_directories: app_inc))
