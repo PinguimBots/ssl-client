@@ -3,9 +3,9 @@ project('pbssl', ['cpp', 'c'],
     default_options : [
         'buildtype=debugoptimized',
         'warning_level=0',
-        'cpp_std=c++2a',
+        'cpp_std=c++20',
     ],
-    meson_version: '>= 0.56',
+    meson_version: '>= 0.60',
     #license: ['???'],
 )
 
@@ -35,7 +35,7 @@ endif
 # wrapping it manually is WAY beyond the scope of this project.
 # So it's wise to make the project runnable without it, check out 'pinguim/conf.hpp' and the
 # vision input subsystem.
-opencv_dep = dependency('opencv4', version: '>= 4.0.0', include_type: 'system', required: false)
+opencv_dep = dependency('opencv4', version: '>= 4.5.1', include_type: 'system', required: false)
 # Gui stuff
 opengl_dep = os == 'windows' ? meson.get_compiler('c').find_library('opengl32') : dependency('gl', include_type: 'system')
 sdl2_intrinsic_deps = os in ['windows', 'darwin'] ? [] : [
@@ -75,6 +75,7 @@ sources = files(
 
     'src/pinguim/vsss/strategy.cpp',
     'src/pinguim/vsss/control.cpp',
+    'src/pinguim/vsss/control2.cpp',
     'src/pinguim/vsss/common.cpp',
 )
 

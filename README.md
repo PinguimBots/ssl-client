@@ -1,9 +1,12 @@
 # pbssl
-> PinguimBots client for the 202X online #robocub competitions
+> PinguimBots client for the 202X online/offline #robocub competitions
 
 ## Dependencies
 In order to run the project you need **installed on your system**:
-- [meson](https://github.com/mesonbuild/meson) >= 0.56 and a suitable backend
+- [meson](https://github.com/mesonbuild/meson) >= 0.60 and a suitable backend (ninja/make)
+- A C++20 capable compiler [(check here)](https://en.cppreference.com/w/cpp/compiler_support)
+    - GCC >= 11 OR
+    - Clang >= 13
 - OpenGL
 - OpenMP
 
@@ -16,6 +19,9 @@ The following are also needed but downloaded/compiled automatically if not found
 - [docopt.cpp](https://github.com/docopt/docopt.cpp) >= 0.6.0
 - [glm](http://glm.g-truc.net/) >= 0.9.8
 - [protobuf](https://developers.google.com/protocol-buffers) >= 3.0.0 and protoc
+
+The following are used when present but not necessary:
+- [OpenCV4](https://opencv.org/) >= 4.5.1
 
 ## Running the project
 
