@@ -24,6 +24,8 @@ namespace pinguim::app::subsystems::logic
         emplace_fill_capacity(robot_input_types, input_types::none);
         prev_inputs.reserve(gi.allied_team.size());
         emplace_fill_capacity(prev_inputs);
+        max_lerp_time.reserve(gi.allied_team.size());
+        emplace_fill_capacity(max_lerp_time, 0.2f);
 
         if(draw_window) { draw_inputs_window(gi, c, delta_seconds); }
 
@@ -36,10 +38,7 @@ namespace pinguim::app::subsystems::logic
 
 auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_info const& gi, commands& c, float delta_seconds) -> void
 {
-    const auto max_lerp_time = 0.2f;
-    const auto lerp_factor   = std::clamp(delta_seconds, 0.f, max_lerp_time) / max_lerp_time;
-
-    ImGui::SetNextWindowSize({610, 237}, ImGuiCond_Once);
+    ImGui::SetNextWindowSize({610, 278}, ImGuiCond_Once);
     if(ImGui::Begin("[Logic] Direct Control", &draw_window))
     {
         for(auto i = 0u; i < c.size(); ++i)
@@ -47,10 +46,10 @@ auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_in
             auto const robot_id = gi.allied_team[i].id;
 
             ImGui::BeginGroupPanel(fmt::format("Robot {} Input Panel", robot_id).c_str());
-            ImGui::Dummy({0, 5});
+            ImGui::Dummy({5, 5});
 
             auto& selected = robot_input_types[i];
-            draw_input_type_combo(robot_id, selected);
+            draw_input_type_combo(robot_id, selected, max_lerp_time[i]);
 
             auto target_input = command{gi.allied_team_id, robot_id * cvt::toe, 0, 0};
             auto const [fwd, bkw, left, right] = get_input_state(selected);
@@ -73,7 +72,7 @@ auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_in
                 }
             }
 
-
+            const auto lerp_factor   = std::clamp(delta_seconds, 0.f, max_lerp_time[i]) / max_lerp_time[i];
             auto lerped_input = command{
                 target_input.team_id, target_input.robot_id,
                 std::lerp(prev_inputs[i].left_motor,  target_input.left_motor,  lerp_factor),
@@ -118,7 +117,7 @@ auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_in
     ImGui::End();
 }
 
-auto pinguim::app::subsystems::logic::direct_control::draw_input_type_combo(u32 robot_id, input_types& selected) -> void
+auto pinguim::app::subsystems::logic::direct_control::draw_input_type_combo(u32 robot_id, input_types& selected, float& max_robot_lerp_time) -> void
 {
     auto selected_str = std::string{ pinguim::renum::unqualified_value_name(selected) };
 
@@ -134,6 +133,15 @@ auto pinguim::app::subsystems::logic::direct_control::draw_input_type_combo(u32 
         }
         ImGui::EndCombo();
     }
+    ImGui::Text("Max Lerp Time");
+    ImGui::SetNextItemWidth(160);
+    ImGui::SliderFloat(
+        fmt::format("##robot {} max lerp time", robot_id).c_str(),
+        &max_robot_lerp_time,
+        0.f,
+        1.f,
+        "%.2f Seconds"
+    );
     ImGui::Dummy({0, 10});
     ImGui::EndGroup();
 }
@@ -150,7 +158,7 @@ auto pinguim::app::subsystems::logic::direct_control::get_input_state(input_type
             return { k(SDL_SCANCODE_W), k(SDL_SCANCODE_S), k(SDL_SCANCODE_A), k(SDL_SCANCODE_D) };
         case input_types::keyboard_IJKL: [[fallthrough]];
         case input_types::keyboard_IJKL_direct:
-            return { k(SDL_SCANCODE_I), k(SDL_SCANCODE_J), k(SDL_SCANCODE_L), k(SDL_SCANCODE_K) };
+            return { k(SDL_SCANCODE_I), k(SDL_SCANCODE_K), k(SDL_SCANCODE_J), k(SDL_SCANCODE_L) };
         case input_types::keyboard_ARROWS: [[fallthrough]];
         case input_types::keyboard_ARROWS_direct:
             return { k(SDL_SCANCODE_UP), k(SDL_SCANCODE_DOWN), k(SDL_SCANCODE_LEFT), k(SDL_SCANCODE_RIGHT) };

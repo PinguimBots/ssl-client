@@ -39,12 +39,13 @@ namespace pinguim::app::subsystems::logic
 
         auto draw_inputs_window(game_info const& gi, commands&, float delta_seconds) -> void;
         // Returns the current command.
-        auto draw_input_type_combo(u32 robot_id, input_types& selected) -> void;
+        auto draw_input_type_combo(u32 robot_id, input_types& selected, float& max_robot_lerp_time) -> void;
         auto get_input_state(input_types input) -> input_state;
 
         std::vector<input_types> robot_input_types = {};
         // Used for lerping.
         std::vector<command> prev_inputs = {};
+        std::vector<float> max_lerp_time = {};
 
         bool draw_window = true;
     };
