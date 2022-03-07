@@ -143,7 +143,7 @@ namespace pinguim::renum
             constexpr auto begin() const { return *this; }
             constexpr auto end()   const { return nullptr; }
 
-            constexpr auto operator==(void*) const { return i == count; }
+            constexpr auto operator==(void*) const -> bool { return i == count; }
             constexpr auto operator*() const
             {
                 if constexpr(IsValueIterator)

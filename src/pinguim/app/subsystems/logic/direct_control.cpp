@@ -23,7 +23,7 @@ namespace pinguim::app::subsystems::logic
         robot_input_types.reserve(gi.allied_team.size());
         emplace_fill_capacity(robot_input_types, input_types::none);
         prev_inputs.reserve(gi.allied_team.size());
-        emplace_fill_capacity(prev_inputs, 0, 0, 0, 0);
+        emplace_fill_capacity(prev_inputs);
 
         if(draw_window) { draw_inputs_window(gi, c, delta_seconds); }
 

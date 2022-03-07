@@ -1,5 +1,7 @@
 #include "pinguim/vsss/control.hpp"
 
+#include "pinguim/cvt.hpp"
+
 #include <cmath>
 #include <algorithm>
 
@@ -43,7 +45,7 @@ auto pinguim::vsss::control::generate_vels(pinguim::vsss::robot robot, pinguim::
     auto [target_x, target_y] = pinguim::vsss::to_pair(target_pos);
     auto [xDif, yDif] = pinguim::vsss::to_pair(target_pos - robot.position);
 
-    double positionError = glm::length(glm::vec2{xDif, yDif}); //Distancia linha reta robo -> bola
+    double positionError = cvt::toe * glm::length(glm::vec2{xDif, yDif}); //Distancia linha reta robo -> bola
 
     double angleError = 0.0, target_angle = 0.0;
 
