@@ -1,29 +1,24 @@
 #include "pinguim/app/subsystems/manager.hpp"
 
 #include "pinguim/app/subsystems/all"
+#include "pinguim/cvt.hpp"
 
 #include <imgui.h>
-
-auto pinguim::app::subsystems::manager::handle_event(SDL_Event& e) -> bool
-{
-    if(_input  && _input->handle_event(e))  return true;
-    if(_logic  && _logic->handle_event(e))  return true;
-    if(_output && _output->handle_event(e)) return true;
-    return false;
-}
 
 namespace i = pinguim::app::subsystems::input;
 namespace l = pinguim::app::subsystems::logic;
 namespace o = pinguim::app::subsystems::output;
 
-auto pinguim::app::subsystems::manager::draw_selector_ui() -> void
+auto pinguim::app::subsystems::manager::draw_selector_ui(float delta_seconds) -> void
 {
+    namespace ImGui = ::ImGui;
+
     // Just for automating some boilerplate.
     #define MENU_ITEM(namestr, enum_var, enum_val, enum_none_val, setter, set_type) \
         if( ImGui::MenuItem( namestr, nullptr, enum_var == enum_val) )              \
         {                                                                           \
             if( enum_var != enum_val ) {                                            \
-                setter < set_type >();                                              \
+                setter(new set_type);                                               \
                 enum_var = enum_val;                                                \
             } else {                                                                \
                 setter(nullptr);                                                    \
@@ -32,6 +27,9 @@ auto pinguim::app::subsystems::manager::draw_selector_ui() -> void
         }
 
     ImGui::BeginMainMenuBar();
+
+    ImGui::Text("%.2f MS", cvt::to<double> * delta_seconds * 1000);
+
     if(ImGui::BeginMenu("Subsystems"))
     {
         if(ImGui::BeginMenu("Input"))

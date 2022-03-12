@@ -1,28 +1,18 @@
 #pragma once
 
-#include <utility> // For std::forward.
 #include <memory> // For std::unique_ptr.
 
 #include "pinguim/app/subsystems/types.hpp"
-
-// Forward decl. Defined in <SDL.h>
-union SDL_Event;
 
 namespace pinguim::app::subsystems
 {
     struct manager : public input_subsystem, public logic_subsystem, public output_subsystem
     {
-        auto draw_selector_ui() -> void;
+        auto draw_selector_ui(float delta_seconds) -> void;
 
         auto input(pinguim::app::input_subsystem*) -> void;
         auto logic(pinguim::app::logic_subsystem*) -> void;
         auto output(pinguim::app::output_subsystem*) -> void;
-        template <typename T, typename... Args> auto input(Args&&... args)  -> void { input(  new T(std::forward<Args>(args)...) ); }
-        template <typename T, typename... Args> auto logic(Args&&... args)  -> void { logic(  new T(std::forward<Args>(args)...) ); }
-        template <typename T, typename... Args> auto output(Args&&... args) -> void { output( new T(std::forward<Args>(args)...) ); }
-
-        // Meant to be used with pinguim::imgui::plumber.
-        auto handle_event(SDL_Event& e) -> bool override;
 
         auto update_gameinfo(game_info&, float delta_seconds) -> bool override;
         auto run_logic(game_info const&, commands&, float delta_seconds) -> bool override;
