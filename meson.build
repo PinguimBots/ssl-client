@@ -60,18 +60,27 @@ utils_deps   = [simproto_dep, asio_dep, fmt_dep, docopt_dep, glm_dep, openmp_dep
 app_inc = include_directories('src')
 
 sources = files(
-    'src/pinguim/scoped.cpp',
+    'src/pinguim/geometry.cpp',
 
     'src/pinguim/app/subsystems/manager.cpp',
+    'src/pinguim/app/subsystems/registrar.cpp',
+
     'src/pinguim/app/subsystems/input/firasim.cpp',
     'src/pinguim/app/subsystems/input/vision.cpp',
     'src/pinguim/app/subsystems/logic/direct_control.cpp',
     'src/pinguim/app/subsystems/logic/strategy.cpp',
     'src/pinguim/app/subsystems/output/firasim.cpp',
+    'src/pinguim/app/subsystems/misc/imgui_debug.cpp',
 
+    'src/pinguim/imgui/widgets/toggle_button.cpp',
+    'src/pinguim/imgui/widgets/group_panel.cpp',
+    'src/pinguim/imgui/fonts/loader.cpp',
     'src/pinguim/imgui/plumber.cpp',
     'src/pinguim/imgui/img.cpp',
-    'src/pinguim/imgui/widgets/group_panel.cpp',
+
+    'src/pinguim/imgui/fonts/kenney_game_icons.cpp',
+
+    'src/pinguim/vsss/net/udp_sender.cpp',
 
     'src/pinguim/vsss/strategy.cpp',
     'src/pinguim/vsss/control.cpp',
@@ -80,6 +89,7 @@ sources = files(
 )
 
 subdir('conf')
+subdir('scripts')
 subdir('tests')
 
 pbssl_exe = executable(
@@ -88,5 +98,4 @@ pbssl_exe = executable(
     include_directories: [app_inc, conf_inc],
     dependencies: [opencv_dep, gui_deps, utils_deps],
     cpp_args: cpp_warnings,
-    #cpp_pch: 'src/pinguim/app/pch.hpp',
 )

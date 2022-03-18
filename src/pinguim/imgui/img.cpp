@@ -1,19 +1,30 @@
 #include "pinguim/imgui/img.hpp"
 
-#include "pinguim/conf.hpp"
+#include "pinguim/cvt.hpp"
+
+#include <opencv2/opencv.hpp>
 
 #include <utility> // For std::swap.
 
-auto ImGui::Image(
-    const cv::ogl::Texture2D& tex,
-    const ImVec2& uv0,
-    const ImVec2& uv1,
-    const ImVec4& tint_col,
-    const ImVec4& border_col
+// To easily interop between imgui types and our detail:: placeholders.
+#define IM_VEC2_CLASS_EXTRA ImVec2(const pinguim::ImGui::detail::V2& v) : x{v.x}, y{v.y} {}
+#define IM_VEC4_CLASS_EXTRA ImVec4(const pinguim::ImGui::detail::V4& v) : x{v.x}, y{v.y}, z{v.z}, w{v.w} {}
+#include <imgui.h>
+#include <imgui_internal.h> // For hooking.
+
+#include <GL/glew.h>
+
+auto pinguim::ImGui::Image(
+    const pinguim::imgui::img& img,
+    const detail::V2& uv0,
+    const detail::V2& uv1,
+    const detail::V4& tint_col,
+    const detail::V4& border_col
 ) -> void
 {
-    ImGui::Image( reinterpret_cast<void*>( static_cast<intptr_t>( tex.texId() ) ),
-        ImVec2( static_cast<float>( tex.cols() ), static_cast<float>( tex.rows() ) ),
+    ::ImGui::Image(
+        reinterpret_cast<void*>( static_cast<intptr_t>( img.texture.handle ) ),
+        ImVec2( static_cast<float>( img.texture.cols ), static_cast<float>( img.texture.rows ) ),
         uv0,
         uv1,
         tint_col,
@@ -21,73 +32,64 @@ auto ImGui::Image(
     );
 }
 
-auto ImGui::Image(
-    const pinguim::imgui::img& img,
-    const ImVec2& uv0,
-    const ImVec2& uv1,
-    const ImVec4& tint_col,
-    const ImVec4& border_col
+auto pinguim::ImGui::Image(
+    pinguim::imgui::img&& img,
+    const detail::V2& uv0,
+    const detail::V2& uv1,
+    const detail::V4& tint_col,
+    const detail::V4& border_col
 ) -> void
 {
-    if (std::holds_alternative<cv::ogl::Texture2D>(img.texture)) {
-        ImGui::Image(std::get<cv::ogl::Texture2D>(img.texture), uv0, uv1, tint_col, border_col);
-    } else {
-        const auto& imgdata = std::get<pinguim::imgui::img::gl_texture>(img.texture);
-        ImGui::Image(
-            reinterpret_cast<void*>( static_cast<intptr_t>( imgdata.handle ) ),
-            ImVec2( static_cast<float>( imgdata.cols ), static_cast<float>( imgdata.rows ) ),
-            uv0,
-            uv1,
-            tint_col,
-            border_col
-        );
-    }
+    auto hook     = ImGuiContextHook();
+    hook.Type     = ImGuiContextHookType_NewFramePre;
+    hook.Callback = []([[maybe_unused]] auto* ctx, auto* h)
+    {
+        delete cvt::rc<pinguim::imgui::img*>(h->UserData);
+        h->Type = ImGuiContextHookType_PendingRemoval_;
+    };
+    hook.UserData = new pinguim::imgui::img(std::move(img));
+
+    ImGui::Image(
+        *cvt::rc<pinguim::imgui::img*>(hook.UserData),
+        uv0,
+        uv1,
+        tint_col,
+        border_col
+    );
+
+    ::ImGui::AddContextHook(::ImGui::GetCurrentContext(), &hook);
 }
 
-pinguim::imgui::img::img() : pinguim::imgui::img::img(0, 0, 0)
-{}
-
-pinguim::imgui::img::img(cv::InputArray mat)
+pinguim::imgui::img::img(const cv::_InputArray& mat)
+    : texture{}
 {
-    if constexpr(pinguim::conf::opencv_with_opengl)
-    {
-        // Best case scenario, this *probably* avoids copies.
-        texture = cv::ogl::Texture2D{mat};
-    }
-    else
-    {
-        // If mat is a cv::Mat this *probably* avoids copying, but
-        // we can't really avoid glTexImage2D making a copy :(
-        cv::Mat _mat;
-        cv::cvtColor(mat, _mat, cv::COLOR_BGR2RGBA);
+    // If mat is a cv::Mat this *probably* avoids copying, but
+    // we can't really avoid glTexImage2D making a copy :(
+    cv::Mat _mat;
+    cv::cvtColor(mat, _mat, cv::COLOR_BGR2RGBA);
 
-        auto gl = gl_texture{};
-
-        glGenTextures(1, &gl.handle);
-        glBindTexture(GL_TEXTURE_2D, gl.handle);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RGBA,
-            _mat.cols,
-            _mat.rows,
-            0,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            _mat.data
-        );
-        gl.cols = _mat.cols;
-        gl.rows = _mat.rows;
-
-        texture = std::move(gl);
-    }
+    glGenTextures(1, &texture.handle);
+    glBindTexture(GL_TEXTURE_2D, texture.handle);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        _mat.cols,
+        _mat.rows,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        _mat.data
+    );
+    texture.cols = _mat.cols;
+    texture.rows = _mat.rows;
 }
 
 pinguim::imgui::img::img(GLuint handle, int cols, int rows)
-    : texture{ gl_texture{handle, cols, rows} }
+    : texture{ handle, cols, rows }
 {}
 
 pinguim::imgui::img::img(img&& other)
@@ -100,9 +102,4 @@ auto pinguim::imgui::img::operator=(img&& other) -> img&
 }
 
 pinguim::imgui::img::~img()
-{
-    if (std::holds_alternative<gl_texture>(texture)) {
-        const auto& gl = std::get<gl_texture>(texture);
-        glDeleteTextures(1, &gl.handle);
-    }
-}
+{ glDeleteTextures(1, &texture.handle); }

@@ -1,5 +1,9 @@
 #include "pinguim/imgui/plumber.hpp"
 
+#include "pinguim/imgui/fonts/loader.hpp"
+#include "pinguim/standalone/forward.hpp"
+#include "pinguim/cvt.hpp"
+
 #include <GL/glew.h>
 
 #include <SDL.h>
@@ -8,17 +12,46 @@
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_opengl3.h>
 
+pinguim::imgui::plumber::~plumber()
+{
+    if(imgui_opengl3_context) ImGui_ImplOpenGL3_Shutdown();
+    if(imgui_sdl2_context)    ImGui_ImplSDL2_Shutdown();
+    if(imgui_context)         ImGui::DestroyContext(imgui_context);
+    if(sdl_glcontext)         SDL_GL_DeleteContext(sdl_glcontext);
+    if(sdl_window)            SDL_DestroyWindow(sdl_window);
+    if(sdl_context)           SDL_Quit();
+}
+
+pinguim::imgui::plumber::plumber(plumber&& other)
+{ *this = s::move(other); }
+
+auto pinguim::imgui::plumber::operator=(plumber&& other) -> plumber&
+{
+    #define PINGUIM_DETAIL_SWAP(a, b) { auto temp = a; a = b; b = temp; }
+
+    PINGUIM_DETAIL_SWAP(sdl_context,           other.sdl_context);
+    PINGUIM_DETAIL_SWAP(sdl_window,            other.sdl_window);
+    PINGUIM_DETAIL_SWAP(sdl_glcontext,         other.sdl_glcontext);
+    PINGUIM_DETAIL_SWAP(imgui_context,         other.imgui_context);
+    PINGUIM_DETAIL_SWAP(imgui_sdl2_context,    other.imgui_sdl2_context);
+    PINGUIM_DETAIL_SWAP(imgui_opengl3_context, other.imgui_opengl3_context);
+
+    #undef PINGUIM_DETAIL_SWAP
+
+    return *this;
+}
+
 // TODO: return info about what errored out (nonstd::expected<plumber, error_type>)
-auto pinguim::imgui::make_plumber(const char* windowname) -> std::optional<plumber>
+auto pinguim::imgui::make_plumber(const char* windowname) -> plumber*
 {
     static bool is_initialized = false;
 
-    if(is_initialized) {return std::nullopt;}
+    if(is_initialized) {return nullptr;}
 
     auto mario = plumber{};
 
-    if(SDL_Init(SDL_INIT_VIDEO) != 0) {return std::nullopt;}
-    mario.sdl_context = {nullptr, [](auto){SDL_Quit();}};
+    if(SDL_Init(SDL_INIT_VIDEO) != 0) {return nullptr;}
+    mario.sdl_context = true;
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -28,97 +61,82 @@ auto pinguim::imgui::make_plumber(const char* windowname) -> std::optional<plumb
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-    auto window = SDL_CreateWindow(
+    mario.sdl_window = SDL_CreateWindow(
         windowname,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720,
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    if(window == nullptr) {return std::nullopt;}
-    mario.sdl_window = {window, [](auto w){SDL_DestroyWindow(w);}};
+    if(mario.sdl_window == nullptr) {return nullptr;}
 
-    // And the graphics context
-    auto gl_context = SDL_GL_CreateContext(window);
-    if(gl_context == nullptr) {return std::nullopt;}
-    mario.sdl_glcontext = {gl_context, [](auto ctx) {SDL_GL_DeleteContext(reinterpret_cast<SDL_GLContext>(ctx));}};
+    mario.sdl_glcontext = SDL_GL_CreateContext(mario.sdl_window);
+    if(mario.sdl_glcontext == nullptr) {return nullptr;}
 
-    if(SDL_GL_MakeCurrent(window, gl_context) != 0) {return std::nullopt;}
+    if(SDL_GL_MakeCurrent(mario.sdl_window, mario.sdl_glcontext) != 0) {return nullptr;}
     SDL_GL_SetSwapInterval(1); // Enable vsync
 
-    if(glewInit() != GLEW_OK) {return std::nullopt;}
+    if(glewInit() != GLEW_OK) {return nullptr;}
 
     IMGUI_CHECKVERSION();
 
-    auto imgui_context = ImGui::CreateContext();
-    if(imgui_context == nullptr) {return std::nullopt;}
-    ImGui::SetCurrentContext(imgui_context);
-    mario.imgui_context = {imgui_context, [](auto ctx){ImGui::DestroyContext(static_cast<ImGuiContext*>(ctx));}};
+    mario.imgui_context = ImGui::CreateContext();
+    if(mario.imgui_context == nullptr) {return nullptr;}
+    ImGui::SetCurrentContext(mario.imgui_context);
 
     ImGui::GetIO().IniFilename = nullptr;
 
-    if(ImGui_ImplSDL2_InitForOpenGL(window, gl_context) == false) {return std::nullopt;}
-    mario.imgui_sdl2_context = {nullptr, [](auto){ImGui_ImplSDL2_Shutdown();}};
+    if(ImGui_ImplSDL2_InitForOpenGL(mario.sdl_window, mario.sdl_glcontext) == false) {return nullptr;}
+    mario.imgui_sdl2_context = true;
 
-    if(ImGui_ImplOpenGL3_Init("#version 130") == false) {return std::nullopt;}
-    mario.imgui_opengl3_context = {nullptr, [](auto){ImGui_ImplOpenGL3_Shutdown();}};
+    if(ImGui_ImplOpenGL3_Init("#version 130") == false) {return nullptr;}
+    mario.imgui_opengl3_context = true;
+
+    fonts::init();
 
     is_initialized = true;
-    return mario;
+    return new plumber{ s::move(mario) };
+}
+
+namespace pinguim::imgui::detail
+{
+    struct default_quit_handler_userdata { bool quit; SDL_Window* w; };
+
+    auto default_quit_handler(SDL_Event& e, void* ud_ptr) -> void
+    {
+        auto& ud = *cvt::rc< default_quit_handler_userdata* >(ud_ptr);
+
+        if (e.type == SDL_QUIT)
+        { ud.quit = true; }
+        else if (e.type == SDL_WINDOWEVENT &&
+            e.window.event == SDL_WINDOWEVENT_CLOSE &&
+            e.window.windowID == SDL_GetWindowID(ud.w)
+        )
+        { ud.quit = true; }
+        else
+        { ud.quit = false; }
+    };
 }
 
 auto pinguim::imgui::plumber::handle_event() -> bool
 {
-    auto quit = false;
-    handle_event([&](auto& e){ quit = quit_handler(e); });
-    return quit;
+    auto ud = detail::default_quit_handler_userdata{ false, sdl_window };
+    handle_events(&detail::default_quit_handler, &ud);
+    return ud.quit;
 }
 
-auto pinguim::imgui::plumber::quit_handler(SDL_Event& e) -> bool
-{
-    if (e.type == SDL_QUIT) {return true;}
-    if (e.type == SDL_WINDOWEVENT &&
-        e.window.event == SDL_WINDOWEVENT_CLOSE &&
-        e.window.windowID == SDL_GetWindowID(sdl_window.get()))
-    {
-        return true;
-    }
-
-    return false;
-};
-
-
-auto pinguim::imgui::plumber::handle_event(event_handler& handler) -> void
+auto pinguim::imgui::plumber::handle_events(event_handler h, void* userdata) -> void
 {
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
         ImGui_ImplSDL2_ProcessEvent(&event);
-        handler(event);
-    }
-}
-// Same as above.
-auto pinguim::imgui::plumber::handle_event(event_handler&& handler) -> void
-{
-    SDL_Event event;
-    while (SDL_PollEvent(&event))
-    {
-        ImGui_ImplSDL2_ProcessEvent(&event);
-        handler(event);
-    }
-}
-// Same as above.
-auto pinguim::imgui::plumber::handle_event(const event_handler& handler) -> void
-{
-    SDL_Event event;
-    while (SDL_PollEvent(&event))
-    {
-        ImGui_ImplSDL2_ProcessEvent(&event);
-        handler(event);
+        h(event, userdata);
     }
 }
 
-auto pinguim::imgui::plumber::begin_frame() -> void
+auto pinguim::imgui::plumber::begin_frame(bool rebuild_fonts) -> void
 {
+    if(rebuild_fonts) { ImGui_ImplOpenGL3_CreateFontsTexture(); } // TODO: Does this leak memory ?
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(sdl_window.get());
+    ImGui_ImplSDL2_NewFrame(sdl_window);
     ImGui::NewFrame();
 }
 
@@ -131,5 +149,5 @@ auto pinguim::imgui::plumber::draw_frame() -> void
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    SDL_GL_SwapWindow(sdl_window.get());
+    SDL_GL_SwapWindow(sdl_window);
 }

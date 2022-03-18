@@ -28,4 +28,7 @@ imgui = static_library('imgui',
     include_directories: include_dirs,
 )
 
+binary_to_compressed_c = executable('binary_to_compressed_c', 'misc/fonts/binary_to_compressed_c.cpp')
+meson.override_find_program('binary_to_compressed_c', binary_to_compressed_c)
+
 imgui_dep = declare_dependency(include_directories: include_dirs, link_with: imgui)

@@ -3,6 +3,7 @@
 #include <complex>
 #include <csignal>
 #include <cstdlib> // For std::exit;
+#include <type_traits> // For std::underlying_t.
 
 // Networking stuff.
 #include <pinguim/simproto/all>
@@ -115,7 +116,7 @@ auto do_strategy(auto& is_yellow, auto& game_on, auto& bounds, auto& strategy, a
             pb_ball.velocity = pinguim::vsss::point{ball.vx(), ball.vy()};
 
             for (const auto &other_robot : allied_team) {
-                if (other_robot.robot_id() != cvt::tou * pinguim::vsss::Roles::ATTACKER) {
+                if (other_robot.robot_id() != cvt::to<std::underlying_t<pinguim::vsss::Roles>> * pinguim::vsss::Roles::ATTACKER) {
                     pb_enemies.push_back({other_robot.x(), other_robot.y()});
                 }
             }

@@ -29,10 +29,13 @@ namespace pinguim::inline chrono
         constexpr auto click() -> stopwatch&;
 
         template <typename Duration = std::chrono::duration<float>>
-        constexpr auto last_segment() const -> decltype(Duration::count());
+        constexpr auto last_segment() const;
 
         template <typename Duration = std::chrono::duration<float>>
-        constexpr auto since_beginning() const -> decltype(Duration::count());
+        constexpr auto since_click() const;
+
+        template <typename Duration = std::chrono::duration<float>>
+        constexpr auto since_beginning() const;
 
     private:
         time_point start;
@@ -64,10 +67,15 @@ constexpr auto pinguim::chrono::stopwatch<Timer>::click() -> stopwatch&
 
 template <typename Timer>
 template <typename Duration>
-constexpr auto pinguim::chrono::stopwatch<Timer>::last_segment() const -> decltype(Duration::count())
+constexpr auto pinguim::chrono::stopwatch<Timer>::last_segment() const
 { return std::chrono::duration_cast<Duration>(this_segment_start - last_segment_start).count(); }
 
 template <typename Timer>
 template <typename Duration>
-constexpr auto pinguim::chrono::stopwatch<Timer>::since_beginning() const -> decltype(Duration::count())
+constexpr auto pinguim::chrono::stopwatch<Timer>::since_click() const
+{ return std::chrono::duration_cast<Duration>(timer::now() - this_segment_start).count(); }
+
+template <typename Timer>
+template <typename Duration>
+constexpr auto pinguim::chrono::stopwatch<Timer>::since_beginning() const
 { return std::chrono::duration_cast<Duration>(timer::now() - start).count(); }

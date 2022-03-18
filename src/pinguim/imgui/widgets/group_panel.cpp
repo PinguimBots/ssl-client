@@ -7,8 +7,10 @@
 
 static ImVector<ImRect> s_GroupPanelLabelStack;
 
-void ImGui::BeginGroupPanel(const char* name, const ImVec2& size)
+void pinguim::ImGui::BeginGroupPanel(const char* name, const ImVec2& size)
 {
+    namespace ImGui = ::ImGui;
+
     ImGui::BeginGroup();
 
     auto itemSpacing = ImGui::GetStyle().ItemSpacing;
@@ -56,8 +58,10 @@ void ImGui::BeginGroupPanel(const char* name, const ImVec2& size)
     s_GroupPanelLabelStack.push_back(ImRect(labelMin, labelMax));
 }
 
-void ImGui::EndGroupPanel()
+void pinguim::ImGui::EndGroupPanel()
 {
+    namespace ImGui = ::ImGui;
+
     ImGui::PopItemWidth();
 
     auto itemSpacing = ImGui::GetStyle().ItemSpacing;

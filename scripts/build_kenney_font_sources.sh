@@ -1,0 +1,1 @@
+meson compile -C ../builddir kenney_font_sources && meson install -C ../builddir --tags kenney_font_sources

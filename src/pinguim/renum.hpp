@@ -2,6 +2,8 @@
 
 #include "pinguim/conf.hpp"
 
+#include "pinguim/standalone/remove_cvref.hpp"
+
 #include <string_view>
 
 // Implementation details to make this magic work.
@@ -98,16 +100,6 @@ namespace pinguim::renum::detail
 
         #pragma GCC diagnostic pop
     }
-
-    // Some type_trait utils (didn't want to #include <type_traits>).
-    template <typename T> struct remove_reference      { using type = T; };
-    template <typename T> struct remove_reference<T&>  { using type = T; };
-    template <typename T> struct remove_reference<T&&> { using type = T; };
-    template <typename T> struct remove_cv                   { using type = T; };
-    template <typename T> struct remove_cv<const T>          { using type = T; };
-    template <typename T> struct remove_cv<volatile T>       { using type = T; };
-    template <typename T> struct remove_cv<const volatile T> { using type = T; };
-    template <typename T> using  remove_cvref_t = typename remove_cv< typename remove_reference<T>::type >::type;
 }
 
 namespace pinguim::renum
@@ -183,19 +175,19 @@ namespace pinguim::renum
     //    "keyboard_AD"sv
     template<
         typename Enum,
-        typename Reflected = reflect< detail::remove_cvref_t<Enum> >
+        typename Reflected = reflect< pinguim::s::remove_cvref_t<Enum> >
     > constexpr auto qualified_value_name(Enum&& e) -> std::string_view
     { return Reflected{}[e].qualified(); }
 
     template<
         typename Enum,
-        typename Reflected = reflect< detail::remove_cvref_t<Enum> >
+        typename Reflected = reflect< pinguim::s::remove_cvref_t<Enum> >
     > constexpr auto unqualified_value_name(Enum&& e) -> std::string_view
     { return Reflected{}[e].unqualified(); }
 
     template<
         typename Enum,
-        typename Reflected = reflect< detail::remove_cvref_t<Enum> >
+        typename Reflected = reflect< pinguim::s::remove_cvref_t<Enum> >
     > constexpr auto semi_qualified_value_name(Enum&& e) -> std::string_view
     { return Reflected{}[e].semi_qualified(); }
 }

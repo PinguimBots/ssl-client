@@ -28,7 +28,7 @@ namespace pinguim::app::subsystems::logic
             keyboard_ARROWS = 6,
             keyboard_ARROWS_direct = 7,
         };
-        static constexpr auto is_direct(input_types i) { return static_cast<int>(i) % 2 == 0; }
+        static constexpr auto is_direct(input_types i) { return static_cast<int>(i) % 2 == 1; }
 
         struct input_state {
             bool fwd   = false;
@@ -37,7 +37,7 @@ namespace pinguim::app::subsystems::logic
             bool right = false;
         };
 
-        auto draw_inputs_window(game_info const& gi, commands&, float delta_seconds) -> void;
+        auto draw_inputs_window(game_info const& gi, list<command>&, float delta_seconds) -> void;
         // Returns the current command.
         auto draw_input_type_combo(u32 robot_id, input_types& selected, float& max_robot_lerp_time) -> void;
         auto get_input_state(input_types input) -> input_state;
@@ -46,7 +46,5 @@ namespace pinguim::app::subsystems::logic
         // Used for lerping.
         std::vector<command> prev_inputs = {};
         std::vector<float> max_lerp_time = {};
-
-        bool draw_window = true;
     };
 }

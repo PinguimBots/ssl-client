@@ -19,13 +19,6 @@ else
     conf_data.set('fixed_team_size', 0)
 endif
 
-has_opencv_with_opengl = meson.get_compiler('cpp').run(
-    files('detect_opencv_with_opengl.cpp'),
-    name: 'has_opencv_with_opengl',
-    dependencies: [opencv_dep],
-).returncode() == 0
-conf_data.set10('opencv_with_opengl', has_opencv_with_opengl)
-
 conf_data.set10('opencv_support', opencv_dep.found())
 conf_data.set('PINGUIM_CONF_OPENCV_SUPPORT', opencv_dep.found())
 

@@ -1,0 +1,16 @@
+kenney_game_icons
+KENNEY_CODEPOINT_MIN, KENNEY_CODEPOINT_MAX
+0xe000, ../assets/kenney-game-icons/PNG/Black/2x/exclamation.png,      KENNEY_ICON_EXCLAMATION
+0xe001, ../assets/kenney-game-icons/PNG/Black/2x/information.png,      KENNEY_ICON_INFORMATION
+0xe002, ../assets/kenney-game-icons/PNG/Black/2x/warning.png,          KENNEY_ICON_WARNING
+0xe003, ../assets/kenney-game-icons/PNG/Black/2x/barsHorizontal.png,   KENNEY_ICON_HBARS
+0xe004, ../assets/kenney-game-icons/PNG/Black/2x/barsVertical.png,     KENNEY_ICON_VBARS
+0xe005, ../assets/kenney-game-icons/PNG/Black/2x/pause.png,            KENNEY_ICON_PAUSE
+0xe006, ../assets/kenney-game-icons/PNG/Black/2x/stop.png,             KENNEY_ICON_STOP
+0xe007, ../assets/kenney-game-icons/PNG/Black/2x/scrollHorizontal.png, KENNEY_ICON_HSCROLL
+0xe008, ../assets/kenney-game-icons/PNG/Black/2x/scrollVertical.png,   KENNEY_ICON_VSCROLL
+0xe009, ../assets/kenney-game-icons/PNG/Black/2x/question.png,         KENNEY_ICON_QUESTION
+0xe00a, ../assets/kenney-game-icons/PNG/Black/2x/unlocked.png,         KENNEY_ICON_UNLOCKED
+0xe00b, ../assets/kenney-game-icons/PNG/Black/2x/locked.png,           KENNEY_ICON_LOCKED
+0xe00c, ../assets/kenney-game-icons/PNG/Black/2x/import.png,           KENNEY_ICON_IMPORT
+0xe00d, ../assets/kenney-game-icons/PNG/Black/2x/return.png,           KENNEY_ICON_RETURN

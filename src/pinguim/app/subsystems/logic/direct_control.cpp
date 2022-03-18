@@ -10,16 +10,25 @@
 #include <cmath>     // For std::lerp.
 
 #include "pinguim/imgui/widgets/group_panel.hpp"
+#include "pinguim/app/subsystems/registrar.hpp"
+#include "pinguim/vsss/control2.hpp" // For goto_point.
+#include "pinguim/dont_forget.hpp"
 #include "pinguim/renum.hpp"
 #include "pinguim/utils.hpp" // For emplace_fill_capacity.
+#include "pinguim/list.hpp"
 #include "pinguim/cvt.hpp"
+
+PINGUIM_APP_REGISTER_LOGIC_SUBSYSTEM(pinguim::app::subsystems::logic::direct_control, "Direct control");
 
 namespace pinguim::app::subsystems::logic
 {
     auto direct_control::run_logic(game_info const& gi, commands& c, float delta_seconds) -> bool
     {
-        c.reserve(gi.allied_team.size());
-        emplace_fill_capacity(c);
+        auto lc = list<command>::from_container( s::move(c) );
+        PINGUIM_DONT_FORGET(c = lc.surrender());
+
+        lc.reserve(gi.allied_team.size());
+        emplace_fill_capacity(lc);
         robot_input_types.reserve(gi.allied_team.size());
         emplace_fill_capacity(robot_input_types, input_types::none);
         prev_inputs.reserve(gi.allied_team.size());
@@ -27,98 +36,117 @@ namespace pinguim::app::subsystems::logic
         max_lerp_time.reserve(gi.allied_team.size());
         emplace_fill_capacity(max_lerp_time, 0.2f);
 
-        if(draw_window) { draw_inputs_window(gi, c, delta_seconds); }
-
-        ImGui::BeginMainMenuBar();
-        ImGui::EndMainMenuBar();
+        draw_inputs_window(gi, lc, delta_seconds);
 
         return true;
     }
 }
 
-auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_info const& gi, commands& c, float delta_seconds) -> void
+auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_info const& gi, list<command>& c, float delta_seconds) -> void
 {
-    ImGui::SetNextWindowSize({610, 278}, ImGuiCond_Once);
-    if(ImGui::Begin("[Logic] Direct Control", &draw_window))
+    namespace ImGui = ::ImGui;
+
+    ImGui::SetNextWindowSize({0, 0});
+
+    ImGui::Begin("[Logic] Direct Control");
+    PINGUIM_DONT_FORGET( ImGui::End() );
+
+    for(auto i = 0u; i < c.size(); ++i)
     {
-        for(auto i = 0u; i < c.size(); ++i)
+        auto const robot_id = gi.allied_team[i].id;
+
+        pb::ImGui::BeginGroupPanel(fmt::format("Robot {} Input Panel", robot_id).c_str());
+        ImGui::Dummy({5, 5});
+
+        auto& selected = robot_input_types[i];
+        draw_input_type_combo(robot_id, selected, max_lerp_time[i]);
+
+        auto target_input = command{gi.allied_team_id, robot_id * cvt::toe, 0, 0};
+        auto const [fwd, bkw, left, right] = get_input_state(selected);
+        // TODO: refactor into function.
+        if(!is_direct(selected))
         {
-            auto const robot_id = gi.allied_team[i].id;
+            auto const final_direction =
+                gi.allied_team[i].location +
+                (fwd  * cvt::to<float> * gi.allied_team[i].forward() +
+                bkw   * cvt::to<float> * gi.allied_team[i].backward() +
+                left  * cvt::to<float> * gi.allied_team[i].left() +
+                right * cvt::to<float> * gi.allied_team[i].right())
+                .normalized_or({0, 0});
 
-            ImGui::BeginGroupPanel(fmt::format("Robot {} Input Panel", robot_id).c_str());
-            ImGui::Dummy({5, 5});
-
-            auto& selected = robot_input_types[i];
-            draw_input_type_combo(robot_id, selected, max_lerp_time[i]);
-
-            auto target_input = command{gi.allied_team_id, robot_id * cvt::toe, 0, 0};
-            auto const [fwd, bkw, left, right] = get_input_state(selected);
-            // TODO: refactor into function.
-            if(is_direct(selected))
+            if(final_direction.distance(gi.allied_team[i].location) >= 0.5)
             {
-                // TODO: implement steering.
+                auto const command = pinguim::vsss::control::goto_point(
+                    gi.allied_team[i],
+                    final_direction,
+                    vsss::control::special_action::none
+                );
+                target_input.left_motor  = command.left_motor;
+                target_input.right_motor = command.right_motor;
             }
-            else
-            {
-                if(fwd)
-                {
-                    target_input.left_motor  = left;
-                    target_input.right_motor = right;
-                }
-                else if(bkw)
-                {
-                    target_input.left_motor  = -right;
-                    target_input.right_motor = -left;
-                }
-            }
-
-            const auto lerp_factor   = std::clamp(delta_seconds, 0.f, max_lerp_time[i]) / max_lerp_time[i];
-            auto lerped_input = command{
-                target_input.team_id, target_input.robot_id,
-                std::lerp(prev_inputs[i].left_motor,  target_input.left_motor,  lerp_factor),
-                std::lerp(prev_inputs[i].right_motor, target_input.right_motor, lerp_factor)
-            };
-
-            // TODO: The 2 sliders are in ever so slightly different heights for some reason.
-            ImGui::BeginGroup();
-            ImGui::Text("Left Motor");
-            ImGui::VSliderFloat(
-                fmt::format("##robot {} left motor", robot_id).c_str(),
-                {80, 100},
-                &lerped_input.left_motor,
-                -1.f, 1.f,
-                "%.3f",
-                ImGuiSliderFlags_NoInput
-            );
-            ImGui::EndGroup();
-
-            ImGui::SameLine(100);
-
-            ImGui::BeginGroup();
-            ImGui::Text("Right Motor");
-            ImGui::VSliderFloat(
-                fmt::format("##robot {} right motor", robot_id).c_str(),
-                {80, 100},
-                &lerped_input.right_motor,
-                -1.f, 1.f,
-                "%.3f",
-                ImGuiSliderFlags_NoInput
-            );
-            ImGui::EndGroup();
-
-            ImGui::EndGroupPanel();
-
-            prev_inputs[i] = lerped_input;
-            c[i] = lerped_input;
-
-            if(i + 1 != c.size()) { ImGui::SameLine(); }
         }
+        else
+        {
+            if(fwd)
+            {
+                target_input.left_motor  = left;
+                target_input.right_motor = right;
+            }
+            else if(bkw)
+            {
+                target_input.left_motor  = -left;
+                target_input.right_motor = -right;
+            }
+        }
+
+        const auto lerp_factor   = std::clamp(delta_seconds, 0.f, max_lerp_time[i]) / max_lerp_time[i];
+        auto lerped_input = command{
+            target_input.team_id, target_input.robot_id,
+            std::lerp(prev_inputs[i].left_motor,  target_input.left_motor,  lerp_factor),
+            std::lerp(prev_inputs[i].right_motor, target_input.right_motor, lerp_factor)
+        };
+
+        // TODO: The 2 sliders are in ever so slightly different heights for some reason.
+        ImGui::BeginGroup();
+        ImGui::Text("Left Motor");
+        ImGui::VSliderFloat(
+            fmt::format("##robot {} left motor", robot_id).c_str(),
+            {80, 100},
+            &lerped_input.left_motor,
+            -1.f, 1.f,
+            "%.3f",
+            ImGuiSliderFlags_NoInput
+        );
+        ImGui::EndGroup();
+
+        ImGui::SameLine(100);
+
+        ImGui::BeginGroup();
+        ImGui::Text("Right Motor");
+        ImGui::VSliderFloat(
+            fmt::format("##robot {} right motor", robot_id).c_str(),
+            {80, 100},
+            &lerped_input.right_motor,
+            -1.f, 1.f,
+            "%.3f",
+            ImGuiSliderFlags_NoInput
+        );
+        ImGui::EndGroup();
+
+        pb::ImGui::EndGroupPanel();
+
+        prev_inputs[i] = lerped_input;
+        c[i] = lerped_input;
+
+        if(i + 1 != c.size()) { ImGui::SameLine(); }
     }
-    ImGui::End();
+
 }
 
 auto pinguim::app::subsystems::logic::direct_control::draw_input_type_combo(u32 robot_id, input_types& selected, float& max_robot_lerp_time) -> void
 {
+    namespace ImGui = ::ImGui;
+
     auto selected_str = std::string{ pinguim::renum::unqualified_value_name(selected) };
 
     ImGui::BeginGroup();

@@ -1,5 +1,6 @@
 #include "pinguim/vsss/strategy.hpp"
 
+#include <type_traits> // For std::underlying_t.
 #include <algorithm> // For std::clamp.
 #include <iostream>
 #include <queue>
@@ -21,17 +22,18 @@ auto pinguim::vsss::Strategy::actions(
     std::tuple<pinguim::vsss::point, int> action;
     //printf("\n\nRobot id: %d  |  Orientation: %f\n\n ", robot.id, robot.orientation);
 
+    using u = std::underlying_type<pinguim::vsss::Roles>::type;
     switch (robot.id)
     {
-    case cvt::tou * pinguim::vsss::Roles::GOALKEEPER:
+    case cvt::to<u> * pinguim::vsss::Roles::GOALKEEPER:
         action = goalkeeper_action(robot, ball);
         break;
 
-    case cvt::tou * pinguim::vsss::Roles::DEFENDER:
+    case cvt::to<u> * pinguim::vsss::Roles::DEFENDER:
         action = defender_action(robot, ball);
         break;
 
-    case cvt::tou * pinguim::vsss::Roles::ATTACKER:
+    case cvt::to<u> * pinguim::vsss::Roles::ATTACKER:
         action = attacker_action(robot, ball, enemy_robots);
         break;
     }
@@ -199,6 +201,8 @@ bool pinguim::vsss::Strategy::isNear(pinguim::vsss::point point1, pinguim::vsss:
 
 auto pinguim::vsss::Strategy::trackBallYAxix(const pinguim::vsss::robot &robot, const pinguim::vsss::ball &ball) -> std::tuple<pinguim::vsss::point, int>
 {
+    using u = std::underlying_type<pinguim::vsss::Roles>::type;
+
     /*
     *Need to limit the goalkeeper's area
     */
@@ -208,11 +212,11 @@ auto pinguim::vsss::Strategy::trackBallYAxix(const pinguim::vsss::robot &robot, 
 
     pinguim::vsss::point predicted_position = lin_pred(old_point,
                                               ball.position,
-                                              robot.id == cvt::tou * pinguim::vsss::Roles::DEFENDER
+                                              robot.id == cvt::to<u> * pinguim::vsss::Roles::DEFENDER
                                                   ? team * DEFENDER_std_X
                                                   : team * GOALKEEPER_std_X);
 
-    if ((predicted_position.imag() > GOAL_AREA_MIN && predicted_position.imag() <= GOAL_AREA_MAX) && robot.id == cvt::tou * pinguim::vsss::Roles::GOALKEEPER)
+    if ((predicted_position.imag() > GOAL_AREA_MIN && predicted_position.imag() <= GOAL_AREA_MAX) && robot.id == cvt::to<u> * pinguim::vsss::Roles::GOALKEEPER)
 
     {
         position = predicted_position;
@@ -220,7 +224,7 @@ auto pinguim::vsss::Strategy::trackBallYAxix(const pinguim::vsss::robot &robot, 
 
     else
     {
-        position = robot.id == cvt::tou * pinguim::vsss::Roles::DEFENDER
+        position = robot.id == cvt::to<u> * pinguim::vsss::Roles::DEFENDER
                        ? predicted_position //pinguim::vsss::point(team*DEFENDER_std_X, new_y)
                        : pinguim::vsss::point(team * GOALKEEPER_std_X, std::clamp(ball.position.imag(), GOAL_AREA_MIN, GOAL_AREA_MAX));
     }

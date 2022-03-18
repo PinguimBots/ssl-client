@@ -4,7 +4,7 @@
 
 #include <imgui.h>
 
-namespace ImGui
+namespace pinguim::ImGui
 {
     void BeginGroupPanel(const char* name, const ImVec2& size = ImVec2(0.0f, 0.0f));
     void EndGroupPanel();

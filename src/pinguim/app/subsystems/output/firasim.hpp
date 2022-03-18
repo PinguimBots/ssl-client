@@ -12,7 +12,7 @@ namespace pinguim::app::subsystems::output
 {
     struct firasim : public pinguim::app::output_subsystem
     {
-        firasim(std::string_view addr="127.0.0.1", u16 port=20011);
+        firasim(std::string_view _addr="127.0.0.1", u16 _port=20011);
 
         auto transmit(commands const&, float delta_seconds) -> bool override;
 
@@ -20,6 +20,12 @@ namespace pinguim::app::subsystems::output
         using packet_t = fira_message::sim_to_ref::Packet;
 
     private:
+        static constexpr auto addr_str_size = 16;
+
+        char addr[addr_str_size];
+        u16 addr_str_len;
+        u16 port;
+
         sender_t sender;
         packet_t packet;
     };

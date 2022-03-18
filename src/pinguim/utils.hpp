@@ -2,19 +2,14 @@
 
 #include <type_traits>
 #include <string_view>
-#include <concepts>
-#include <utility> // For std::forward.
 #include <array>
 
-#include "pinguim/conf.hpp"
+#include "pinguim/standalone/forward.hpp"
 #include "pinguim/aliases.hpp"
+#include "pinguim/conf.hpp"
 
 namespace pinguim::inline utils
 {
-    // Useful for templated static_asserts.
-    template<typename...Ts>
-    struct always_false : std::false_type {};
-
     // When you need to make a std::array of some type but want to
     // decide the size by the amount of arguments.
     // e.g:
@@ -22,27 +17,27 @@ namespace pinguim::inline utils
     // TODO: fix these, calls with a template parameter are ambiguous.
     template <typename T, typename... U>
     constexpr auto array_of(U&&... u)
-    { return std::array<T, sizeof...(U)>{ static_cast<T>(std::forward<U>(u))... }; }
+    { return std::array<T, sizeof...(U)>{ static_cast<T>(s::forward<U>(u))... }; }
     template <typename... U>
     constexpr auto array_of(U&&... u)
-    { return array_of< std::decay_t<std::common_type_t<U...>>, U... >( std::forward<U>(u)... ); }
+    { return array_of< std::decay_t<std::common_type_t<U...>>, U... >( s::forward<U>(u)... ); }
     template <typename T, typename... U>
     constexpr auto arr(U&&... u)
-    { return array_of<T>( std::forward<U>(u)... ); }
+    { return array_of<T>( s::forward<U>(u)... ); }
     template <typename... U>
     constexpr auto arr(U&&... u)
-    { return array_of( std::forward<U>(u)... ); }
+    { return array_of( s::forward<U>(u)... ); }
 
     template <typename Collection, typename... Args>
     constexpr auto emplace_fill_capacity(Collection& c, Args&&... args)
     {
         auto missing = c.capacity() - c.size();
-        while(missing--) { c.emplace_back( std::forward<Args>(args)... ); }
+        while(missing--) { c.emplace_back( s::forward<Args>(args)... ); }
     }
 
     // from https://stackoverflow.com/questions/81870/is-it-possible-to-print-a-variables-type-in-standard-c/56766138#56766138
     // Thanks!
-    template<typename T, bool EnableShortInts = true, bool EnableShortFloats = true>
+    template<typename T, bool EnableShortInts = true>
     constexpr auto type_name() -> std::string_view
     {
         if constexpr (EnableShortInts && std::is_integral_v<T> && sizeof(T) <= sizeof(u64))
@@ -53,32 +48,22 @@ namespace pinguim::inline utils
             if constexpr (std::is_signed_v<T>){return signed_atlas[sizeof(T) - 1];}
             else return unsigned_atlas[sizeof(T) - 1];
         }
-        if constexpr (EnableShortFloats && std::is_floating_point_v<T> && sizeof(T) <= sizeof(f64))
-        {
-            constexpr const char* float_atlas[] = {"dummy", "dummy", "dummy", "f32", "dummy", "dummy", "dummy", "f64"};
-            return float_atlas[sizeof(T) - 1];
-        }
-        std::string_view name, prefix, suffix, suffix2;
+        std::string_view name, prefix, suffix;
         #if defined(PINGUIM_CONF_COMPILER_IS_CLANG)
             name   = __PRETTY_FUNCTION__;
             prefix = "std::string_view pinguim::type_name() [T = ";
-            if constexpr (EnableShortInts) { suffix = ", EnableShortInts = true"; }
-            else                           { suffix = ", EnableShortInts = false"; }
-            if constexpr (EnableShortFloats) { suffix2 = ", EnableShortFloats = true]"; }
-            else                             { suffix2 = ", EnableShortFloats = false]"; }
+            if constexpr (EnableShortInts) { suffix = ", EnableShortInts = true]"; }
+            else                           { suffix = ", EnableShortInts = false]"; }
         #elif defined(PINGUIM_CONF_COMPILER_IS_GCC)
             name   = __PRETTY_FUNCTION__;
             prefix = "constexpr std::string_view pinguim::utils::type_name() [with T = ";
-            if constexpr (EnableShortInts) { suffix = "; bool EnableShortInts = true"; }
-            else                           { suffix = "; bool EnableShortInts = false"; }
-            if constexpr (EnableShortFloats) { suffix2 = "; bool EnableShortFloats = true; std::string_view = std::basic_string_view<char>]"; }
-            else                             { suffix2 = "; bool EnableShortFloats = false; std::string_view = std::basic_string_view<char>]"; }
+            if constexpr (EnableShortInts) { suffix = "; bool EnableShortInts = true; std::string_view = std::basic_string_view<char>]"; }
+            else                           { suffix = "; bool EnableShortInts = false; std::string_view = std::basic_string_view<char>]"; }
         #else
-            static_assert(std::always_false<T>, "Please implement type_name() for this compiler");
+            static_assert(false, "Please implement type_name() for this compiler");
         #endif
         name.remove_prefix(prefix.size());
         name.remove_suffix(suffix.size());
-        name.remove_suffix(suffix2.size());
         return name;
     }
 

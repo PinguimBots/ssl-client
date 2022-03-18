@@ -10,16 +10,15 @@
 // the assumption being that those commands will be performed by robots and in turn affect the
 // Information subsystem's intel.
 
-#include <vector>
-
 #include "pinguim/vsss/game_info.hpp"
 #include "pinguim/vsss/command.hpp"
+#include "pinguim/container.hpp"
 
 namespace pinguim::app
 {
     using pinguim::vsss::game_info;
     using pinguim::vsss::command;
-    using commands = std::vector<command>;
+    using commands = container<command>;
 
     struct input_subsystem
     {
@@ -37,5 +36,11 @@ namespace pinguim::app
     {
         virtual auto transmit(commands const&, float delta_seconds) -> bool = 0;
         virtual ~output_subsystem() = default;
+    };
+
+    struct misc_subsystem
+    {
+        virtual auto loop(float delta_seconds) -> void = 0;
+        virtual ~misc_subsystem() = default;
     };
 }

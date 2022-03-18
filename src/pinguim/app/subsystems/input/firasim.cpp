@@ -2,9 +2,19 @@
 
 #include "pinguim/vsss/firasim/tuplified_proto.hpp"
 #include "pinguim/vsss/net/decoders/sim.hpp" // Needed for receiver_t.sync().
+
+#include "pinguim/imgui/widgets/group_panel.hpp"
+
+#include "pinguim/app/subsystems/registrar.hpp"
+
 #include "pinguim/aliases.hpp"
 #include "pinguim/utils.hpp" // For emplace_fill_capacity().
 #include "pinguim/cvt.hpp"
+
+#include <imgui.h>
+#include <fmt/core.h>
+
+PINGUIM_APP_REGISTER_INPUT_SUBSYSTEM(pinguim::app::subsystems::input::firasim, "Firasim");
 
 namespace pinguim::app::subsystems::input
 {
@@ -16,8 +26,35 @@ namespace pinguim::app::subsystems::input
 
     auto firasim::update_gameinfo(game_info& gi, [[maybe_unused]] float delta_seconds) -> bool
     {
+        namespace ImGui = ::ImGui;
+
         auto has_new_env = env_receiver.sync( env_packet );
         //auto has_new_referee = referee_receiver.sync( referee_packet );
+
+        ImGui::SetNextWindowSize({0, 0});
+        ImGui::Begin("[INPUT] Firasim");
+        for(auto& robot : gi.allied_team) {
+            pb::ImGui::BeginGroupPanel(fmt::format("Robot {}", robot.id).c_str());
+            ImGui::SetNextItemWidth(150);
+            ImGui::InputFloat(
+                fmt::format("Wheelbase##robot {} wheelbase", robot.id).c_str(),
+                &robot.wheelbase,
+                0.001f,
+                0.010f,
+                "%0.3f Meters"
+            );
+            ImGui::SetNextItemWidth(150);
+            ImGui::InputFloat(
+                fmt::format("Wheel Radius##robot {} wheel radius", robot.id).c_str(),
+                &robot.wheel_radius,
+                0.001f,
+                0.010f,
+                "%0.3f Meters"
+            );
+            ImGui::Dummy({0, 5});
+            pb::ImGui::EndGroupPanel();
+        }
+        ImGui::End();
 
         if(!has_new_env) { return false; }
 
@@ -80,7 +117,7 @@ namespace pinguim::app::subsystems::input
             {cvt::toe + fx/2, cvt::toe + -fy/2}, {cvt::toe + -fx/2, cvt::toe + -fy/2},
             // Left side goal.
             {cvt::toe + -fx/2, cvt::toe + -goaly/2}, {cvt::toe + (-fx/2-goalx), cvt::toe + -goaly/2},
-            {cvt::toe + (-fx/2-goalx), cvt::toe + goaly/2}, {cvt::toe + -fx/2, cvt::toe + goaly/2},
+            {cvt::toe + (-fx/2-goalx), cvt::toe + goaly/2}, {cvt::toe + -fx/2, cvt::toe + goaly/2}
         };
         const auto target_goal_indexes = allied_team_color == team::blue
             ? pb::arr(2, 6)

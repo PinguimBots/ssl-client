@@ -21,12 +21,11 @@
 //     5.2f * cvt::to<int> + 5.99 == 10.99
 #pragma once
 
-#include <type_traits>
-#include <utility> // For std::forward.
+#include "pinguim/standalone/forward.hpp"
 
 namespace pinguim::cvt
 {
-    inline namespace converters
+    namespace converters
     {
         // Non-special versions of the *_cast 'functions'.
 
@@ -36,10 +35,6 @@ namespace pinguim::cvt
         template <typename To> struct cc; // const_cast.
 
         // Custom converters.
-
-        // Converts to the std::underlying_t (used for getting
-        // the base type of enums).
-        struct underlying;
 
         // Uses magic to 'guess' the expected type and convert to it.
         // Can only be used in situations where the compiler can
@@ -64,14 +59,20 @@ namespace pinguim::cvt
     // You can use the following like constants of functions.
     // E.g: `5.8f * cvt::to<double>` or `cvt::to<double>(5.8f)`.
 
-    template <typename To, typename Converter = sc<To>>
-    inline constexpr auto to = into<Converter>{};
+    template <typename To>
+    inline constexpr auto to = into< converters::sc<To> >{};
 
-    inline constexpr auto to_underlying  = into<underlying>{};
-    inline constexpr auto tou            = into<underlying>{};
+    template <typename To>
+    inline constexpr auto sc = into< converters::sc<To> >{}; // equivalent to cvt::to<To>.
+    template <typename To>
+    inline constexpr auto dc = into< converters::dc<To> >{};
+    template <typename To>
+    inline constexpr auto rc = into< converters::rc<To> >{};
+    template <typename To>
+    inline constexpr auto cc = into< converters::cc<To> >{};
 
-    inline constexpr auto to_expected  = into<expected>{};
-    inline constexpr auto toe          = into<expected>{};
+    inline constexpr auto to_expected  = into<converters::expected>{};
+    inline constexpr auto toe          = into<converters::expected>{};
 }
 
 // Implementations below.
@@ -81,57 +82,57 @@ namespace pinguim::cvt
     template <typename Converter>
     template <typename From>
     constexpr auto into<Converter>::operator()(From&& from) const
-    { return Converter{}( std::forward<From>(from) ); }
+    { return Converter{}( s::forward<From>(from) ); }
 
     // operator*
     template <typename T, typename Converter>
     constexpr auto operator*(T&& val, const into<Converter>& cvt)
-    { return cvt( std::forward<T>(val) ); }
+    { return cvt( s::forward<T>(val) ); }
     template <typename T, typename Converter>
     constexpr auto operator*(const into<Converter>& cvt, T&& val)
-    { return cvt( std::forward<T>(val) ); }
+    { return cvt( s::forward<T>(val) ); }
 
     // operator/
     template <typename T, typename Converter>
     constexpr auto operator/(T&& val, const into<Converter>& cvt)
-    { return cvt( std::forward<T>(val) ); }
+    { return cvt( s::forward<T>(val) ); }
     template <typename T, typename Converter>
     constexpr auto operator/(const into<Converter>& cvt, T&& val)
-    { return cvt( std::forward<T>(val) ); }
+    { return cvt( s::forward<T>(val) ); }
 
     // operator%
     template <typename T, typename Converter>
     constexpr auto operator%(T&& val, const into<Converter>& cvt)
-    { return cvt( std::forward<T>(val) ); }
+    { return cvt( s::forward<T>(val) ); }
     template <typename T, typename Converter>
     constexpr auto operator%(const into<Converter>& cvt, T&& val)
-    { return cvt( std::forward<T>(val) ); }
+    { return cvt( s::forward<T>(val) ); }
 
     // operator+
     template <typename T, typename Converter>
     constexpr auto operator+(T&& val, const into<Converter>& cvt)
-    { return cvt( std::forward<T>(val) ); }
+    { return cvt( s::forward<T>(val) ); }
     template <typename T, typename Converter>
     constexpr auto operator+(const into<Converter>& cvt, T&& val)
-    { return cvt( std::forward<T>(val) ); }
+    { return cvt( s::forward<T>(val) ); }
 
     // operator-
     template <typename T, typename Converter>
     constexpr auto operator-(T&& val, const into<Converter>& cvt)
-    { return cvt( std::forward<T>(val) ); }
+    { return cvt( s::forward<T>(val) ); }
     template <typename T, typename Converter>
     constexpr auto operator-(const into<Converter>& cvt, T&& val)
-    { return cvt( std::forward<T>(val) ); }
+    { return cvt( s::forward<T>(val) ); }
 }
 
-namespace pinguim::cvt::inline converters
+namespace pinguim::cvt::converters
 {
     template <typename To>
     struct sc
     {
         template <typename From>
         constexpr auto operator()(From&& from) const
-        { return static_cast<To>( std::forward<From>(from) ); }
+        { return static_cast<To>( s::forward<From>(from) ); }
     };
 
     template <typename To>
@@ -139,7 +140,7 @@ namespace pinguim::cvt::inline converters
     {
         template <typename From>
         constexpr auto operator()(From&& from) const
-        { return dynamic_cast<To>( std::forward<From>(from) ); }
+        { return dynamic_cast<To>( s::forward<From>(from) ); }
     };
 
     template <typename To>
@@ -147,7 +148,7 @@ namespace pinguim::cvt::inline converters
     {
         template <typename From>
         constexpr auto operator()(From&& from) const
-        { return reinterpret_cast<To>( std::forward<From>(from) ); }
+        { return reinterpret_cast<To>( s::forward<From>(from) ); }
     };
 
     template <typename To>
@@ -155,14 +156,7 @@ namespace pinguim::cvt::inline converters
     {
         template <typename From>
         constexpr auto operator()(From&& from) const
-        { return const_cast<To>( std::forward<From>(from) ); }
-    };
-
-    struct underlying
-    {
-        template <typename From>
-        constexpr auto operator()(From&& from) const
-        { return static_cast< std::underlying_type_t<From> >( std::forward<From>(from) ); }
+        { return const_cast<To>( s::forward<From>(from) ); }
     };
 
     struct expected
@@ -181,11 +175,11 @@ namespace pinguim::cvt::inline converters
 
             template <typename ExpectedType>
             constexpr operator ExpectedType() &&
-            { return to<ExpectedType>(std::move(v)); }
+            { return to<ExpectedType>(s::move(v)); }
         };
 
         template <typename From>
         constexpr auto operator()(From&& from) const
-        { return implicit_cvt<From>{ std::forward<From>(from) }; }
+        { return implicit_cvt<From>{ s::forward<From>(from) }; }
     };
 }

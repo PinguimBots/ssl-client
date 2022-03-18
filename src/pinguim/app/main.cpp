@@ -1,10 +1,11 @@
-#include <iostream>
 #include <csignal>
 #include <cstdlib> // For std::exit;
+#include <cstdio>
 
 #include "pinguim/app/subsystems/manager.hpp"
+#include "pinguim/imgui/fonts/loader.hpp"
 #include "pinguim/imgui/plumber.hpp"
-#include "pinguim/aliases.hpp"
+#include "pinguim/dont_forget.hpp"
 #include "pinguim/chrono.hpp"
 
 auto quit_signal = false;
@@ -12,34 +13,41 @@ auto quit_signal = false;
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
 {
     std::signal(SIGINT, []([[maybe_unused]] int signal) {
-        std::cout << "SIGINT Received, Closing" << std::endl;
+        std::printf("SIGINT Received, Closing\n");
         quit_signal = true;
     });
     std::signal(SIGABRT, []([[maybe_unused]] int signal) {
-        std::cout << "SIGABRT Received. Something went bad!" << std::endl;
+        std::printf("SIGABRT Received. Something went bad!\n");
         std::exit(1);
     });
 
-    auto sm = pb::app::subsystems::manager();
+    auto mario = pinguim::imgui::make_plumber();
+    if(mario == nullptr)
+    {
+        std::printf("Failed making mario, exiting!\n");
+        return 1;
+    }
+    PINGUIM_DONT_FORGET( delete mario );
 
-    auto dt        = 0.f;
-    auto game_info = pb::app::game_info{};
-    auto commands  = pb::app::commands{};
-
-    auto mario = pb::imgui::make_plumber().value();
+    auto sm = pinguim::app::subsystems::manager();
+    auto dt = 0.f;
 
     auto quit = false;
     while(!quit && !quit_signal){
-        dt = pb::time([&]{
-            quit = mario.handle_event();
-            mario.begin_frame();
+        dt = pinguim::time([&]{
+            quit = mario->handle_event();
+
+            auto const should_rebuild_fonts = pinguim::imgui::fonts::need_rebuild();
+            mario->begin_frame(should_rebuild_fonts);
+            pinguim::imgui::fonts::notify_rebuild_status(should_rebuild_fonts);
 
             sm.draw_selector_ui(dt);
-            sm.update_gameinfo(game_info, dt);
-            sm.run_logic(game_info, commands, dt);
-            sm.transmit(commands, dt);
+            sm.loop_misc(dt);
+            sm.update_gameinfo(dt);
+            sm.run_logic(dt);
+            sm.transmit(dt);
 
-            mario.draw_frame();
+            mario->draw_frame();
         });
     }
 

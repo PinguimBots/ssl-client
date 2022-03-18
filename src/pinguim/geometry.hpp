@@ -1,11 +1,5 @@
 #pragma once
 
-#include <utility> // std::pair.
-#include <complex>
-#include <array>
-#include <tuple>
-#include <cmath> // std::sin and std::cos.
-
 #include "pinguim/aliases.hpp"
 
 namespace pinguim
@@ -16,25 +10,37 @@ namespace pinguim
 
 namespace pinguim::geometry
 {
-    template<typename NumT>
+    template <typename NumT>
     struct point
     {
         NumT x;
         NumT y;
 
-        constexpr auto as_arr()     { return std::array<NumT, 2>{x, y}; }
-        constexpr auto as_tuple()   { return std::tuple<NumT, NumT>{x, y}; }
-        constexpr auto as_pair()    { return std::pair<NumT, NumT>{x, y}; }
-        constexpr auto as_complex() { return std::complex<NumT>{x, y}; }
+        [[nodiscard]] auto operator+(const point& other) const -> point;
+        [[nodiscard]] auto operator-(const point& other) const -> point;
+        [[nodiscard]] auto operator*(const NumT& num) const -> point;
+        [[nodiscard]] auto operator/(const NumT& num) const -> point;
 
-        static constexpr auto rotated(const point& p, float radians, const point& axis = {0, 0}) -> point;
-        static constexpr auto rotate(point& p, float radians, const point& axis = {0, 0}) -> point&
-        { return (p = point::rotated(p, radians, axis)); }
-        constexpr auto rotate(float radians, const point& axis = {0, 0}) -> point&
-        { return point::rotate(*this, radians, axis); }
-        constexpr auto rotated(float radians, const point& axis = {0, 0}) -> point
-        { return point::rotated(*this, radians, axis); }
+        [[nodiscard]] auto distance(const point& to) const -> NumT;
+        [[nodiscard]] auto length() const -> NumT;
+        [[nodiscard]] auto midpoint(const point& p) const -> point;
+
+        [[nodiscard]] auto rotated(float radians, const point& axis = {0, 0}) const -> point;
+        auto rotate(float radians, const point& axis = {0, 0}) -> point&;
+
+        // NOTE: Returns {Nan, Nan} if length() == 0 due to division by 0,
+        // use normalized_or({0, 0}) if that's a problem.
+        [[nodiscard]] auto normalized() const -> point;
+        auto normalize() -> point&;
+
+        [[nodiscard]] auto normalized_or(const point& p) const -> point;
+        auto normalize_or(const point& p) -> point&;
     };
+
+    template <typename NumT>
+    [[nodiscard]] auto operator*(NumT num, const point<NumT>& p) -> point<NumT>;
+    template <typename NumT>
+    [[nodiscard]] auto operator/(NumT num, const point<NumT>& p) -> point<NumT>;
 
     using rpoint = point<double>;
     using fpoint = point<float>;
@@ -42,11 +48,27 @@ namespace pinguim::geometry
     using upoint = point<u32>;
 }
 
-template<typename NumT>
-constexpr auto pb::geo::point<NumT>::rotated(const point& p, float radians, const point& axis) -> point
-{
-    return {
-        .x = std::cos(radians) * (p.x - axis.x) - std::sin(radians) * (p.y - axis.y) + axis.x,
-        .y = std::sin(radians) * (p.x - axis.x) + std::cos(radians) * (p.y - axis.y) + axis.y
-    };
-}
+// Extern instantiations (for faster #include time), instantiated in geometry.cpp.
+//
+// This + implementations being in the .cpp file means if you want these functions
+// for other types (which realistically you won't don't) you will need to implement
+// them yourself.
+//
+// This is a tradeoff between #include time and extendability.
+//
+// You can use LTO to regain (probably) regain the runtime-speed lost from not using
+// constexpr but then linking takes forever.
+
+extern template struct pb::geo::point<double>;
+extern template struct pb::geo::point<float>;
+extern template struct pb::geo::point<pb::i32>;
+extern template struct pb::geo::point<pb::u32>;
+
+extern template auto pinguim::geometry::operator*<double> (double, const point<double>&)   -> point<double>;
+extern template auto pinguim::geometry::operator/<double> (double, const point<double>&)   -> point<double>;
+extern template auto pinguim::geometry::operator*<float>  (float, const point<float>&)     -> point<float>;
+extern template auto pinguim::geometry::operator/<float>  (float, const point<float>&)     -> point<float>;
+extern template auto pinguim::geometry::operator*<pb::i32>(pb::i32, const point<pb::i32>&) -> point<pb::i32>;
+extern template auto pinguim::geometry::operator/<pb::i32>(pb::i32, const point<pb::i32>&) -> point<pb::i32>;
+extern template auto pinguim::geometry::operator*<pb::u32>(pb::u32, const point<pb::u32>&) -> point<pb::u32>;
+extern template auto pinguim::geometry::operator/<pb::u32>(pb::u32, const point<pb::u32>&) -> point<pb::u32>;

@@ -6,8 +6,6 @@ namespace pinguim::conf
     // Only considered if team_size_fixed = true.
     constexpr long long fixed_team_size = @fixed_team_size@;
 
-    constexpr bool opencv_with_opengl = @opencv_with_opengl@;
-
     constexpr bool opencv_support = @opencv_support@;
 #mesondefine PINGUIM_CONF_OPENCV_SUPPORT
 }

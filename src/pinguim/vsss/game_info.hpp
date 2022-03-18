@@ -6,10 +6,9 @@
 // unless otherwise specified.
 #pragma once
 
-#include <vector>
-
-#include "pinguim/aliases.hpp"
+#include "pinguim/list.hpp"
 #include "pinguim/geometry.hpp"
+#include "pinguim/aliases.hpp"
 
 namespace pinguim::vsss
 {
@@ -24,14 +23,17 @@ namespace pinguim::vsss
         float size;
         u8 id;
 
+        float wheelbase    = 0.075f;
+        float wheel_radius = 0.030f;
+
         // Direction unit-vectors.
-        constexpr auto forward() -> geo::fpoint
+        inline auto forward() const -> geo::fpoint
         { return geo::fpoint{1, 0}.rotated(rotation); }
-        constexpr auto backward() -> geo::fpoint
+        inline auto backward() const -> geo::fpoint
         { return geo::fpoint{-1, 0}.rotated(rotation); }
-        constexpr auto left() -> geo::fpoint
+        inline auto left() const -> geo::fpoint
         { return geo::fpoint{0, 1}.rotated(rotation); }
-        constexpr auto right() -> geo::fpoint
+        inline auto right() const -> geo::fpoint
         { return geo::fpoint{0, -1}.rotated(rotation); }
     };
 
@@ -44,16 +46,16 @@ namespace pinguim::vsss
 
     struct field
     {
-        std::vector<geo::fpoint> bounds;
-        std::vector<geo::fpoint> target_goal;
-        std::vector<geo::fpoint> defending_goal;
+        list<geo::fpoint> bounds;
+        list<geo::fpoint> target_goal;
+        list<geo::fpoint> defending_goal;
     };
 
     struct game_info
     {
-        std::vector<robot> allied_team;
+        list<robot> allied_team;
         u8 allied_team_id;
-        std::vector<robot> enemy_team;
+        list<robot> enemy_team;
         field field_info;
         ball ball_info;
         u16 allied_goals;
