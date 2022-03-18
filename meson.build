@@ -4,6 +4,7 @@ project('pbssl', ['cpp', 'c'],
         'buildtype=debugoptimized',
         'warning_level=0',
         'cpp_std=c++20',
+        'cpp_rtti=false',
     ],
     meson_version: '>= 0.60',
     #license: ['???'],
@@ -11,16 +12,32 @@ project('pbssl', ['cpp', 'c'],
 
 os = host_machine.system()
 cxx = meson.get_compiler('cpp')
+cxxid = cxx.get_id()
 
-## Needed by SDL2 in msvc, since i don't want to rewrite
-## the wrapfile i'll just add it here instead.
 if os == 'windows'
-    #add_global_arguments('-DHAVE_LIBC', language: 'c')
+    ## Needed by SDL2.
+    add_global_arguments('-DHAVE_LIBC', language: 'c')
     add_global_arguments('-DSDL_VIDEO_RENDER_OGL_ES2=0', language: 'c')
     add_global_arguments('-DSDL_VIDEO_RENDER_D3D=0', language: 'c')
     add_global_arguments('-DSDL_VIDEO_RENDER_OGL_ES=0', language: 'c')
     add_global_arguments('-DSDL_VIDEO_OPENGL_EGL=0', language: 'c')
+
+    ## Needed by asio (see https://think-async.com/Asio/asio-1.22.1/doc/asio/using.html).
+    add_global_arguments('-DBOOST_DATE_TIME_NO_LIB', language: 'cpp')
+    add_global_arguments('-DBOOST_REGEX_NO_LIB', language: 'cpp')
 endif
+
+if cxxid == 'msvc'
+    # Silence SDL2 warning: warning C4828: The file contains a character starting at offset 0x45e that is illegal in the current source character set (codepage 65001).
+    add_global_arguments('/wd4828', language: 'c')
+
+    # Silence warnings from headers beyond our control.
+    add_project_arguments('/external:W0', language: 'cpp')
+    add_project_arguments('/external:anglebrackets', language: 'cpp')
+endif
+
+# Since cpp_rtti=false.
+add_global_arguments('-DASIO_NO_TYPEID', language: 'cpp')
 
 # Clang has a great compile time (not compile-time) flag.
 if get_option('time-trace') == true
@@ -37,25 +54,25 @@ endif
 # vision input subsystem.
 opencv_dep = dependency('opencv4', version: '>= 4.5.1', include_type: 'system', required: false)
 # Gui stuff
-opengl_dep = os == 'windows' ? meson.get_compiler('c').find_library('opengl32') : dependency('gl', include_type: 'system')
+opengl_dep = os == 'windows' ? meson.get_compiler('c').find_library('opengl32') : dependency('gl').as_system('system')
 sdl2_intrinsic_deps = os in ['windows', 'darwin'] ? [] : [
-    dependency('xext', fallback: ['xext', 'xext_dep'], include_type: 'system'),
-    dependency('xi',   fallback: ['xi',   'xi_dep'],   include_type: 'system'),
+    dependency('xext', fallback: ['xext', 'xext_dep']).as_system('system'),
+    dependency('xi',   fallback: ['xi',   'xi_dep']).as_system('system'),
 ]
-glew_dep  = dependency('glew',  version: '>= 2.0.0', fallback: ['glew', 'glew_dep'],   include_type: 'system')
-sdl2_dep  = dependency('sdl2',  version: '>= 2.0.9', fallback: ['sdl2', 'sdl2_dep'],   include_type: 'system')
-imgui_dep = dependency('imgui', version: '>= 1.7.6', fallback: ['imgui', 'imgui_dep'], include_type: 'system')
+glew_dep  = dependency('glew',  version: '>= 2.0.0', fallback: ['glew', 'glew_dep']).as_system('system')
+sdl2_dep  = dependency('sdl2',  version: '>= 2.0.9', fallback: ['sdl2', 'sdl2_dep']).as_system('system')
+imgui_dep = dependency('imgui', version: '>= 1.7.6', fallback: ['imgui', 'imgui_dep']).as_system('system')
 imgui_file_dialog_dep = subproject('imgui_file_dialog').get_variable('imgui_file_dialog_dep').as_system('system')
 sdl2_deps = [sdl2_intrinsic_deps, sdl2_dep]
 gui_deps  = [opengl_dep, glew_dep, sdl2_deps, imgui_dep, imgui_file_dialog_dep]
 # Utils and other stuff.
 simproto_dep = subproject('simproto').get_variable('simproto_dep').as_system('system')
-asio_dep     = dependency('asio',   version: '>= 1.18.1', fallback: ['asio', 'asio_dep'],     include_type: 'system')
-fmt_dep      = dependency('fmt',    version: '>= 7.0.0',  fallback: ['fmt', 'fmt_dep'],       include_type: 'system')
-docopt_dep   = dependency('docopt', version: '>= 0.6.0',  fallback: ['docopt', 'docopt_dep'], include_type: 'system')
-glm_dep      = dependency('glm',    version: '>= 0.9.8',  fallback: ['glm', 'glm_dep'],       include_type: 'system')
+protobuf_dep = dependency('protobuf', version: '>= 3.0.0',  fallback: ['protobuf', 'protobuf_dep']).as_system('system')
+asio_dep     = dependency('asio',     version: '>= 1.18.1', fallback: ['asio', 'asio_dep']).as_system('system')
+fmt_dep      = dependency('fmt',      version: '>= 7.0.0',  fallback: ['fmt', 'fmt_dep']).as_system('system')
+glm_dep      = dependency('glm',      version: '>= 0.9.8',  fallback: ['glm', 'glm_dep']).as_system('system')
 openmp_dep   = dependency('openmp')
-utils_deps   = [simproto_dep, asio_dep, fmt_dep, docopt_dep, glm_dep, openmp_dep]
+utils_deps   = [simproto_dep, asio_dep, fmt_dep, glm_dep, openmp_dep, protobuf_dep]
 
 app_inc = include_directories('src')
 

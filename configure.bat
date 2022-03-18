@@ -1,0 +1,1 @@
+meson builddir -Ddefault_library=static

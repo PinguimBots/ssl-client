@@ -9,3 +9,11 @@ generated = custom_target(
     input:  protofiles_in,
     output: protofiles_out
 )
+
+generated_only_headers = []
+
+foreach g : generated.to_list()
+    if g.full_path().endswith('.h')
+        generated_only_headers += g
+    endif
+endforeach

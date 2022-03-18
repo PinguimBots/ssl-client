@@ -24,7 +24,9 @@ imgui = static_library('imgui',
         dependency('glew'),
         dependency('sdl2'),
     ],
-    cpp_args: ['-DGLEW_NO_GLU', get_option('default_library') == 'static' ? '-DGLEW_STATIC' : '-DGLEW_BUILD'],
+    cpp_args: \
+        ['-DGLEW_NO_GLU', get_option('default_library') == 'static' ? '-DGLEW_STATIC' : '-DGLEW_BUILD'] + \
+        meson.get_compiler('cpp').get_supported_arguments(['/W', '-w']),
     include_directories: include_dirs,
 )
 

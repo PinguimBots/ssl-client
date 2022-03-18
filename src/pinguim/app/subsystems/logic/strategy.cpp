@@ -6,7 +6,11 @@ PINGUIM_APP_REGISTER_LOGIC_SUBSYSTEM(pinguim::app::subsystems::logic::strategy, 
 
 namespace pinguim::app::subsystems::logic
 {
-    auto strategy::run_logic(game_info const& gi, commands &, float delta_seconds) -> bool
+    auto strategy::run_logic(
+        [[maybe_unused]] game_info const& gi,
+        [[maybe_unused]]commands &,
+        [[maybe_unused]] float delta_seconds
+    ) -> bool
     {
         return false;
     }

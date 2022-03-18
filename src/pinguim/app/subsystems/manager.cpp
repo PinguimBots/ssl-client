@@ -74,6 +74,7 @@ auto pinguim::app::subsystems::manager::draw_selector_ui(float delta_seconds) ->
             case registrar::type_enum::logic:  return "Logic";
             case registrar::type_enum::output: return "Output";
             case registrar::type_enum::misc:   return "Misc";
+            default: return "Unknown";
         }}();
 
         if(!ImGui::BeginMenu(submenu_name)) { continue; }

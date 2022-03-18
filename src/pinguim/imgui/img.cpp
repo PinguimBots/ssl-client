@@ -1,8 +1,12 @@
 #include "pinguim/imgui/img.hpp"
 
 #include "pinguim/cvt.hpp"
+#include "pinguim/conf.hpp"
 
-#include <opencv2/opencv.hpp>
+#if defined(PINGUIM_CONF_OPENCV_SUPPORT)
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgproc.hpp> // For color conversion stuff.
+#endif
 
 #include <utility> // For std::swap.
 
@@ -60,6 +64,7 @@ auto pinguim::ImGui::Image(
     ::ImGui::AddContextHook(::ImGui::GetCurrentContext(), &hook);
 }
 
+#if defined(PINGUIM_CONF_OPENCV_SUPPORT)
 pinguim::imgui::img::img(const cv::_InputArray& mat)
     : texture{}
 {
@@ -87,6 +92,9 @@ pinguim::imgui::img::img(const cv::_InputArray& mat)
     texture.cols = _mat.cols;
     texture.rows = _mat.rows;
 }
+#else
+pinguim::imgui::img::img(const cv::_InputArray&) : img{0, 0, 0} {}
+#endif
 
 pinguim::imgui::img::img(GLuint handle, int cols, int rows)
     : texture{ handle, cols, rows }

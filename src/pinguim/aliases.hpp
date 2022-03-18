@@ -26,7 +26,7 @@ namespace pinguim::inline integer_aliases
             constexpr auto size = Size/8;
             if      constexpr(sizeof(signed char)      == size) { return static_cast<signed char>(0); }
             else if constexpr(sizeof(signed short)     == size) { return static_cast<signed short>(0); }
-            else if constexpr(sizeof(signed int)       == size) { return static_cast<signed int>(0); }
+            else if constexpr(sizeof(signed int)       == size) { return                           0; }
             else if constexpr(sizeof(signed long)      == size) { return static_cast<signed long>(0); }
             else if constexpr(sizeof(signed long long) == size) { return static_cast<signed long long>(0); }
             else { static_assert(false_type<Size>::value, "No type of this size"); }

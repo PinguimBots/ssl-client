@@ -6,7 +6,8 @@ In order to run the project you need **installed on your system**:
 - [meson](https://github.com/mesonbuild/meson) >= 0.60 and a suitable backend (ninja/make)
 - A C++20 capable compiler [(check here)](https://en.cppreference.com/w/cpp/compiler_support)
     - GCC >= 11 OR
-    - Clang >= 13
+    - Clang >= 13 OR
+    - MSVC >= 19 (VS >= 16.10)
 - OpenGL
 - OpenMP
 

@@ -4,8 +4,7 @@ conf_data = configuration_data()
 # conf.hpp.in must be in that separate folder.
 
 ## Compiler stuff.
-cxxid = cxx.get_id()
-conf_data.set_quoted('cxx_id', cxx.get_id())
+conf_data.set_quoted('cxx_id', cxxid)
 conf_data.set('PINGUIM_CONF_COMPILER_IS_GCC',   cxxid == 'gcc')
 conf_data.set('PINGUIM_CONF_COMPILER_IS_CLANG', cxxid == 'clang')
 conf_data.set('PINGUIM_CONF_COMPILER_IS_MSVC',  cxxid == 'msvc')

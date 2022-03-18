@@ -30,7 +30,7 @@ namespace pinguim
         // Elementwise move constructors.
         constexpr list(std::initializer_list<T>);
 
-        ~list();
+        ~list() { clear(); if(elements.data) delete elements.data; }
 
         constexpr auto operator=(list const&) -> list&;
         constexpr auto operator=(list&&) noexcept -> list&;
@@ -107,13 +107,6 @@ constexpr pinguim::list<T>::list(std::initializer_list<T> l)
 {
     reserve( l.size() );
     for(auto& e : l) push_back( s::move(e) );
-}
-
-template <typename T>
-pinguim::list<T>::~list<T>()
-{
-    clear();
-    if(elements.data) delete elements.data;
 }
 
 template <typename T>

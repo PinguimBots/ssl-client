@@ -9,9 +9,9 @@ namespace pinguim::app::subsystems::misc
         auto loop(float delta_seconds) -> void override;
 
     private:
-        bool show_metrics;
-        bool show_demo;
-        bool show_stack_tool;
-        bool show_about;
+        bool show_metrics = false;
+        bool show_demo = false; 
+        bool show_stack_tool = false;
+        bool show_about = false;
     };
 }

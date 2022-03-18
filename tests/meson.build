@@ -1,5 +1,7 @@
 cpp_warnings = meson.get_compiler('cpp').get_supported_arguments([
-    '-Wall',
+    # /Wall enables ALL warnings in MSCV
+    # while -Wall enables only the reasonable ones in GCC/Clang.
+    cxxid != 'msvc' ? '-Wall' : '/W4',
     '-Wpedantic',
     '-Wextra', # reasonable and standard
     '-Wshadow', # warn the user if a variable declaration shadows one from a parent context

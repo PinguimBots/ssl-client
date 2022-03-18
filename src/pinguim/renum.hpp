@@ -51,6 +51,14 @@ namespace pinguim::renum::detail
     template <typename Enum, Enum Value>
     consteval auto enum_value_view()
     {
+        #if defined(PINGUIM_CONF_COMPILER_IS_MSVC)
+
+        // TODO: fixme!
+        const char* fn = __FUNCSIG__;
+        return view{fn, sizeof(__FUNCSIG__)};
+
+        #else
+
         // In GCC this fn will look like: 'constexpr auto detail::enum_value_view() [Enum = some_enum; Value = some_value]'
         // In Clang:                      'constexpr auto detail::enum_value_view() [Enum = some_enum, Value = some_value]'
         const char* fn = __PRETTY_FUNCTION__;
@@ -73,6 +81,8 @@ namespace pinguim::renum::detail
         auto len = 0u;
         while(*(fn + len) != ']') ++len;
         return view{fn, len};
+    
+        #endif
     }
 
     // Just a holder for many things of the same type (generally ints).
@@ -86,9 +96,11 @@ namespace pinguim::renum::detail
     template <typename Enum, typename I, I Lo, I Hi, I... Accumulated>
     consteval auto make_enum_idx_seq()
     {
+        #if !defined(PINGUIM_CONF_COMPILER_IS_MSVC)
         // If the index is not valid we'll get a warning.
         #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wconversion"
+        #endif
 
         // If is done.
         if constexpr(Lo > Hi) { return seq<I, Accumulated...>{}; }
@@ -98,7 +110,9 @@ namespace pinguim::renum::detail
         // If is not valid.
         else { return make_enum_idx_seq<Enum, I, Lo+1, Hi, Accumulated...>(); }
 
+        #if !defined(PINGUIM_CONF_COMPILER_IS_MSVC)
         #pragma GCC diagnostic pop
+        #endif
     }
 }
 

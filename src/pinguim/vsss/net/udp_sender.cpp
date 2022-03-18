@@ -2,6 +2,7 @@
 
 #include "pinguim/standalone/forward.hpp"
 
+#include "pinguim/vsss/net/pre_asio.hpp"
 #include <asio.hpp>
 
 #include <string_view>

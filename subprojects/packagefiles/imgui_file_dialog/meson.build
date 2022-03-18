@@ -15,6 +15,7 @@ imgui_file_dialog = static_library(
     'imgui_file_dialog',
     'ImGuiFileDialog.cpp',
     dependencies: imgui_dep,
+    cpp_args: meson.get_compiler('cpp').get_supported_arguments(['/w', '-w']),
     include_directories: include_dirs,
 )
 

@@ -37,6 +37,7 @@ simproto_lib = library(
     'simproto',
     generated,
     include_directories: incdir,
+    cpp_args: meson.get_compiler('cpp').get_supported_arguments(['/w', '-w']),
     dependencies: protobuf_dep,
 )
 
@@ -44,7 +45,6 @@ simproto_dep = declare_dependency(
     link_with: simproto_lib,
     include_directories: incdir,
     dependencies: protobuf_dep,
-    # Makes sure the headers are built before the dependants, this also exposes the soures,
-    # which would be bad if this package has multiple dependants.
-    sources: generated,
+    # Makes sure the headers are built before whoever needs this dependency.
+    sources: generated_only_headers,
 )

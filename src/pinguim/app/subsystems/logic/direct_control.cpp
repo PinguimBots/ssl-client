@@ -74,7 +74,7 @@ auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_in
                 right * cvt::to<float> * gi.allied_team[i].right())
                 .normalized_or({0, 0});
 
-            if(final_direction.distance(gi.allied_team[i].location) >= 0.5)
+            if(final_direction.distance(gi.allied_team[i].location) >= 0.5f)
             {
                 auto const command = pinguim::vsss::control::goto_point(
                     gi.allied_team[i],
@@ -94,8 +94,8 @@ auto pinguim::app::subsystems::logic::direct_control::draw_inputs_window(game_in
             }
             else if(bkw)
             {
-                target_input.left_motor  = -left;
-                target_input.right_motor = -right;
+                target_input.left_motor  = -cvt::to<float>(left);
+                target_input.right_motor = -cvt::to<float>(right);
             }
         }
 
