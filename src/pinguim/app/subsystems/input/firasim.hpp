@@ -16,7 +16,7 @@ namespace pinguim::app::subsystems::input
 
         auto update_gameinfo(game_info&, float delta_seconds) -> bool override;
 
-        using receiver_t = pinguim::vsss::net::multicast_udp_receiver<512>;
+        using receiver_t = pinguim::vsss::net::multicast_udp_receiver;
         using env_packet_t = fira_message::sim_to_ref::Environment;
         using referee_packet_t = VSSRef::ref_to_team::VSSRef_Command;
 

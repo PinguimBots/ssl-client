@@ -4,12 +4,12 @@
 
 namespace pinguim::vsss::net
 {
-    namespace detail { struct sv { const char* data; u64 len; }; }
+    namespace udp_sender_detail { struct sv { const char* data; u64 len; }; }
 
     struct udp_sender
     {
         constexpr udp_sender() = default;
-        udp_sender(detail::sv ip, u16 port);
+        udp_sender(udp_sender_detail::sv ip, u16 port);
         udp_sender(udp_sender&&);
         ~udp_sender();
 

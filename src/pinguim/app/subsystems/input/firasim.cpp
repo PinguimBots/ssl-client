@@ -1,7 +1,6 @@
 #include "pinguim/app/subsystems/input/firasim.hpp"
 
 #include "pinguim/vsss/firasim/tuplified_proto.hpp"
-#include "pinguim/vsss/net/decoders/sim.hpp" // Needed for receiver_t.sync().
 
 #include "pinguim/imgui/widgets/group_panel.hpp"
 
@@ -20,7 +19,7 @@ namespace pinguim::app::subsystems::input
 {
     firasim::firasim(std::string_view addr, u16 port)
         : allied_team_color{team::yellow}
-        , env_receiver{addr, port}
+        , env_receiver{addr.data(), addr.length(), port}
         //, referee_receiver{"addr", "port"};
     {}
 
@@ -28,12 +27,20 @@ namespace pinguim::app::subsystems::input
     {
         namespace ImGui = ::ImGui;
 
-        auto has_new_env = env_receiver.sync( env_packet );
+        auto has_new_env = env_receiver.read(
+            [](auto buf, auto p){
+                auto& packet = *cvt::rc<env_packet_t*>(p);
+                packet.ParseFromArray(buf.data, buf.size * cvt::toe);
+            },
+            &env_packet
+        );
+
         //auto has_new_referee = referee_receiver.sync( referee_packet );
 
         ImGui::SetNextWindowSize({0, 0});
         ImGui::Begin("[INPUT] Firasim");
-        for(auto& robot : gi.allied_team) {
+        for(auto& robot : gi.allied_team)
+        {
             pb::ImGui::BeginGroupPanel(fmt::format("Robot {}", robot.id).c_str());
             ImGui::SetNextItemWidth(150);
             ImGui::InputFloat(
@@ -66,6 +73,7 @@ namespace pinguim::app::subsystems::input
             : env_packet.goals_yellow() * cvt::toe;
 
         const auto [blue_team, yellow_team, ball] = env_packet.frame();
+
         const auto& allied_team = allied_team_color == team::yellow
             ? yellow_team
             : blue_team;
@@ -73,6 +81,7 @@ namespace pinguim::app::subsystems::input
         const auto& enemy_team = allied_team_color == team::yellow
             ? blue_team
             : yellow_team;
+
         // Fill the teams with zeroed robots if the size differs.
         gi.allied_team.reserve(allied_team.size());
         pb::emplace_fill_capacity(gi.allied_team);

@@ -39,6 +39,10 @@ namespace pinguim
         constexpr auto operator[](u64) const -> T const&;
 
         [[nodiscard]] constexpr auto size()     const -> u64;
+        // Only use if you know what you are doing.
+        // Useful if you are using this as resizable buffer
+        // that is filled by someone else.
+        constexpr auto override_size(u64)             -> void;
         [[nodiscard]] constexpr auto capacity() const -> u64;
 
         [[nodiscard]] constexpr auto begin() -> T*;
@@ -123,9 +127,10 @@ constexpr auto pinguim::list<T>::operator=(const list& other) -> list&
 template <typename T>
 constexpr auto pinguim::list<T>::operator=(list&& other) noexcept -> list&
 {
-    this->~list();
+    // Is actually a swap but thats okay.
+    auto temp = s::move(elements);
     elements = s::move(other.elements);
-    other.elements = {nullptr, 0, 0};
+    other.elements = s::move(temp);
 
     return *this;
 }
@@ -141,6 +146,10 @@ constexpr auto pinguim::list<T>::operator[](u64 pos) const -> T const&
 template <typename T>
 constexpr auto pinguim::list<T>::size() const -> u64
 { return elements.size; }
+
+template <typename T>
+constexpr auto pinguim::list<T>::override_size(u64 newsize) -> void
+{ elements.size = newsize; }
 
 template <typename T>
 constexpr auto pinguim::list<T>::capacity() const -> u64

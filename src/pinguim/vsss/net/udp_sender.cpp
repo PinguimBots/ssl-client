@@ -9,7 +9,7 @@
 
 struct pinguim::vsss::net::udp_sender::impl
 {
-    impl(detail::sv ip, u16 port)
+    impl(udp_sender_detail::sv ip, u16 port)
         : io{}
         , strand{ asio::make_strand(io) }
         , endpoint{ asio::ip::make_address(std::string_view{ip.data, ip.len}), port }
@@ -26,7 +26,7 @@ struct pinguim::vsss::net::udp_sender::impl
     asio::ip::udp::socket socket;
 };
 
-pinguim::vsss::net::udp_sender::udp_sender(detail::sv ip, u16 port)
+pinguim::vsss::net::udp_sender::udp_sender(udp_sender_detail::sv ip, u16 port)
     : pimpl{ new impl(ip, port) }
 {}
 

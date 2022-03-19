@@ -97,6 +97,7 @@ sources = files(
 
     'src/pinguim/imgui/fonts/kenney_game_icons.cpp',
 
+    'src/pinguim/vsss/net/multicast_udp_receiver.cpp',
     'src/pinguim/vsss/net/udp_sender.cpp',
 
     'src/pinguim/vsss/strategy.cpp',
