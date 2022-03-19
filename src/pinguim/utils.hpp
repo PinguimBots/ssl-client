@@ -59,6 +59,11 @@ namespace pinguim::inline utils
             prefix = "constexpr std::string_view pinguim::utils::type_name() [with T = ";
             if constexpr (EnableShortInts) { suffix = "; bool EnableShortInts = true; std::string_view = std::basic_string_view<char>]"; }
             else                           { suffix = "; bool EnableShortInts = false; std::string_view = std::basic_string_view<char>]"; }
+        #elif defined(PINGUIM_CONF_COMPILER_IS_MSVC)
+            name = __FUNCSIG__;
+            prefix = "class std::basic_string_view<char,struct std::char_traits<char> > __cdecl pinguim::utils::type_name<";
+            if constexpr(EnableShortInts) { suffix = ",true>(void)"; }
+            else                          { suffix = ",false>(void)"; }
         #else
             static_assert(false, "Please implement type_name() for this compiler");
         #endif
@@ -67,9 +72,9 @@ namespace pinguim::inline utils
         return name;
     }
 
-    template <typename T, bool EnableShortInts = true, bool EnableShortFloats = true>
+    template <typename T, bool EnableShortInts = true>
     constexpr auto type_name(T&&) -> std::string_view
-    { return type_name< T, EnableShortInts, EnableShortFloats >(); }
+    { return type_name< T, EnableShortInts >(); }
 }
 
 // Macro for automating structured binding boilerplate.

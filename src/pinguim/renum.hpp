@@ -40,7 +40,18 @@ namespace pinguim::renum::detail
             auto data = _unqualified.data();
             auto size = _unqualified.size();
 
-            for(auto colons = 0u; colons <= 2; colons += *(--data) == ':') ++size;
+            #if defined(PINGUIM_CONF_COMPILER_IS_MSVC)
+
+                for(auto colons = 0u; colons < 2; colons += *(--data) == ':') ++size;
+                --data;
+                while(*data != ',' && *data != ':') { --data; ++size; }
+                ++size;
+
+            #else
+
+                for(auto colons = 0u; colons <= 2 && *data != ' '; colons += *(--data) == ':') ++size;
+
+            #endif
 
             return {data+1, size-1};
         }
@@ -53,35 +64,62 @@ namespace pinguim::renum::detail
     {
         #if defined(PINGUIM_CONF_COMPILER_IS_MSVC)
 
-        // TODO: fixme!
-        const char* fn = __FUNCSIG__;
-        return view{fn, sizeof(__FUNCSIG__)};
+            // if valid:   auto __cdecl pinguim::renum::detail::enum_value_view<enum some_enum,some_enum::some_value>(void)
+            // if invalid: auto __cdecl pinguim::renum::detail::enum_value_view<enum some_enum,(enum some_enum)some_value>(void)
+            std::string_view name = __FUNCSIG__;
+            std::string_view prefix = "auto __cdecl pinguim::renum::detail::enum_value_view<";
+            std::string_view suffix = ">(void)";
+            name.remove_prefix(prefix.size());
+            name.remove_suffix(suffix.size());
+
+            const char* fn = name.data();
+            auto len = name.length();
+
+            // To deal with nested templates.
+            auto open_brackets = 0u;
+            while(true)
+            {
+                ++fn;
+                --len;
+
+                open_brackets += *fn == '<';
+                open_brackets -= *fn == '>';
+
+                if(*fn == ',' && open_brackets == 0) break;
+            }
+
+            ++fn;
+            --len;
+            if(*fn == '(') { return view{nullptr, 0}; }
+
+            return view{fn, len};
 
         #else
 
-        // In GCC this fn will look like: 'constexpr auto detail::enum_value_view() [Enum = some_enum; Value = some_value]'
-        // In Clang:                      'constexpr auto detail::enum_value_view() [Enum = some_enum, Value = some_value]'
-        const char* fn = __PRETTY_FUNCTION__;
+            // In GCC this fn will look like: 'constexpr auto detail::enum_value_view() [Enum = some_enum; Value = fully_qualified::some_enum::some_value]'
+            // In Clang:                      'constexpr auto detail::enum_value_view() [Enum = some_enum, Value = fully_qualified::some_enum::some_value]'
+            // They differ by punctuation, basically.
+            // if valid:   'constexpr auto detail::enum_value_view() [Enum = some_enum, Value = fully_qualified::some_enum::some_value]'
+            // if invalid: 'constexpr auto detail::enum_value_view() [Enum = some_enum, Value = (fully_qualified::some_enum)some_value]'
+            const char* fn = __PRETTY_FUNCTION__;
 
-        #if defined(PINGUIM_CONF_COMPILER_IS_GCC)
-        while(*(fn++) != ';');
-        #elif defined(PINGUIM_CONF_COMPILER_IS_CLANG)
-        while(*(fn++) != ',');
-        #else
-        static_assert(false, "Please implement pinguim::renum::detail::enum_value_view for this compiler");
-        #endif
+            #if defined(PINGUIM_CONF_COMPILER_IS_GCC)
+                while(*(fn++) != ';');
+            #elif defined(PINGUIM_CONF_COMPILER_IS_CLANG)
+                while(*(fn++) != ',');
+            #else
+                static_assert(false, "Please implement pinguim::renum::detail::enum_value_view for this compiler");
+            #endif
 
-        while(*(fn++) != '=');
-        fn += 1; // Skip the space padding the '=' sign in 'Value = some_value'.
+            while(*(fn++) != '=');
+            fn += 1; // Skip the space padding the '=' sign in 'Value = some_value'.
 
-        // If the value is valid then the actual value name will be the first character pointed by fn,
-        // otherwise it will be '(some_enum)value' where some_enum is the enum name value is the value.
-        if(*fn == '(') { return view{nullptr, 0}; }
+            if(*fn == '(') { return view{nullptr, 0}; }
 
-        auto len = 0u;
-        while(*(fn + len) != ']') ++len;
-        return view{fn, len};
-    
+            auto len = 0u;
+            while(*(fn + len) != ']') ++len;
+            return view{fn, len};
+
         #endif
     }
 
@@ -94,7 +132,7 @@ namespace pinguim::renum::detail
     // We won't *actually* call this, we just decltype() it to get the
     // resulting type, cheeky.
     template <typename Enum, typename I, I Lo, I Hi, I... Accumulated>
-    consteval auto make_enum_idx_seq()
+    consteval auto enum_check_range_impl()
     {
         #if !defined(PINGUIM_CONF_COMPILER_IS_MSVC)
         // If the index is not valid we'll get a warning.
@@ -106,14 +144,17 @@ namespace pinguim::renum::detail
         if constexpr(Lo > Hi) { return seq<I, Accumulated...>{}; }
         // If is valid.
         else if constexpr(enum_value_view<Enum, Enum(Lo)>().begin != nullptr)
-        { return make_enum_idx_seq<Enum, I, Lo+1, Hi, Accumulated..., Lo>(); }
+        { return enum_check_range_impl<Enum, I, Lo+1, Hi, Accumulated..., Lo>(); }
         // If is not valid.
-        else { return make_enum_idx_seq<Enum, I, Lo+1, Hi, Accumulated...>(); }
+        else { return enum_check_range_impl<Enum, I, Lo+1, Hi, Accumulated...>(); }
 
         #if !defined(PINGUIM_CONF_COMPILER_IS_MSVC)
         #pragma GCC diagnostic pop
         #endif
     }
+
+    template <typename Enum, typename I, I Lo, I Hi>
+    using enum_check_range = decltype( enum_check_range_impl<Enum, I, Lo, Hi>() );
 }
 
 namespace pinguim::renum
@@ -128,6 +169,7 @@ namespace pinguim::renum
             ((detail::enum_value_view<Enum, Enum(Values)>().begin != nullptr) && ...),
             "Invalid value for enum reflection (did you try to manually use reflected<enum> ? please use reflect<enum> instead)."
         );
+        static_assert(sizeof...(Values) > 0, "Needs at least one value, increase CheckLo and CheckHi if you need");
 
         static constexpr auto count           = sizeof...(Values);
         static constexpr I values[]           = { Values... };
@@ -171,11 +213,11 @@ namespace pinguim::renum
     struct reflected<Enum, Seq<I, Values...>> { using type = reflected<Enum, I, Values...>; };
 
     // This is the type the end-user is going to use, from this we compute the valid values
-    // between [CheckLo, CheckHi] using that cheeky function from before.
-    template <typename Enum, typename I = long long int, I CheckLo = -32, I CheckHi = 32>
+    // between [CheckLo, CheckHi] using enum_check_range.
+    template <typename Enum, auto CheckLo = -32, auto CheckHi = 32>
     using reflect = typename reflected<
         Enum,
-        decltype( detail::make_enum_idx_seq<Enum, I, CheckLo, CheckHi>() )
+        detail::enum_check_range< Enum, decltype(CheckLo), CheckLo, CheckHi >
     >::type;
 
     // The following are just aliases for convenience.
