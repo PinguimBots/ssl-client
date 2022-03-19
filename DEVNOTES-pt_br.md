@@ -17,7 +17,7 @@ o estágio, iniciar o loop da aplicação e, quando sair,
 desmontar o estágio.
 
 Mais especificamente, vamos iniciar o `ImGui` (biblioteca de
-interface gráfica) com o [`mario`](#mario-), criar um
+interface gráfica) com o [`mario`](#e-o-mario-), criar um
 `subsystem_manager` e entrar num loop.
 
 No loop vamos devemos apenas:
@@ -30,11 +30,11 @@ E só, nada mais.
 
 ## O que faz o `subsystem_manager` ?
 
-O `manager` instancia e alimenta os subsistemas da aplicação.
+O `manager` instancia, alimenta com informações e chama os
+subsistemas da aplicação.
 
-Ele realmente é bem simples também e so serve para automatizar
-o ciclo de vida dos subsistemas (criar e destruir quando é
-necessário).
+Ele realmente é bem simples também e so serve criar e destruir
+os subsistemas quando é necessário.
 
 ## E o `mario` ?
 
@@ -50,9 +50,9 @@ curiosidade essas são as coisas que ele faz:
 - Cria a janela
 - Inicializa o ImGui
 - Conecta o ImGui ao SDL e OpenGl
-  
+
 Como essas coisas não podem ficar sendo feitas e desfeitas
-o `mario` é um *singleton*, então se quiser que ele faça alguma
+o `mario` é um *singleton*, então se quisermos que ele faça alguma
 coisa em especial vamos ter que passar pelo seu dono, o `main()`.
 
 # Subsistemas
@@ -88,12 +88,20 @@ de forma estática.
 O nosso amigo `registrar.hpp` já nos da uma forma fácil de fazer isso:
 
 <table>
-<tr><th>
+<tr>
 
-`pinguim/app/subsystems/registrar.hpp` 
+<th>
+
+`pinguim/app/subsystems/registrar.hpp`
+
+</th><th>
+
+`pinguim/app/subsystems/input/meu_novo_subsistema_de_input.cpp`
 
 </th></tr>
-<tr><td>
+<tr>
+
+<td>
 
 ```cpp
 #define PINGUIM_APP_REGISTER_INPUT_SUBSYSTEM(class, name) \
@@ -106,18 +114,7 @@ O nosso amigo `registrar.hpp` já nos da uma forma fácil de fazer isso:
     // Implementação aqui
 ```
 
-</tr></td>
-</table>
-
-Dai botamos isso no nosso `.cpp` assim:
-
-<table>
-<tr><th>
-
-`pinguim/app/subsystems/input/meu_novo_subsistema_de_input.cpp`
-
-</th></tr>
-<tr><td>
+</td><td>
 
 ```cpp
 #include "pinguim/app/subsystems/input/meu_novo_subsistema_de_input.hpp"
@@ -132,15 +129,15 @@ PINGUIM_APP_REGISTER_INPUT_SUBSYSTEM(
 // Implementação da classe...
 ```
 
-</tr></td>
+</td></tr>
 </table>
 
-Fica convencionado que vamos botar sempre no topo do `.cpp`,
+Fica convencionado que vamos botar o macro sempre no topo do `.cpp`
 depois de todos os `#includes`.
 
 > Fica por curiosidade olhar a implementação do macro em
-> `registrar.hpp` e `manager.cpp` e tentar entender como
-> as peças funcionam juntas.
+> `registrar.hpp` e a implementação do `manager` em
+> `manager.hpp` para tentar entender como as peças funcionam juntas.
 >
 > Duas dicas: `registrar::instance()` retorna um *singleton*
 > e as funções `registrar::register_*_subsystem()` recebem
