@@ -1,0 +1,149 @@
+#ifndef OPENCV_CVCONFIG_H_INCLUDED
+#define OPENCV_CVCONFIG_H_INCLUDED
+
+/* OpenCV compiled as static or dynamic libs */
+#mesondefine BUILD_SHARED_LIBS
+
+/* OpenCV intrinsics optimized code */
+#mesondefine CV_ENABLE_INTRINSICS
+
+/* OpenCV additional optimized code */
+#mesondefine CV_DISABLE_OPTIMIZATION
+
+/* Compile for 'real' NVIDIA GPU architectures */
+#define CUDA_ARCH_BIN @OPENCV_CUDA_ARCH_BIN@
+
+/* NVIDIA GPU features are used */
+#define CUDA_ARCH_FEATURES @OPENCV_CUDA_ARCH_FEATURES@
+
+/* Compile for 'virtual' NVIDIA PTX architectures */
+#define CUDA_ARCH_PTX @OPENCV_CUDA_ARCH_PTX@
+
+/* AMD's Basic Linear Algebra Subprograms Library*/
+#mesondefine HAVE_CLAMDBLAS
+
+/* AMD's OpenCL Fast Fourier Transform Library*/
+#mesondefine HAVE_CLAMDFFT
+
+/* Clp support */
+#mesondefine HAVE_CLP
+
+/* NVIDIA CUDA Runtime API*/
+#mesondefine HAVE_CUDA
+
+/* NVIDIA CUDA Basic Linear Algebra Subprograms (BLAS) API*/
+#mesondefine HAVE_CUBLAS
+
+/* NVIDIA CUDA Deep Neural Network (cuDNN) API*/
+#mesondefine HAVE_CUDNN
+
+/* NVIDIA CUDA Fast Fourier Transform (FFT) API*/
+#mesondefine HAVE_CUFFT
+
+/* DirectX */
+#mesondefine HAVE_DIRECTX
+#mesondefine HAVE_DIRECTX_NV12
+#mesondefine HAVE_D3D11
+#mesondefine HAVE_D3D10
+#mesondefine HAVE_D3D9
+
+/* Eigen Matrix & Linear Algebra Library */
+#mesondefine HAVE_EIGEN
+
+/* Geospatial Data Abstraction Library */
+#mesondefine HAVE_GDAL
+
+/* Halide support */
+#mesondefine HAVE_HALIDE
+
+/* Vulkan support */
+#mesondefine HAVE_VULKAN
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#mesondefine HAVE_INTTYPES_H
+
+/* Intel Integrated Performance Primitives */
+#mesondefine HAVE_IPP
+#mesondefine HAVE_IPP_ICV
+#mesondefine HAVE_IPP_IW
+#mesondefine HAVE_IPP_IW_LL
+
+/* JPEG-2000 codec */
+#mesondefine HAVE_OPENJPEG
+#mesondefine HAVE_JASPER
+
+/* IJG JPEG codec */
+#mesondefine HAVE_JPEG
+
+/* libpng/png.h needs to be included */
+#mesondefine HAVE_LIBPNG_PNG_H
+
+/* GDCM DICOM codec */
+#mesondefine HAVE_GDCM
+
+/* NVIDIA Video Decoding API*/
+#mesondefine HAVE_NVCUVID
+#mesondefine HAVE_NVCUVID_HEADER
+#mesondefine HAVE_DYNLINK_NVCUVID_HEADER
+
+/* NVIDIA Video Encoding API*/
+#mesondefine HAVE_NVCUVENC
+
+/* OpenCL Support */
+#mesondefine HAVE_OPENCL
+#mesondefine HAVE_OPENCL_STATIC
+#mesondefine HAVE_OPENCL_SVM
+
+/* NVIDIA OpenCL D3D Extensions support */
+#mesondefine HAVE_OPENCL_D3D11_NV
+
+/* OpenEXR codec */
+#mesondefine HAVE_OPENEXR
+
+/* OpenGL support*/
+#mesondefine HAVE_OPENGL
+
+/* PNG codec */
+#mesondefine HAVE_PNG
+
+/* Posix threads (pthreads) */
+#mesondefine HAVE_PTHREAD
+
+/* parallel_for with pthreads */
+#mesondefine HAVE_PTHREADS_PF
+
+/* Intel Threading Building Blocks */
+#mesondefine HAVE_TBB
+
+/* Ste||ar Group High Performance ParallelX */
+#mesondefine HAVE_HPX
+
+/* TIFF codec */
+#mesondefine HAVE_TIFF
+
+/* Define if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
+#mesondefine WORDS_BIGENDIAN
+
+/* VA library (libva) */
+#mesondefine HAVE_VA
+
+/* Intel VA-API/OpenCL */
+#mesondefine HAVE_VA_INTEL
+
+/* Lapack */
+#mesondefine HAVE_LAPACK
+
+/* Library was compiled with functions instrumentation */
+#mesondefine ENABLE_INSTRUMENTATION
+
+/* OpenVX */
+#mesondefine HAVE_OPENVX
+
+/* OpenCV trace utilities */
+#mesondefine OPENCV_TRACE
+
+/* Library QR-code decoding */
+#mesondefine HAVE_QUIRC
+
+#endif // OPENCV_CVCONFIG_H_INCLUDED

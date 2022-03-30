@@ -1,0 +1,14 @@
+option('shush', type: 'boolean', value: true,
+    description:
+        'Disables all warnings, use this if compiling as a subproject ' +
+        'and don\'t want to be annoyed'
+)
+
+option('print_conf', type: 'boolean', value: false)
+option('print_optimizations', type: 'boolean', value: false,
+    description: 'Prints optimization support as it goes through, see conf/optimizations/meson.build'
+)
+
+option('enable_nonfree', type: 'boolean', value: false,
+    description: 'Enable non-free algorithms'
+)

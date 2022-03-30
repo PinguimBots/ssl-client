@@ -6,9 +6,6 @@ cc = meson.get_compiler('cpp')
 
 flags = cc.get_supported_arguments([
   '-DHAVE_PTHREAD',
-  '-Wno-sign-compare',
-  '-Wno-unused-parameter',
-  '-Wno-ignored-qualifiers',
   '/w',
   '-w',
 ])
