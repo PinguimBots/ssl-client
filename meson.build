@@ -80,6 +80,8 @@ sources = files(
 
     'src/pinguim/app/subsystems/input/firasim.cpp',
     'src/pinguim/app/subsystems/input/vision.cpp',
+    'src/pinguim/app/subsystems/input/vision/pipeline.cpp',
+    'src/pinguim/app/subsystems/input/vision/segmentation.cpp',
     'src/pinguim/app/subsystems/logic/direct_control.cpp',
     'src/pinguim/app/subsystems/logic/strategy.cpp',
     'src/pinguim/app/subsystems/output/firasim.cpp',

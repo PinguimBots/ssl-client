@@ -40,6 +40,9 @@ namespace pinguim::app::subsystems::input
         ImGui::Begin("[INPUT] Vision");
         PINGUIM_DONT_FORGET( ImGui::End() );
 
+        bool first_frame_of_new_capture_type = false;
+
+        // Capture type dropdown.
         auto selected_str = std::string{ pinguim::renum::unqualified_value_name(capture_type) };
         ImGui::SetNextItemWidth(100);
         if(ImGui::BeginCombo("Capture Type", selected_str.c_str()))
@@ -50,8 +53,10 @@ namespace pinguim::app::subsystems::input
                 {
                     capture_type = enum_value;
                     file_capture_config = std::nullopt;
+                    camera_capture_config = std::nullopt;
                     video.release();
                     currframe.release();
+                    first_frame_of_new_capture_type = true;
                 }
             }
             ImGui::EndCombo();
@@ -78,6 +83,23 @@ namespace pinguim::app::subsystems::input
             // Try opening the file.
             if(!newfile.empty())
             { init_file_capture(newfile); }
+        }
+
+        if(capture_type == capture_type_enum::camera)
+        {
+            if(first_frame_of_new_capture_type)
+            {
+                camera_capture_config = {0};
+                init_camera_capture();
+            }
+            auto& cfg = camera_capture_config.value();
+
+            auto val_int = cvt::to<int> * cfg.index;
+            auto value_changed = ImGui::InputInt("Camera Index", &val_int);
+            if(value_changed) {
+                cfg.index = val_int >= 0 ? cvt::to<u32> * val_int : 0;
+                init_camera_capture();
+            }
         }
 
         if(!video.isOpened()) { return false; }
@@ -137,6 +159,15 @@ namespace pinguim::app::subsystems::input
             )) { video.set(cv::CAP_PROP_POS_MSEC, cvt::to<double> * video_timeline * 1000); }
         }
 
+        if(capture_type == capture_type_enum::camera)
+        {
+            auto& cfg = camera_capture_config.value();
+
+            video.read(currframe);
+
+            pb::ImGui::Image({currframe});
+        }
+
         return true;
     }
 
@@ -170,6 +201,11 @@ namespace pinguim::app::subsystems::input
         );
 
         return true;
+    }
+
+    auto vision::init_camera_capture() -> void
+    {
+        video.open(cvt::to<i32> * camera_capture_config.value().index);
     }
 
     auto vision::read_frame_from_file_capture() -> u16

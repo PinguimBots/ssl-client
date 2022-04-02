@@ -22,6 +22,7 @@ namespace pinguim::app::subsystems::input
     private:
 
         auto init_file_capture(std::string path) -> bool;
+        auto init_camera_capture() -> void;
 
         // Uses settings from file_capture_config and
         // overrides currframe with the new frame.
@@ -54,7 +55,15 @@ namespace pinguim::app::subsystems::input
             stopwatch<> frametime_pacer;
         };
 
+        struct camera_capture_config_struct
+        {
+            u32 index;
+        };
+
         std::optional<file_capture_config_struct> file_capture_config;
+        std::optional<camera_capture_config_struct> camera_capture_config;
+
+        //pipeline camera_pipeline;
 
         cv::VideoCapture video;
         cv::Mat currframe;
