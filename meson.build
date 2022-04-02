@@ -4,7 +4,6 @@ project('pbssl', ['cpp', 'c'],
         'buildtype=debugoptimized',
         'warning_level=0',
         'cpp_std=c++20',
-        'cpp_rtti=false',
     ],
     meson_version: '>= 0.60',
     #license: ['???'],
@@ -35,9 +34,6 @@ if cxxid == 'msvc'
     add_project_arguments('/external:W0', language: 'cpp')
     add_project_arguments('/external:anglebrackets', language: 'cpp')
 endif
-
-# Since cpp_rtti=false.
-add_global_arguments('-DASIO_NO_TYPEID', language: 'cpp')
 
 # Clang has a great compile time (not compile-time) flag.
 if get_option('time-trace') == true
@@ -84,6 +80,8 @@ sources = files(
 
     'src/pinguim/app/subsystems/input/firasim.cpp',
     'src/pinguim/app/subsystems/input/vision.cpp',
+    'src/pinguim/app/subsystems/input/vision/pipeline.cpp',
+    'src/pinguim/app/subsystems/input/vision/segmentation.cpp',
     'src/pinguim/app/subsystems/logic/direct_control.cpp',
     'src/pinguim/app/subsystems/logic/strategy.cpp',
     'src/pinguim/app/subsystems/output/firasim.cpp',
