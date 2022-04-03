@@ -32,6 +32,7 @@ cvconfig_confdata = configuration_data()
 cvconfig_confdata.set_quoted('OPENCV_CUDA_ARCH_BIN', '')
 cvconfig_confdata.set_quoted('OPENCV_CUDA_ARCH_FEATURES', '')
 cvconfig_confdata.set_quoted('OPENCV_CUDA_ARCH_PTX', '')
+cvconfig_confdata.set('CV_ENABLE_INTRINSICS', 1)
 
 conf += {'gen': {
     'includes': include_directories('..', '.'),

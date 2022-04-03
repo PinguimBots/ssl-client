@@ -15,12 +15,13 @@ conf = {
 
     'enable_nonfree': enable_nonfree,
     'module_build_flags': [] \
-        + ['-D__OPENCV_BUILD'] \
+        + ['-D__OPENCV_BUILD', '-Wno-deprecated-enum-enum-conversion'] \
         + shush_flag \
         + (enable_nonfree ? ['-DOPENCV_ENABLE_NONFREE'] : []),
 
     # Equivalent to BUILD_opencv_* in the cmake build.
-    'modules_to_build': ['core']
+    # TODO: figure out the logic to select what modules are built.
+    'modules_to_build': ['core', 'imgproc', 'videoio']
 }
 
 subdir('optimizations')

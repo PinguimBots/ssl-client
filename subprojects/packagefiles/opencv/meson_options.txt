@@ -12,3 +12,14 @@ option('print_optimizations', type: 'boolean', value: false,
 option('enable_nonfree', type: 'boolean', value: false,
     description: 'Enable non-free algorithms'
 )
+
+option('videoio_plugin_list', type: 'array', value: ['default'], choices: ['default', 'ffmpeg', 'gstreamer', 'mfx', 'msmf', 'all'],
+    description:
+        'List of videoio backends to be compiled as plugins (ffmpeg, gstreamer, ' +
+        'mfx, msmf or special values \'all\' and \'default\'. ' +
+        'When defaulted will select \'all\' on linux and none on windows and mac'
+)
+
+option('ipp_gaussian_blur', type: 'boolean', value: false,
+    description: 'Enable IPP optimizations for GaussianBlur (+8Mb in binary size)'
+)

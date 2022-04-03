@@ -34,17 +34,17 @@ mod_core_sources += custom_target(
         'sum SSE2 AVX2',
     ],
     output: [
-        'mathfuncs_core.sse2',                                 'mathfuncs_core.avx', 'mathfuncs_core.avx2',                                       'mathfuncs_core.simd_declarations',
-                                                'stat.sse4_2',                       'stat.avx2',                                                 'stat.simd_declarations',
-        'arithm.sse2',         'arithm.sse4_1',                                      'arithm.avx2',          'arithm.vsx3',                       'arithm.simd_declarations',
-        'convert.sse2',                                                              'convert.avx2',         'convert.vsx3',                      'convert.simd_declarations',
-        'convert_scale.sse2',                                                        'convert_scale.avx2',                                        'convert_scale.simd_declarations',
-        'count_non_zero.sse2',                                                       'count_non_zero.avx2',                                       'count_non_zero.simd_declarations',
-        'matmul.sse2',         'matmul.sse4_1',                                      'matmul.avx2',                          'matmul.avx512_skx', 'matmul.simd_declarations',
-        'mean.sse2',                                                                 'mean.avx2',                                                 'mean.simd_declarations',
-        'merge.sse2',                                                                'merge.avx2',                                                'merge.simd_declarations',
-        'split.sse2',                                                                'split.avx2',                                                'split.simd_declarations',
-        'sum.sse2',                                                                  'sum.avx2',                                                  'sum.simd_declarations',
+        'mathfuncs_core.simd_declarations.hpp', 'mathfuncs_core.sse2.cpp',                                         'mathfuncs_core.avx.cpp', 'mathfuncs_core.avx2.cpp',
+        'stat.simd_declarations.hpp',                                                           'stat.sse4_2.cpp',                           'stat.avx2.cpp',
+        'arithm.simd_declarations.hpp',         'arithm.sse2.cpp',         'arithm.sse4_1.cpp',                                              'arithm.avx2.cpp',          'arithm.vsx3.cpp',
+        'convert.simd_declarations.hpp',        'convert.sse2.cpp',                                                                          'convert.avx2.cpp',         'convert.vsx3.cpp',
+        'convert_scale.simd_declarations.hpp',  'convert_scale.sse2.cpp',                                                                    'convert_scale.avx2.cpp',
+        'count_non_zero.simd_declarations.hpp', 'count_non_zero.sse2.cpp',                                                                   'count_non_zero.avx2.cpp',
+        'matmul.simd_declarations.hpp',         'matmul.sse2.cpp',         'matmul.sse4_1.cpp',                                              'matmul.avx2.cpp',                              'matmul.avx512_skx.cpp',
+        'mean.simd_declarations.hpp',           'mean.sse2.cpp',                                                                             'mean.avx2.cpp',
+        'merge.simd_declarations.hpp',          'merge.sse2.cpp',                                                                            'merge.avx2.cpp',
+        'split.simd_declarations.hpp',          'split.sse2.cpp',                                                                            'split.avx2.cpp',
+        'sum.simd_declarations.hpp',            'sum.sse2.cpp',                                                                              'sum.avx2.cpp',
     ],
 )
 
@@ -82,5 +82,10 @@ mod_core = {
         conf['gen']['includes'],  # Since we need users to have 'opencv2/opencv_modules.hpp' findable.
     ],
 }
+
+mod_core_dep = declare_dependency(
+    link_with: mod_core['lib'],
+    include_directories: mod_core['exported_includes'],
+)
 
 modules_built += {'core': mod_core}
