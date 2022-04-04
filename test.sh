@@ -1,8 +1,5 @@
 #!/usr/bin/env sh
 
-if [ ! -d "builddir" ]
-then
-    ./configure.sh
-fi
+. $(pwd)/configure.sh
 
 meson test -C builddir "$@"
