@@ -70,7 +70,7 @@ fi
 
 if [ ! -d "meson" ]
 then
-    git clone -b 0.60.0 https://github.com/mesonbuild/meson.git
+    git clone -b 0.60.0 --depth 1 https://github.com/mesonbuild/meson.git
     ln -sf $(pwd)/meson/meson.py $(pwd)/bin/meson
 fi
 

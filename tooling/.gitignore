@@ -1,4 +1,7 @@
 *
 
 !.gitignore
+!programs.sh
+!semver.sh
 !setup_tooling.sh
+!setup_tooling2.sh

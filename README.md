@@ -14,7 +14,7 @@ every tool we need, so the following tooling is necessary but downloaded/compile
     - Clang `>= 13` OR
     - MSVC `>= 19` and VS `>= 16.10`
 
-> *Note: Bootstrapped tooling still needs `make`, `wget`, `git` and `tar` installed.*
+> *Note: Bootstrapped tooling needs `make`, `wget`, `git`, `tar` and `grep` installed.*
 
 Dependency-wise you will need **installed on your system**:
 
