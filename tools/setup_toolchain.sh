@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+# TODO: make progress resumable on failure
+
 no_cleanup=0
 force_reconfigure=0
 force_no_pkg_config=0
@@ -347,8 +349,8 @@ make_python()
 
 make_libssl()
 {
-    # TODO: check for perl dependencies before making.
-    make_perl_dependencies
+    # TODO: check if perl is suitable before making.
+    make_perl
 
     clean $builddir/libssl
 
@@ -374,28 +376,24 @@ make_libssl()
     show "\t\t${GREEN}libssl sucessfully installed${CRESET}, will use ${YELLOW}libssl_install_dir=$libssl_install_dir${CRESET}\n"
 }
 
-make_perl_dependencies()
+make_perl()
 {
-    # Install perl
-
     download "Perl" "https://cpan.metacpan.org/authors/id/S/SH/SHAY/perl-5.34.1.tar.gz" "perl-5.34.1.tar.gz" "\t\t\t"
     extract_clean "Perl" "$downloaddir/perl-5.34.1.tar.gz" "$builddir/Perl" "\t\t\t"
 
     case $no_cleanup in
-        0) perl_rm_cmd="cd $root; rm -r $builddir/Perl";;
+        0) perl_rm_cmd="cd $root; rm -rf $builddir/Perl";;
         1) perl_rm_cmd="cd $root";;
     esac
 
-    perl_conf_cmd="sh Configure -d -e -Dextras=\"App::cpm\" -Dinstallprefix=$installdir/perl -Dprefix=$installdir/perlprefix"
+    perl_conf_cmd="sh Configure -d -e -Dextras=\"strict\" -Dinstallprefix=$installdir/perl -Dprefix=$installdir/perl"
 
     cd $builddir/Perl
         buildstep "$perl_conf_cmd"  "$perl_rm_cmd" "Perl_configure.txt" "\t\t\t" "Configuring Perl"        "configure Perl"       "Perl configured"
         buildstep "make -j$(nproc)" "$perl_rm_cmd" "Perl_build.txt"     "\t\t\t" "Building Perl"           "build Perl"           "Perl built"
-        buildstep "make test"       "$perl_rm_cmd" "Perl_test.txt"      "\t\t\t" "Testing Perl"            "test Perl"            "Perl tested"
+        #buildstep "make test"       "$perl_rm_cmd" "Perl_test.txt"      "\t\t\t" "Testing Perl"            "test Perl"            "Perl tested"
         buildstep "make install"    "$perl_rm_cmd" "Perl_install.txt"   "\t\t\t" "Installing Perl locally" "install Perl locally" "Perl installed locally"
     cd $root
-
-    # TODO: Then install dependencies
 }
 
 make_certifi()
@@ -531,10 +529,11 @@ assure_dir $builddir
 installdir=$root/local
 clean $installdir
 assure_dir $installdir
-export PATH=$installdir/bin:$PATH
+export PATH=$installdir/bin:$installdir/perl/bin:$PATH
 export PKG_CONFIG_PATH=$installdir/lib/pkgconfig:$installdir/lib64/pkgconfig:$PKG_CONFIG_PATH
 export LD_LIBRARY_PATH=$installdir/lib:$installdir/lib64:$LD_LIBRARY_PATH
 export LIBRARY_PATH=$installdir/lib:$installdir/lib64:$LIBRARY_PATH
+export PERL5LIB=$installdir/perl/lib:$PERL5LIB
 
 main
 
@@ -543,10 +542,11 @@ main
 show "Writing $YELLOW$toolchain_file$CRESET"
 
 show "#!/usr/bin/env sh" > $toolchain_file
-show "export PATH=$installdir/bin:\$PATH" >> $toolchain_file
+show "export PATH=$installdir/bin:$installdir/perl/bin:\$PATH" >> $toolchain_file
 show "export PKG_CONFIG_PATH=$installdir/lib/pkgconfig:$installdir/lib64/pkgconfig:\$PKG_CONFIG_PATH" >> $toolchain_file
 show "export LD_LIBRARY_PATH=$installdir/lib:$installdir/lib64:\$LD_LIBRARY_PATH" >> $toolchain_file
 show "export LIBRARY_PATH=$installdir/lib:$installdir/lib64:\$LIBRARY_PATH" >> $toolchain_file
+show "export PERL5LIB=$installdir/perl/lib:\$PERL5LIB" >> $toolchain_file
 show "export CC=$CC"   >> $toolchain_file
 show "export CXX=$CXX" >> $toolchain_file
 
