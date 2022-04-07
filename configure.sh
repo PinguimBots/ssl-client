@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 
-# TODO: Commented out until the script is fully fleshed out.
-#cd tooling; ./setup_tooling.sh; cd ..
-#. $(pwd)/tooling/tooling.sh
+set -e
+
+cd tools; sh setup_toolchain.sh; cd ..
+. ./tools/toolchain.sourceme.sh
 
 if [ ! -d "builddir" ]; then meson setup builddir "$@"; fi
