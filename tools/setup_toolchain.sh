@@ -323,7 +323,7 @@ make_python()
         libssl_flags="$($pkg_config libssl --cflags) $($pkg_config libssl --libs)"
         show "\tFound ${GREEN}libssl$CRESET, will use ${YELLOW}libssl_flags=$libssl_flags$CRESET\n"
     else
-        show "\t${RED}Did not find zlib$CRESET, will build ${YELLOW}libssl 3.0.2$CRESET from source instead"
+        show "\t${RED}Did not find libssl$CRESET, will build ${YELLOW}libssl 3.0.2$CRESET from source instead"
         make_libssl
     fi
 
