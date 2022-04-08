@@ -61,7 +61,7 @@ main()
     ## Checking for python
 
     if [ $force_build_python -ne 0 ]; then show "NOTE: --force-build-python is set"; fi
-    find_versioned_ge "Python" "3.9" "/python\\([0-9]\\+\\.\\?\\)*\$" "--version" "[0-9].*\$" "python"
+    find_versioned_ge "Python" "3.9" "/python\\([0-9]\\+\\.\\?\\)*\$" "extract_python_version" "python"
     if [ ! -z "$python" ] && [ $force_build_python -eq 0 ]
     then
         python_found=1
@@ -89,7 +89,7 @@ main()
     ## Checking for meson.
 
     if [ $force_build_meson -ne 0 ]; then show "NOTE: --force-build-meson is set"; fi
-    find_versioned_ge "meson" "0.60" "/meson$" "--version" ".*" "meson"
+    find_versioned_ge "meson" "0.60" "/meson$" "extract_meson_version" "meson"
     if [ ! -z "$meson" ] && [ $force_build_meson -eq 0 ]
     then
         meson_found=1
@@ -108,8 +108,8 @@ main()
     clang_regex="clang++\\(-[0-9]\\+\\)\\?"
 
     if [ $force_build_compiler -ne 0 ]; then show "NOTE: --force-build-compiler is set"; fi
-    find_versioned_ge "g++"     "11" "/$gcc_regex\$"   "--version" "\\(\\([0-9]\\+\\)\\(\\.\\|-\\)\\?\\)*$" "gcc"
-    find_versioned_ge "clang++" "13" "/$clang_regex\$" "--version" "[0-9]\\+\\.\\([0-9]\\+\\.\\?\\)*"       "clang"
+    find_versioned_ge "clang++" "13" "/$clang_regex\$" "extract_clang_version" "clang"
+    find_versioned_ge "g++"     "11" "/$gcc_regex\$"   "extract_gcc_version"   "gcc"
 
     if [ ! -z "$clang" ] && [ $force_build_compiler -eq 0 ]
     then
@@ -262,17 +262,16 @@ find_versioned_ge()
     local name=$1
     local min_ver=$2
     local program_regex=$3
-    local version_command=$4
-    local version_regex=$5
-    local outvar=$6
-    local indent=$7
+    local extract_version_command=$4
+    local outvar=$5
+    local indent=$6
 
     eval "$outvar=''"
 
     show "${indent}Seaching for $YELLOW$name >= $min_ver$CRESET"
     for p in $(show "$all_programs" | grep "$program_regex")
     do
-        version=$($p $version_command 2>&1 | grep -o "$version_regex")
+        version="$($extract_version_command $p)"
 
         if [ $(sh semver.sh "$version" "$min_ver") -ge 0 ]
         then
@@ -285,6 +284,27 @@ find_versioned_ge()
             fi
         else show "\t- $RED$version$CRESET => $p"; fi
     done
+}
+
+extract_python_version()
+{ $1 --version 2>&1 | grep -o "[0-9].*\$"; }
+
+extract_cmake_version()
+{ $1 --version | grep -o "\\([0-9]\\+\\.\\?\\)\\+$"; }
+
+extract_meson_version()
+{ $1 --version | grep -o ".*"; }
+
+extract_clang_version()
+{ $1 --version | grep -o "[0-9]\\+\\.\\([0-9]\\+\\.\\?\\)*"; }
+
+extract_gcc_version()
+{
+    local ver=$($1 -dumpfullversion)
+
+    if [ $? -ne 0 ]; then $1 -dumpversion
+    else                  echo "$ver"
+    fi
 }
 
 pkg_config_check()
@@ -438,7 +458,8 @@ make_zlib()
         buildstep "make install"                      "$zlib_rm_cmd" "zlib_install.txt" "\t\t" "Installing zlib"  "install zlib"   "zlib installed"
     cd $root
 
-    show "\t\t${GREEN}zlib sucessfully installed$CRESET\n"
+    zlib_flags="-I$installdir/include -L$installdir/lib64 -L$installdir/lib -lz"
+    show "\t\t${GREEN}zlib sucessfully installed$CRESET, will use ${YELLOW}zlib_flags=$zlib_flags$CRESET\n"
 }
 
 make_certifi()
@@ -493,7 +514,7 @@ make_meson()
 make_clang()
 {
     if [ $force_build_cmake -ne 0 ]; then show "\tNOTE: --force-build-cmake is set"; fi
-    find_versioned_ge "cmake" "3.13.3" "/cmake$" "--version" "\\([0-9]\\+\\.\\?\\)\\+$" "cmake" "\t"
+    find_versioned_ge "cmake" "3.13.3" "/cmake$" "extract_cmake_version" "cmake" "\t"
 
     if [ ! -z "$cmake" ] && [ $force_build_cmake -eq 0 ]
     then
