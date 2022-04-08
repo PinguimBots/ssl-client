@@ -422,8 +422,8 @@ make_perl()
 
 make_zlib()
 {
-    download "zlib" "https://www.zlib.net/zlib-1.2.12.tar.gz" "zlib-1.2.12.tar.gz" "\t\t\t"
-    extract_clean "zlib" "$downloaddir/zlib-1.2.12.tar.gz" "$builddir/zlib" "\t\t\t"
+    download "zlib" "https://www.zlib.net/zlib-1.2.12.tar.gz" "zlib-1.2.12.tar.gz" "\t\t"
+    extract_clean "zlib" "$downloaddir/zlib-1.2.12.tar.gz" "$builddir/zlib" "\t\t"
 
     case $no_cleanup in
         0) zlib_rm_cmd="cd $root; rm -rf $builddir/zlib";;
@@ -433,12 +433,12 @@ make_zlib()
     zlib_conf_cmd="sh Configure -d -e -Dextras=\"strict\" -Dinstallprefix=$installdir/perl -Dprefix=$installdir/perl"
 
     cd $builddir/zlib
-        buildstep "./configure --prefix=$installdir"  "$zlib_rm_cmd" "zlib_conf.txt"    "\t\t\t" "Configuring zlib" "configure zlib" "zlib configured"
-        buildstep "make -j$(nproc)"                   "$zlib_rm_cmd" "zlib_build.txt"   "\t\t\t" "Building zlib"    "build zlib"     "zlib built"
-        buildstep "make install"                      "$zlib_rm_cmd" "zlib_install.txt" "\t\t\t" "Installing zlib"  "install zlib"   "zlib installed"
+        buildstep "./configure --prefix=$installdir"  "$zlib_rm_cmd" "zlib_conf.txt"    "\t\t" "Configuring zlib" "configure zlib" "zlib configured"
+        buildstep "make -j$(nproc)"                   "$zlib_rm_cmd" "zlib_build.txt"   "\t\t" "Building zlib"    "build zlib"     "zlib built"
+        buildstep "make install"                      "$zlib_rm_cmd" "zlib_install.txt" "\t\t" "Installing zlib"  "install zlib"   "zlib installed"
     cd $root
 
-    show "\t\t\t${GREEN}zlib sucessfully installed$CRESET\n"
+    show "\t\t${GREEN}zlib sucessfully installed$CRESET\n"
 }
 
 make_certifi()
