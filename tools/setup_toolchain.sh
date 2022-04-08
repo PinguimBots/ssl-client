@@ -52,10 +52,10 @@ main()
     if [ ! -z "$pkg_config" ] && [ $force_no_pkg_config -eq 0 ]
     then
         pkg_config_found=1
-        show "Found ${GREEN}pkg-config${CRESET}, will use ${YELLOW}pkg_config=$pkg_config${CRESET}\n"
+        show "Found ${GREEN}pkg-config$CRESET, will use ${YELLOW}pkg_config=$pkg_config$CRESET\n"
     else
         pkg_config_found=0
-        show "${RED}Did not find pkg-config${CRESET}, if we need to build ${YELLOW}python3${CRESET} we'll need to build ${YELLOW}openssl${CRESET} too\n"
+        show "${RED}Did not find pkg-config$CRESET, if we need to build ${YELLOW}python3$CRESET we'll need to build ${YELLOW}openssl$CRESET and ${YELLOW}zlib$CRESET too\n"
     fi
 
     ## Checking for python
@@ -108,8 +108,8 @@ main()
     clang_regex="clang++\\(-[0-9]\\+\\)\\?"
 
     if [ $force_build_compiler -ne 0 ]; then show "NOTE: --force-build-compiler is set"; fi
-    find_versioned_ge "g++"     "11" "/$gcc_regex\$"   "-dumpfullversion" ".*"                               "gcc"
-    find_versioned_ge "clang++" "13" "/$clang_regex\$" "--version"        "[0-9]\\+\\.\\([0-9]\\+\\.\\?\\)*" "clang"
+    find_versioned_ge "g++"     "11" "/$gcc_regex\$"   "--version" "\\(\\([0-9]\\+\\)\\(\\.\\|-\\)\\?\\)*$" "gcc"
+    find_versioned_ge "clang++" "13" "/$clang_regex\$" "--version" "[0-9]\\+\\.\\([0-9]\\+\\.\\?\\)*"       "clang"
 
     if [ ! -z "$clang" ] && [ $force_build_compiler -eq 0 ]
     then
@@ -134,6 +134,14 @@ main()
 assure_dir() { if [ ! -d "$1" ]; then mkdir "$1"; fi }
 clean()      { if [ -d "$1" ]; then rm -rf "$1"; fi }
 show()       { printf '%b\n' "$1"; }
+
+show_then_run()
+{
+    local cmd="$1"
+    local indent="$2"
+    show "${indent}Running $YELLOW$1$CRESET";
+    eval "$1"
+}
 
 pid_waiting_spinner()
 {
@@ -192,8 +200,9 @@ buildstep()
     pid_waiting_spinner $! "$indent" "$msg_build" "\033[2K\033[F\033[2K\033[F"
     if [ $? -ne 0 ]
     then
-        show "$indent${RED}Failed to $msg_fail$CRESET, aborting $YELLOW(See $logdir/$log_out)$CRESET"
+        show "$indent${RED}Aborting: Failed to $msg_fail$CRESET with $YELLOW$command$CRESET"
         show "$indent\tRunning cleanup: $YELLOW$fail_command$CRESET"
+        show "$indent\t$YELLOWSee $logdir/$log_out$CRESET"
         eval $fail_command
         exit 1
     fi
@@ -296,26 +305,37 @@ pkg_config_check()
 
 make_python()
 {
-    show "\tChecking for ${YELLOW}libssl${CRESET}"
+    show "\tChecking for ${YELLOW}zlib$CRESET"
+    pkg_config_check "zlib"
+    if [ $zlib_found -ne 0 ]
+    then
+        zlib_flags="$($pkg_config zlib --cflags) $($pkg_config zlib --libs)"
+        show "\tFound ${GREEN}zlib$CRESET, will use ${YELLOW}zlib_flags=$zlib_flags$CRESET\n"
+    else
+        show "\t${RED}Did not find zlib$CRESET, will build ${YELLOW}zlib 1.2.12$CRESET from source instead"
+        make_zlib
+    fi
+
+    show "\tChecking for ${YELLOW}libssl$CRESET"
     pkg_config_check "libssl"
     if [ $libssl_found -ne 0 ]
     then
-        # TODO: where is libssl ?
-        libssl_install_dir=/usr/share/libssl
-        show "Found ${GREEN}libssl${CRESET}, will use ${YELLOW}libssl_install_dir=$libssl_install_dir${CRESET}\n"
+        libssl_flags="$($pkg_config libssl --cflags) $($pkg_config libssl --libs)"
+        show "\tFound ${GREEN}libssl$CRESET, will use ${YELLOW}libssl_flags=$libssl_flags$CRESET\n"
     else
-        show "\t${RED}Did not find libssl${CRESET}, will build ${YELLOW}libssl 3.0.2${CRESET} from source instead"
+        show "\t${RED}Did not find zlib$CRESET, will build ${YELLOW}libssl 3.0.2$CRESET from source instead"
         make_libssl
     fi
 
     download "Python" "https://www.python.org/ftp/python/3.9.0/Python-3.9.0.tgz" "Python-3.9.0.tgz" "\t"
     extract_clean "Python" "$downloaddir/Python-3.9.0.tgz" "$builddir/python" "\t"
 
-    show "\tModifying python to use openssl"
-    show "SSL=$libssl_install_dir"                                    >> $builddir/python/Modules/Setup
-    show "_ssl _ssl.c \\"                                             >> $builddir/python/Modules/Setup
-    show "	-DUSE_SSL -I\$(SSL)/include -I\$(SSL)/include/openssl \\" >> $builddir/python/Modules/Setup
-    show "	-L\$(SSL)/lib64 -L\$(SSL)/lib -lssl -lcrypto"             >> $builddir/python/Modules/Setup
+    # Meson requires the ssl module.
+    show "\tModifying Python to build the ssl module"
+        show_then_run "show \"_ssl _ssl.c -DUSE_SSL $libssl_flags\" >> $builddir/python/Modules/Setup" "\t\t"
+    # Meson requires the zlib module.
+    show "\tModifying Python to build the zlib module"
+        show_then_run "show \"zlib zlibmodule.c $zlib_flags\" >> $builddir/python/Modules/Setup" "\t\t"
 
     case $no_cleanup in
         0) py_rm_cmd="cd $root; rm -r $builddir/python";;
@@ -324,23 +344,25 @@ make_python()
 
     mkdir $builddir/python/build
     cd $builddir/python/build
-        # Commented out until i implement openssl building.
-        #python_configure_command="./../configure --without-ensurepip --prefix=$python_install_dir CFLAGS=\"-I$(pwd)/../../openssl/installdir/include\" LDFLAGS=\"-L$(pwd)/../../openssl/installdir/lib64\""
         # --without-ensurepip since it causes 'make install' to fail when zlib is not installed.
         # That also means that we have no pip, but we'll make do.
         # Also don't do '--enable-optimizations' since it causes problems on systems with older toolchains (GCC ~4, etc).
         py_configure_cmd="./../configure --without-ensurepip --prefix=$installdir"
 
-        buildstep "$py_configure_cmd" "$py_rm_cmd" "Python_conf.txt"    "\t" "Configuring Python"         "configure Python"        "Python configured"
-        buildstep "make -j$(nproc)"   "$py_rm_cmd" "Python_build.txt"   "\t" "Building Python"            "build Python"            "Python built"
-        buildstep "make install"      "$py_rm_cmd" "Python_install.txt" "\t" "Installing Python locally"  "install Python locally"  "Python installed locally"
+        buildstep "$py_configure_cmd" "$py_rm_cmd" "Python_conf.txt"    "\t" "Configuring Python" "configure Python" "Python configured"
+        buildstep "make -j$(nproc)"   "$py_rm_cmd" "Python_build.txt"   "\t" "Building Python"    "build Python"     "Python built"
+        buildstep "make install"      "$py_rm_cmd" "Python_install.txt" "\t" "Installing Python"  "install Python"   "Python installed"
     cd $root
 
     # Remember when I said we'll make do without pip, this is what I meant.
     # If you compile openssl from source you don't have the certs necessary to
     # do https stuff, that's why we need to install certifi (without pip)
     # and link it's certs to openssl's`.
-    if [ $libssl_found -eq 0 ]; then make_certifi; fi
+    if [ $libssl_found -eq 0 ]
+    then
+        echo "\n\t\tWe built ${YELLOW}libssl$CRESET from source so we have no certs, will build ${YELLOW}certifi$CRESET and source their certs instead"
+        make_certifi
+    fi
 
     python="$installdir/bin/python3"
     python_version="3.9.0"
@@ -350,11 +372,10 @@ make_python()
 make_libssl()
 {
     # TODO: check if perl is suitable before making.
+    show "\t\t${YELLOW}libssl$CRESET requires ${YELLOW}Perl$CRESET to build, will build ${YELLOW}Perl 5.34.1$CRESET from source"
     make_perl
 
     clean $builddir/libssl
-
-    libssl_install_dir=$installdir
 
     libssl_clone_cmd="git clone -b openssl-3.0.2 https://github.com/openssl/openssl.git $builddir/libssl"
     buildstep "$libssl_clone_cmd" "" "libssl_clone.txt" "\t\t" "Cloning libssl" "clone libssl" "libssl cloned"
@@ -368,12 +389,14 @@ make_libssl()
     cd $builddir/libssl/build
         libssl_configure_cmd="./../Configure --prefix=$installdir --openssldir=$installdir"
 
-        buildstep "$libssl_configure_cmd" "$libssl_rm_cmd" "libssl_configure.txt" "\t\t" "Configuring libssl"        "configure libssl"       "libssl configured"
-        buildstep "make -j$(nproc)"       "$libssl_rm_cmd" "libssl_build.txt"     "\t\t" "Building libssl"           "build libssl"           "libssl built"
-        buildstep "make install"          "$libssl_rm_cmd" "libssl_install.txt"   "\t\t" "Installing libssl locally" "install libssl locally" "libssl installed locally"
+        buildstep "$libssl_configure_cmd" "$libssl_rm_cmd" "libssl_configure.txt" "\t\t" "Configuring libssl" "configure libssl" "libssl configured"
+        buildstep "make -j$(nproc)"       "$libssl_rm_cmd" "libssl_build.txt"     "\t\t" "Building libssl"    "build libssl"     "libssl built"
+        buildstep "make install"          "$libssl_rm_cmd" "libssl_install.txt"   "\t\t" "Installing libssl"  "install libssl"   "libssl installed"
     cd $root
 
-    show "\t\t${GREEN}libssl sucessfully installed${CRESET}, will use ${YELLOW}libssl_install_dir=$libssl_install_dir${CRESET}\n"
+    libssl_flags="-I$installdir/include -I$installdir/include/openssl -L$installdir/lib64 -L$installdir/lib -lssl -lcrypto"
+
+    show "\t\t${GREEN}libssl sucessfully installed$CRESET, will use ${YELLOW}libssl_flags=$libssl_flags$CRESET\n"
 }
 
 make_perl()
@@ -389,11 +412,33 @@ make_perl()
     perl_conf_cmd="sh Configure -d -e -Dextras=\"strict\" -Dinstallprefix=$installdir/perl -Dprefix=$installdir/perl"
 
     cd $builddir/Perl
-        buildstep "$perl_conf_cmd"  "$perl_rm_cmd" "Perl_configure.txt" "\t\t\t" "Configuring Perl"        "configure Perl"       "Perl configured"
-        buildstep "make -j$(nproc)" "$perl_rm_cmd" "Perl_build.txt"     "\t\t\t" "Building Perl"           "build Perl"           "Perl built"
-        #buildstep "make test"       "$perl_rm_cmd" "Perl_test.txt"      "\t\t\t" "Testing Perl"            "test Perl"            "Perl tested"
-        buildstep "make install"    "$perl_rm_cmd" "Perl_install.txt"   "\t\t\t" "Installing Perl locally" "install Perl locally" "Perl installed locally"
+        buildstep "$perl_conf_cmd"  "$perl_rm_cmd" "Perl_configure.txt" "\t\t\t" "Configuring Perl" "configure Perl" "Perl configured"
+        buildstep "make -j$(nproc)" "$perl_rm_cmd" "Perl_build.txt"     "\t\t\t" "Building Perl"    "build Perl"     "Perl built"
+        buildstep "make install"    "$perl_rm_cmd" "Perl_install.txt"   "\t\t\t" "Installing Perl"  "install Perl"   "Perl installed"
     cd $root
+
+    show "\t\t\t${GREEN}Perl sucessfully installed$CRESET\n"
+}
+
+make_zlib()
+{
+    download "zlib" "https://www.zlib.net/zlib-1.2.12.tar.gz" "zlib-1.2.12.tar.gz" "\t\t\t"
+    extract_clean "zlib" "$downloaddir/zlib-1.2.12.tar.gz" "$builddir/zlib" "\t\t\t"
+
+    case $no_cleanup in
+        0) zlib_rm_cmd="cd $root; rm -rf $builddir/zlib";;
+        1) zlib_rm_cmd="cd $root";;
+    esac
+
+    zlib_conf_cmd="sh Configure -d -e -Dextras=\"strict\" -Dinstallprefix=$installdir/perl -Dprefix=$installdir/perl"
+
+    cd $builddir/zlib
+        buildstep "./configure --prefix=$installdir"  "$zlib_rm_cmd" "zlib_conf.txt"    "\t\t\t" "Configuring zlib" "configure zlib" "zlib configured"
+        buildstep "make -j$(nproc)"                   "$zlib_rm_cmd" "zlib_build.txt"   "\t\t\t" "Building zlib"    "build zlib"     "zlib built"
+        buildstep "make install"                      "$zlib_rm_cmd" "zlib_install.txt" "\t\t\t" "Installing zlib"  "install zlib"   "zlib installed"
+    cd $root
+
+    show "\t\t\t${GREEN}zlib sucessfully installed$CRESET\n"
 }
 
 make_certifi()
@@ -470,9 +515,9 @@ make_clang()
     cd $builddir/llvm-project/build
         clang_conf_cmd="cmake -DLLVM_FORCE_USE_OLD_HOST_TOOLCHAIN=1 -DLLVM_ENABLE_PROJECTS=\"clang;openmp\" -GNinja -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=$installdir ../llvm"
 
-        buildstep "$clang_conf_cmd" "$clang_rm_cmd" "Clang_configure.txt" "\t" "Configuring Clang"        "configure Clang"       "Clang configured"
-        buildstep "ninja"           "$clang_rm_cmd" "Clang_build.txt"     "\t" "Building Clang"           "build Clang"           "Clang built"
-        buildstep "ninja install"   "$clang_rm_cmd" "Clang_install.txt"   "\t" "Installing Clang locally" "install Clang locally" "Clang installed locally"
+        buildstep "$clang_conf_cmd" "$clang_rm_cmd" "Clang_configure.txt" "\t" "Configuring Clang"  "configure Clang" "Clang configured"
+        buildstep "ninja"           "$clang_rm_cmd" "Clang_build.txt"     "\t" "Building Clang"     "build Clang"     "Clang built"
+        buildstep "ninja install"   "$clang_rm_cmd" "Clang_install.txt"   "\t" "Installing Clang"   "install Clang"   "Clang installed"
     cd $root
 
     CC="$installdir/bin/clang"
@@ -498,9 +543,9 @@ make_cmake()
         cmake_build_cmd="make -j$(nproc)"
         cmake_install_cmd="make install"
 
-        buildstep "$cmake_bootstrap_cmd" "$cmake_rm_cmd" "CMake_bootstrap.txt" "\t\t" "Bootstrapping CMake"      "bootstrap CMake"       "CMake bootstrapped"
-        buildstep "$cmake_build_cmd"     "$cmake_rm_cmd" "CMake_build.txt"     "\t\t" "Building CMake"           "build CMake"           "CMake built"
-        buildstep "$cmake_install_cmd"   "$cmake_rm_cmd" "CMake_install.txt"   "\t\t" "Installing CMake locally" "install CMake locally" "CMake installed locally"
+        buildstep "$cmake_bootstrap_cmd" "$cmake_rm_cmd" "CMake_bootstrap.txt" "\t\t" "Bootstrapping CMake" "bootstrap CMake" "CMake bootstrapped"
+        buildstep "$cmake_build_cmd"     "$cmake_rm_cmd" "CMake_build.txt"     "\t\t" "Building CMake"      "build CMake"     "CMake built"
+        buildstep "$cmake_install_cmd"   "$cmake_rm_cmd" "CMake_install.txt"   "\t\t" "Installing CMake"    "install CMake"   "CMake installed"
     cd $root
 
     show "\t\t${GREEN}CMake sucessfully installed${CRESET}\n"
