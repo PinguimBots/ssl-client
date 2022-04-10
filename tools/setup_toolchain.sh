@@ -1,46 +1,117 @@
 #!/usr/bin/env sh
 
-# TODO: make progress resumable on failure
+# TODO: make downloads/clones retry X times.
+# TODO: implement skipping and resuming for libssl and zlib
 
-no_cleanup=0
-force_reconfigure=0
-force_no_pkg_config=0
-force_build_python=0
-force_build_ninja=0
-force_build_meson=0
-force_build_compiler=0
-force_build_cmake=0
-force_build_all=0
+resume_last_call=0 # Uses $resume_file to figure out what is already built.
+install_cleanup=0 # Deletes $installdir before stating.
+no_build_cleanup=0 # Doesn't cleanup build artifacts in $builddir, incompatible with --resume-last-call.
+force_reconfigure=0 # Ignore $toolchain_file, forces --ignore-last-call=0.
+force_no_pkg_config=0 # Don't use pkg-config, implies libssl and zlib will be built from source if needed
+
+ignore_system_python=0
+ignore_system_perl=0
+ignore_system_ninja=0
+ignore_system_meson=0
+ignore_system_compiler=0
+ignore_system_cmake=0
+ignore_system_all=0
+
+skip_python=0
+skip_perl=0
+skip_ninja=0
+skip_meson=0
+skip_compiler=0
+skip_cmake=0
+
+# Set by $resume_file
+already_built_python=0
+already_built_perl=0
+already_built_ninja=0
+already_built_meson=0
+already_built_compiler=0
+already_built_cmake=0
 
 while [ $# -gt 0 ]; do
     case $1 in
-        --no-cleanup) no_cleanup=1;;
+        --resume-last-call) resume_last_call=1;;
+        --install-cleanup) install_cleanup=1;;
+        --no-build-cleanup) no_build_cleanup=1;;
         --force-reconfigure) force_reconfigure=1;;
         --force-no-pkg-config) force_no_pkg_config=1;;
-        --force-build-python) force_build_python=1;;
-        --force-build-ninja) force_build_ninja=1;;
-        --force-build-meson) force_build_meson=1;;
-        --force-build-compiler) force_build_compiler=1;;
-        --force-build-cmake) force_build_cmake=1;;
-        --force-build-all)
+
+        --ignore-system-python) ignore_system_python=1;;
+        --ignore-system-perl) ignore_system_perl=1;;
+        --ignore-system-ninja) ignore_system_ninja=1;;
+        --ignore-system-meson) ignore_system_meson=1;;
+        --ignore-system-compiler) ignore_system_compiler=1;;
+        --ignore-system-cmake) ignore_system_cmake=1;;
+        --ignore-system-all)
             force_no_pkg_config=1
-            force_build_python=1
-            force_build_ninja=1
-            force_build_meson=1
-            force_build_compiler=1
-            force_build_cmake=1
+            ignore_system_python=1
+            ignore_system_perl=1
+            ignore_system_ninja=1
+            ignore_system_meson=1
+            ignore_system_compiler=1
+            ignore_system_cmake=1
         ;;
+
+        --skip-python) skip_python=1;;
+        --skip-perl) skip_perl=1;;
+        --skip-ninja) skip_ninja=1;;
+        --skip-meson) skip_meson=1;;
+        --skip-compiler) skip_compiler=1;;
+        --skip-cmake) skip_cmake=1;;
     esac
 
     shift
 done
 
 toolchain_file="$(pwd)/toolchain.sourceme.sh"
+resume_file="$(pwd)/resume.internal.sourceme.sh"
 
 if [ $force_reconfigure -eq 0 ]
 then
     if [ -f "$toolchain_file" ]; then exit 0; fi
+else
+    resume_last_call=0
 fi
+
+do_dependency()
+{
+    local displayname=$1
+    local name=$2
+    local build_version=$3
+    local indent=$4
+
+    local make_func_name="make_$name"
+    local skip_var="skip_$name"
+    local ignore_system_var="ignore_system_$name"
+    local already_built_var="already_built_$name"
+
+    local executable=$(var_expand "$name")
+    if [ ! -z "$executable" ]
+    then 
+        local executable_version=$(var_expand "${name}_version")
+    fi
+
+    if [ $(var_expand "$already_built_var") -eq 1 ]
+    then
+        show "$indent$YELLOW$displayname skipped (already built from last time)$CRESET\n"
+        show "export $already_built_var=1" >> $resume_file
+    elif [ $(var_expand "$skip_var") -eq 1 ]
+    then
+        show "$indent$YELLOW$displayname skipped$CRESET\n"
+        show "export $skip_var=1" >> $resume_file
+    elif [ ! -z "$executable" ] && [ $(var_expand "$ignore_system_var") -eq 0 ]
+    then
+        show "${indent}Found $GREEN$displayname $executable_version$CRESET\n"
+    else
+        show "$indent${RED}Did not find $displayname$CRESET, will make $YELLOW$displayname $build_version$CRESET from source instead"
+        eval "$make_func_name"
+        show "export $already_built_var=1" >> $resume_file
+    fi
+}
 
 main()
 {
@@ -60,45 +131,18 @@ main()
 
     ## Checking for python
 
-    if [ $force_build_python -ne 0 ]; then show "NOTE: --force-build-python is set"; fi
     find_versioned_ge "Python" "3.9" "/python\\([0-9]\\+\\.\\?\\)*\$" "extract_python_version" "python"
-    if [ ! -z "$python" ] && [ $force_build_python -eq 0 ]
-    then
-        python_found=1
-        show "Found ${GREEN}Python $python_version${CRESET}\n"
-    else
-        python_found=0
-        show "${RED}Did not find Python${CRESET}, will build ${YELLOW}Python 3.9.0${CRESET} from source instead"
-        make_python
-    fi
+    do_dependency "Python" "python" "3.9"
 
     ## Checking for Ninja.
 
-    if [ $force_build_ninja -ne 0 ]; then show "NOTE: --force-build-ninja is set"; fi
     find_program "Ninja" "/ninja$" "ninja"
-    if [ ! -z "$ninja" ] && [ $force_build_ninja -eq 0 ]
-    then
-        ninja_found=1
-        show "Found ${GREEN}Ninja$CRESET\n"
-    else
-        ninja_found=0
-        show "${RED}Did not find Ninja$CRESET, will build ${YELLOW}Ninja 1.10.2$CRESET from source instead"
-        make_ninja
-    fi
+    do_dependency "Ninja" "ninja" "1.10.2"
 
     ## Checking for meson.
 
-    if [ $force_build_meson -ne 0 ]; then show "NOTE: --force-build-meson is set"; fi
-    find_versioned_ge "meson" "0.60" "/meson$" "extract_meson_version" "meson"
-    if [ ! -z "$meson" ] && [ $force_build_meson -eq 0 ]
-    then
-        meson_found=1
-        show "Found ${GREEN}Meson $meson_version$CRESET\n"
-    else
-        meson_found=0
-        show "${RED}Did not find Meson$CRESET, will use ${YELLOW}Meson 0.60.0$CRESET from source instead"
-        make_meson
-    fi
+    find_versioned_ge "Meson" "0.60" "/meson$" "extract_meson_version" "meson"
+    do_dependency "Meson" "meson" "0.60.0"
 
     ## Checking for compiler.
 
@@ -107,18 +151,22 @@ main()
     # Matches clang++, clang++-1, ..., clang++-10, ...
     clang_regex="clang++\\(-[0-9]\\+\\)\\?"
 
-    if [ $force_build_compiler -ne 0 ]; then show "NOTE: --force-build-compiler is set"; fi
     find_versioned_ge "clang++" "13" "/$clang_regex\$" "extract_clang_version" "clang"
     find_versioned_ge "g++"     "11" "/$gcc_regex\$"   "extract_gcc_version"   "gcc"
 
-    if [ ! -z "$clang" ] && [ $force_build_compiler -eq 0 ]
+    # TODO: not really necessary since its the last thing to be built but maybe implement already_built_compiler ?
+    if [ $skip_compiler -eq 1 ]
+    then
+        show "${YELLOW}Compiler skipped$CRESET\n"
+        show "export skip_compiler=1" >> $resume_file
+    elif [ ! -z "$clang" ] && [ $ignore_system_compiler -eq 0 ]
     then
         CC="$clang"
         CXX="$clang"
         show "Found ${GREEN}Clang $clang_version$CRESET in $clang"
         show "\tWill use ${YELLOW}CC=$clang$CRESET"
         show "\tWill use ${YELLOW}CXX=$clang$CRESET\n"
-    elif [ ! -z "$gcc" ] && [ $force_build_compiler -eq 0 ]
+    elif [ ! -z "$gcc" ] && [ $ignore_system_compiler -eq 0 ]
     then
         CC="$gcc"
         CXX="$gcc"
@@ -127,7 +175,7 @@ main()
         show "\tWill use ${YELLOW}CXX=$gcc$CRESET\n"
     else
         show "${RED}No suitable compilers found$CRESET, will build ${YELLOW}Clang 13.0.0$CRESET and use as ${YELLOW}CC$CRESET and ${YELLOW}CXX$CRESET"
-        make_clang
+        make_compiler
     fi
 }
 
@@ -139,7 +187,7 @@ show_then_run()
 {
     local cmd="$1"
     local indent="$2"
-    show "${indent}Running $YELLOW$1$CRESET";
+    show "${indent}Running command $YELLOW$1$CRESET";
     eval "$1"
 }
 
@@ -201,9 +249,8 @@ buildstep()
     if [ $? -ne 0 ]
     then
         show "$indent${RED}Aborting: Failed to $msg_fail$CRESET with $YELLOW$command$CRESET"
-        show "$indent\tRunning cleanup: $YELLOW$fail_command$CRESET"
-        show "$indent\t$YELLOWSee $logdir/$log_out$CRESET"
-        eval $fail_command
+        show "$indent\t-- See $logdir/$log_out for status"
+        if [ -z "$fail_command" ]; then show_then_run "$fail_command" "$indent\t"; fi
         exit 1
     fi
     show "$indent$msg_success with $YELLOW$command$CRESET\n$indent\t-- See $logdir/$log_out for output"
@@ -236,13 +283,7 @@ extract_clean()
 }
 
 var_expand()
-{
-  if [ -z "${1-}" ] || [ $# -ne 1 ]; then
-    printf 'var_expand: expected one argument\n' >&2;
-    return 1;
-  fi
-  eval printf '%s' "\"\${$1?}\""
-}
+{ eval printf '%s' "\"\${$1}\""; }
 
 find_program()
 {
@@ -282,12 +323,15 @@ find_versioned_ge()
                 eval "${outvar}_version=\"$version\""
                 eval "$outvar=\"$p\""
             fi
-        else show "\t- $RED$version$CRESET => $p"; fi
+        else show "$indent\t- $RED$version$CRESET => $p"; fi
     done
 }
 
 extract_python_version()
 { $1 --version 2>&1 | grep -o "[0-9].*\$"; }
+
+extract_perl_version()
+{ $1 --version | grep -o "v\\([0-9]\\+\\.\\?\\)\\+"; }
 
 extract_cmake_version()
 { $1 --version | grep -o "\\([0-9]\\+\\.\\?\\)\\+$"; }
@@ -300,10 +344,10 @@ extract_clang_version()
 
 extract_gcc_version()
 {
-    local ver=$($1 -dumpfullversion)
+    $1 -dumpfullversion &> /dev/null
 
     if [ $? -ne 0 ]; then $1 -dumpversion
-    else                  echo "$ver"
+    else                  $1 -dumpfullversion
     fi
 }
 
@@ -357,7 +401,7 @@ make_python()
     show "\tModifying Python to build the zlib module"
         show_then_run "show \"zlib zlibmodule.c $zlib_flags\" >> $builddir/python/Modules/Setup" "\t\t"
 
-    case $no_cleanup in
+    case $no_build_cleanup in
         0) py_rm_cmd="cd $root; rm -r $builddir/python";;
         1) py_rm_cmd="cd $root";;
     esac
@@ -380,27 +424,24 @@ make_python()
     # and link it's certs to openssl's`.
     if [ $libssl_found -eq 0 ]
     then
-        echo "\n\t\tWe built ${YELLOW}libssl$CRESET from source so we have no certs, will build ${YELLOW}certifi$CRESET and source their certs instead"
+        show "\n\t\tWe built ${YELLOW}libssl$CRESET from source so we have no certs, will build ${YELLOW}certifi$CRESET and source their certs instead"
         make_certifi
     fi
 
-    python="$installdir/bin/python3"
-    python_version="3.9.0"
     show "\t${GREEN}Python sucessfully installed${CRESET}\n"
 }
 
 make_libssl()
 {
-    # TODO: check if perl is suitable before making.
-    show "\t\t${YELLOW}libssl$CRESET requires ${YELLOW}Perl$CRESET to build, will build ${YELLOW}Perl 5.34.1$CRESET from source"
-    make_perl
+    find_versioned_ge "Perl" "5.32.0" "/perl\\([0-9]\\+\\.\\?\\)*\$" "extract_perl_version" "perl" "\t\t"
+    do_dependency "Perl" "perl" "5.34.1" "\t\t"
 
     clean $builddir/libssl
 
-    libssl_clone_cmd="git clone -b openssl-3.0.2 https://github.com/openssl/openssl.git $builddir/libssl"
+    libssl_clone_cmd="git clone -b openssl-3.0.2 --depth 1 https://github.com/openssl/openssl.git $builddir/libssl"
     buildstep "$libssl_clone_cmd" "" "libssl_clone.txt" "\t\t" "Cloning libssl" "clone libssl" "libssl cloned"
 
-    case $no_cleanup in
+    case $no_build_cleanup in
         0) libssl_rm_cmd="cd $root; rm -r $builddir/libssl";;
         1) libssl_rm_cmd="cd $root";;
     esac
@@ -424,7 +465,7 @@ make_perl()
     download "Perl" "https://cpan.metacpan.org/authors/id/S/SH/SHAY/perl-5.34.1.tar.gz" "perl-5.34.1.tar.gz" "\t\t\t"
     extract_clean "Perl" "$downloaddir/perl-5.34.1.tar.gz" "$builddir/Perl" "\t\t\t"
 
-    case $no_cleanup in
+    case $no_build_cleanup in
         0) perl_rm_cmd="cd $root; rm -rf $builddir/Perl";;
         1) perl_rm_cmd="cd $root";;
     esac
@@ -445,7 +486,7 @@ make_zlib()
     download "zlib" "https://www.zlib.net/zlib-1.2.12.tar.gz" "zlib-1.2.12.tar.gz" "\t\t"
     extract_clean "zlib" "$downloaddir/zlib-1.2.12.tar.gz" "$builddir/zlib" "\t\t"
 
-    case $no_cleanup in
+    case $no_build_cleanup in
         0) zlib_rm_cmd="cd $root; rm -rf $builddir/zlib";;
         1) zlib_rm_cmd="cd $root";;
     esac
@@ -485,7 +526,7 @@ make_ninja()
     ninja_clone_cmd="git clone -b v1.10.2 --depth 1 https://github.com/ninja-build/ninja.git $builddir/ninja"
     buildstep "$ninja_clone_cmd" "" "Ninja_clone.txt" "\t" "Cloning Ninja" "clone Ninja" "Ninja cloned"
 
-    case $no_cleanup in
+    case $no_build_cleanup in
         0) ninja_rm_cmd="cd $root; rm -r $builddir/ninja";;
         1) ninja_rm_cmd="cd $root";;
     esac
@@ -511,23 +552,16 @@ make_meson()
     show "\t${GREEN}Meson sucessfully installed${CRESET}\n"
 }
 
-make_clang()
+make_compiler()
 {
-    if [ $force_build_cmake -ne 0 ]; then show "\tNOTE: --force-build-cmake is set"; fi
+    if [ $ignore_system_cmake -ne 0 ]; then show "\tNOTE: --ignore-system-cmake is set"; fi
     find_versioned_ge "cmake" "3.13.3" "/cmake$" "extract_cmake_version" "cmake" "\t"
-
-    if [ ! -z "$cmake" ] && [ $force_build_cmake -eq 0 ]
-    then
-        show "\tFound ${GREEN}CMake $cmake_version$CRESET\n"
-    else
-        show "\t${RED}Did not find CMake$CRESET, will build ${YELLOW}CMake 3.23.0$CRESET from source instead"
-        make_cmake
-    fi
+    do_dependency "CMake" "cmake" "3.23.0" "\t"
 
     download "Clang" "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/llvm-project-13.0.0.src.tar.xz" "llvm-project-13.0.0.src.tar.xz" "\t"
     extract_clean "Clang" "$downloaddir/llvm-project-13.0.0.src.tar.xz" "$builddir/llvm-project" "\t"
 
-    case $no_cleanup in
+    case $no_build_cleanup in
         0) clang_rm_cmd="cd $root; rm -r $builddir/llvm-project";;
         1) clang_rm_cmd="cd $root";;
     esac
@@ -546,6 +580,9 @@ make_clang()
     show "\t${GREEN}Clang sucessfully installed${CRESET}"
     show "\t\tWill use ${YELLOW}CC=$CC${CRESET}"
     show "\t\tWill use ${YELLOW}CXX=$CXX${CRESET}\n"
+
+    show "export CC=$CC" >> $resume_file
+    show "export CXX=$CXX" >> $resume_file
 }
 
 make_cmake()
@@ -553,7 +590,7 @@ make_cmake()
     download "CMake" "https://github.com/Kitware/CMake/releases/download/v3.23.0/cmake-3.23.0.tar.gz" "cmake-3.23.0.tar.gz" "\t\t"
     extract_clean "CMake" "$downloaddir/cmake-3.23.0.tar.gz" "$builddir/cmake" "\t\t"
 
-    case $no_cleanup in
+    case $no_build_cleanup in
         0) cmake_rm_cmd="cd $root; rm -r $builddir/cmake";;
         1) cmake_rm_cmd="cd $root";;
     esac
@@ -593,13 +630,16 @@ builddir=$root/build
 assure_dir $builddir
 
 installdir=$root/local
-clean $installdir
+if [ $install_cleanup -eq 1 ]; then clean $installdir; fi
 assure_dir $installdir
 export PATH=$installdir/bin:$installdir/perl/bin:$PATH
 export PKG_CONFIG_PATH=$installdir/lib/pkgconfig:$installdir/lib64/pkgconfig:$PKG_CONFIG_PATH
 export LD_LIBRARY_PATH=$installdir/lib:$installdir/lib64:$LD_LIBRARY_PATH
 export LIBRARY_PATH=$installdir/lib:$installdir/lib64:$LIBRARY_PATH
 export PERL5LIB=$installdir/perl/lib:$PERL5LIB
+
+if [ $resume_last_call -eq 1 ] && [ -f $resume_file ]; then . $resume_file; fi
+if [ -f $resume_file ]; then rm $resume_file; fi
 
 main
 
