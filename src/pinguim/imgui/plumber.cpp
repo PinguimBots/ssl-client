@@ -86,7 +86,7 @@ auto pinguim::imgui::make_plumber(const char* windowname) -> plumber*
     if(ImGui_ImplSDL2_InitForOpenGL(mario.sdl_window, mario.sdl_glcontext) == false) {return nullptr;}
     mario.imgui_sdl2_context = true;
 
-    if(ImGui_ImplOpenGL3_Init("#version 130") == false) {return nullptr;}
+    if(ImGui_ImplOpenGL3_Init("#version 120") == false) {return nullptr;}
     mario.imgui_opengl3_context = true;
 
     fonts::init();
