@@ -5,6 +5,8 @@
 #include "pinguim/dont_forget.hpp"
 #include "pinguim/cvt.hpp"
 
+#include <fmt/core.h>
+
 #include <imgui.h>
 
 #include <memory> // For std::unique_ptr.
@@ -63,7 +65,10 @@ auto pinguim::app::subsystems::manager::draw_selector_ui(float delta_seconds) ->
     ImGui::BeginMainMenuBar();
     PINGUIM_DONT_FORGET( ImGui::EndMainMenuBar() );
 
-    ImGui::Text("%.2f MS", cvt::to<double> * delta_seconds * 1000);
+    auto frametime_str = fmt::format("{:.2f} MS", cvt::to<double> * delta_seconds * 1000);
+    ImGui::SetCursorPosX(ImGui::GetWindowSize().x - ImGui::CalcTextSize(frametime_str.c_str()).x -  ImGui::GetStyle().ItemSpacing.x);
+    ImGui::Text(frametime_str.c_str());
+    ImGui::SetCursorPosX(0);
 
     if(!ImGui::BeginMenu("Subsystems")) { return; }
 
