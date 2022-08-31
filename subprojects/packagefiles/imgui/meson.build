@@ -3,7 +3,7 @@ project('imgui', 'cpp',
     license: 'MIT',
 )
 
-add_project_arguments('-DIMGUI_IMPL_OPENGL_LOADER_GLEW', language: 'cpp')
+add_project_arguments('-DIMGUI_IMPL_OPENGL_LOADER_CUSTOM', language: 'cpp')
 
 include_dirs = include_directories('.')
 
