@@ -22,7 +22,7 @@ cvcpu_confdata.set('OPENCV_CPU_DISPATCH_DEFINITIONS_CONFIGMAKE', cvcpu_confdata_
 modules_confdata = configuration_data()
 modules_confdata.set('OPENCV_ENABLE_NONFREE', conf['enable_nonfree'])
 modules_confdata_definitions_str = ''
-foreach mod : conf['modules_to_build']
+foreach mod : conf['resolved_module_list']
     modules_confdata_definitions_str += '\n#define HAVE_@0@'.format(mod.to_upper())
 endforeach
 modules_confdata.set('OPENCV_MODULE_DEFINITIONS_CONFIGMAKE', modules_confdata_definitions_str)

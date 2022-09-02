@@ -48,6 +48,7 @@ endif
 # wrapping it manually is WAY beyond the scope of this project.
 # So it's wise to make the project runnable without it, check out 'pinguim/conf.hpp' and the
 # vision input subsystem.
+# TODO: fixme on wrap completion.
 opencv_dep = dependency('opencv400000', version: '>= 4.5.1', fallback: ['opencv', 'opencv_dep']).as_system('system')
 # Gui stuff
 opengl_dep = os == 'windows' ? meson.get_compiler('c').find_library('opengl32') : dependency('gl').as_system('system')

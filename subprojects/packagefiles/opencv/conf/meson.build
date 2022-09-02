@@ -1,13 +1,23 @@
 # Does all the configuration work, like setting
-# the HAVE_*, detecting compiler configurations, build flags
-# and what modules to build.
+# the HAVE_* flags, detecting compiler configurations, build flags
+# and figure out what modules to build (and in what order).
+
+conf = {}
+
+# The opencv cmake visits each module twice, once to
+# explore all the available modules and resolve their
+# dependencies, and the second time to actually build them.
+# We can only visit a folder once in meson, so we need to resolve
+# the dependencies upfront.
+subdir('depend')
 
 shush_flag = get_option('shush') ? cxx.get_supported_arguments(['-w', '/w']) : []
 enable_nonfree = get_option('enable_nonfree')
 
-conf = {
+conf += {
     'print_optimizations': get_option('print_optimizations'),
     'print_conf': get_option('print_conf'),
+    # Internal use, to avoid meson freaking out.
     'non_printable_keys': ['gen'],
 
     'shush': get_option('shush'),
@@ -18,10 +28,6 @@ conf = {
         + ['-D__OPENCV_BUILD', '-Wno-deprecated-enum-enum-conversion'] \
         + shush_flag \
         + (enable_nonfree ? ['-DOPENCV_ENABLE_NONFREE'] : []),
-
-    # Equivalent to BUILD_opencv_* in the cmake build.
-    # TODO: figure out the logic to select what modules are built.
-    'modules_to_build': ['core', 'imgproc', 'videoio']
 }
 
 subdir('optimizations')

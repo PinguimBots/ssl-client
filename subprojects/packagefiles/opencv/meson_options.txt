@@ -4,6 +4,27 @@ option('shush', type: 'boolean', value: true,
         'and don\'t want to be annoyed'
 )
 
+option('modules', type: 'array', value: ['core'], 
+    choices: [
+        'core',
+        'flann',
+        'imgproc',
+        'ml',
+        'features2d',
+        'dnn',
+        'imgcodecs',
+        'calib3d',
+        'videoio',
+        'stitching',
+        'photo',
+        'video',
+        'objdetect',
+        'highgui',
+        'gapi',
+    ],
+    description: 'What modules to build'
+)
+
 option('print_conf', type: 'boolean', value: false)
 option('print_optimizations', type: 'boolean', value: false,
     description: 'Prints optimization support as it goes through, see conf/optimizations/meson.build'
