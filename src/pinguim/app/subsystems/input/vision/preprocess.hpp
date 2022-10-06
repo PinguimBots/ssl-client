@@ -1,6 +1,11 @@
-#include <opencv2/improc.hpp>
+#pragma once
 
-inline void PreProcess::execute(cv::Mat src, cv::Mat &dst) {
+#include <opencv2/imgproc.hpp>
 
-    cv::cvtColor(src, dst, cv::COLOR_BGR2HSV);
+namespace PreProcess
+{
+    inline void execute(cv::Mat src, cv::Mat &dst) 
+    {
+        cv::cvtColor(src, dst, cv::COLOR_BGR2HSV);
+    }
 }

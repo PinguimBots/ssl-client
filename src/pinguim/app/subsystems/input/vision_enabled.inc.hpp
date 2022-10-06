@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pinguim/app/subsystems/input/vision/colors.hpp"
 #include "pinguim/app/subsystems/types.hpp"
 #include "pinguim/imgui/img.hpp"
 #include "pinguim/aliases.hpp"
@@ -67,5 +68,7 @@ namespace pinguim::app::subsystems::input
 
         cv::VideoCapture video;
         cv::Mat currframe;
+
+        Colors colors = Colors();
     };
 }

@@ -4,10 +4,7 @@
 
 #include <opencv2/core/mat.hpp>
 
-namespace pinguim::app::subsystems::input
+namespace Pipeline
 {
-    struct vision_pipeline
-    {
-        void execute(game_info &gi, cv::Mat currframe);
-    };
+    void execute(pinguim::vsss::game_info &gi, cv::Mat currframe);
 }

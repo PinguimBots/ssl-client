@@ -168,6 +168,11 @@ namespace pinguim::app::subsystems::input
             pb::ImGui::Image({currframe});
         }
 
+        if(capture_type == capture_type_enum::none) { return false; }
+
+        // currframe: cv::Mat
+        
+
         return true;
     }
 

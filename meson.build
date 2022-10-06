@@ -87,6 +87,10 @@ sources = files(
     'src/pinguim/app/subsystems/output/firasim.cpp',
     'src/pinguim/app/subsystems/misc/imgui_debug.cpp',
 
+    'src/pinguim/app/subsystems/input/vision/extraction.cpp',
+    'src/pinguim/app/subsystems/input/vision/pipeline.cpp',
+    'src/pinguim/app/subsystems/input/vision/segmentation.cpp',
+
     'src/pinguim/imgui/widgets/toggle_button.cpp',
     'src/pinguim/imgui/widgets/group_panel.cpp',
     'src/pinguim/imgui/fonts/loader.cpp',
