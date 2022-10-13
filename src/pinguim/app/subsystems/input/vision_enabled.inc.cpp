@@ -2,6 +2,8 @@
 
 #include "pinguim/app/subsystems/registrar.hpp"
 
+#include "pinguim/app/subsystems/input/vision/pipeline.hpp"
+
 #include "pinguim/imgui/fonts/kenney_game_icons.hpp"
 #include "pinguim/imgui/fonts/loader.hpp"
 
@@ -172,6 +174,13 @@ namespace pinguim::app::subsystems::input
 
         // currframe: cv::Mat
         
+        // Pipeline::execute(gi, currframe, colors);
+
+        ImGui::Begin("Pipeline");
+
+        // pb::ImGui::Image({currframe});
+
+        ImGui::End();
 
         return true;
     }

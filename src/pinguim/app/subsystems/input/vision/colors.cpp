@@ -1,4 +1,4 @@
-#include "Colors.h"
+#include "colors.hpp"
 
 Colors::Colors() {
     this->robotMin = {cv::Scalar(0), cv::Scalar(0), cv::Scalar(0)};

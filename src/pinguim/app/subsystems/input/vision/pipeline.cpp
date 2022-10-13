@@ -9,11 +9,11 @@
 #include <opencv2/core.hpp>
 #include <vector>
 
-void Pipeline::execute(pinguim::vsss::game_info& gi, cv::Mat currframe)
+void Pipeline::execute(pinguim::vsss::game_info& gi, cv::Mat currframe, Colors colors)
 {
     PreProcess::execute(currframe, currframe);
 
-    objectsContours contours = FullSeg::execute(currframe);
+    objectsContours contours = FullSeg::execute(currframe, colors);
 
     Extraction::execute(gi, contours);
 }
