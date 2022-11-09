@@ -147,7 +147,7 @@ namespace
 
 }
 
-objectsContours FullSeg::execute(cv::Mat preProcessedImg, Colors colors)
+objectsContours FullSeg::execute(cv::InputArray preProcessedImg, Colors colors)
 {
     std::vector<std::vector<std::vector<cv::Point>>> allPlayersContours(3, std::vector<std::vector<cv::Point>>());
     std::vector<std::vector<cv::Point>> teamContours, enemyContours;

@@ -7,5 +7,5 @@
 
 namespace Pipeline
 {
-    void execute(pinguim::vsss::game_info &gi, cv::Mat currframe, Colors colors);
+    void execute(pinguim::vsss::game_info &gi, cv::InputArray currframe, Colors colors);
 }

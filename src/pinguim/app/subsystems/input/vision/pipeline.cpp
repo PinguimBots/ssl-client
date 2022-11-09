@@ -9,7 +9,7 @@
 #include <opencv2/core.hpp>
 #include <vector>
 
-void Pipeline::execute(pinguim::vsss::game_info& gi, cv::Mat currframe, Colors colors)
+void Pipeline::execute(pinguim::vsss::game_info& gi, cv::InputArray currframe, Colors colors)
 {
     PreProcess::execute(currframe, currframe);
 

@@ -4,7 +4,7 @@
 
 namespace PreProcess
 {
-    inline void execute(cv::Mat src, cv::Mat &dst) 
+    inline void execute(cv::InputArray src, cv::OutputArray dst) 
     {
         cv::cvtColor(src, dst, cv::COLOR_BGR2HSV);
     }
