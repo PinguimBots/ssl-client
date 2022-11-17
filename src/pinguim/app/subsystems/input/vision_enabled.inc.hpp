@@ -9,7 +9,7 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/videoio.hpp> // For VideoCapture.
 
-#include <optional>
+#include <variant>
 #include <string>
 
 namespace pinguim::app::subsystems::input
@@ -22,22 +22,26 @@ namespace pinguim::app::subsystems::input
 
     private:
 
-        auto init_file_capture(std::string path) -> bool;
-        auto init_camera_capture() -> void;
+        auto draw_capture_type_dropdown(bool& is_first_frame) -> void;
+
+        auto config_camera_capture(bool) -> void;
+        auto fetch_camera_frame(bool)    -> void;
+        auto config_file_capture(bool)   -> void;
+        auto fetch_file_frame(bool)      -> void;
 
         // Uses settings from file_capture_config and
         // overrides currframe with the new frame.
         //
         // Also skips frames if necessary.
         //
-        // Assumes video.isOpened(), and file_capture_config.hasValue().
+        // Assumes video.isOpened(), and config is file_capture.
         auto read_frame_from_file_capture() -> u16;
 
+        // Enum mostrado no dropdown
         enum class capture_type_enum {none, camera, file};
-
         capture_type_enum capture_type = capture_type_enum::none;
 
-        struct file_capture_config_struct
+        struct file_capture
         {
             float video_len_seconds;
             float original_fps;
@@ -56,16 +60,20 @@ namespace pinguim::app::subsystems::input
             stopwatch<> frametime_pacer;
         };
 
-        struct camera_capture_config_struct
+        struct camera_capture
         {
             u32 index;
         };
 
-        std::optional<file_capture_config_struct> file_capture_config;
-        std::optional<camera_capture_config_struct> camera_capture_config;
+        std::variant<
+            std::monostate, // Quando não inicializado.
+            file_capture,
+            camera_capture
+        > config;
 
         //pipeline camera_pipeline;
 
+        // A fonte dos frames, pode ser uma camera, arquivo, foto, etc.
         cv::VideoCapture video;
         cv::Mat currframe;
 

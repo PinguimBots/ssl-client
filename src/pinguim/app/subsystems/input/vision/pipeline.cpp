@@ -9,9 +9,13 @@
 #include <opencv2/core.hpp>
 #include <vector>
 
+<<<<<<< HEAD
 void Pipeline::execute(pinguim::vsss::game_info& gi, cv::InputArray currframe, Colors colors)
+=======
+void Pipeline::execute(pinguim::vsss::game_info& gi, cv::Mat& currframe, Colors colors)
+>>>>>>> e74e739 (refator(input/vision): reorganize main func)
 {
-    PreProcess::execute(currframe, currframe);
+    currframe = PreProcess::execute(currframe);
 
     objectsContours contours = FullSeg::execute(currframe, colors);
 
