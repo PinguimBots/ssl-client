@@ -3,7 +3,7 @@
 #include "pinguim/aliases.hpp"
 
 // Forward decls.
-namespace cv { class _InputArray; }
+namespace cv { class Mat; }
 using GLuint = pinguim::u32;
 namespace pinguim::imgui { struct img; }
 
@@ -49,7 +49,7 @@ namespace pinguim::imgui
 
         img() = default;
 
-        img(const cv::_InputArray&);
+        img(cv::Mat const&, unsigned int gl_format = 0x80E0 /* a.k.a GL_BGR */);
         img(GLuint handle, int cols, int rows);
         img(img&&);
 

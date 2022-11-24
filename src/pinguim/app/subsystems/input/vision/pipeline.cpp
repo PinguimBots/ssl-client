@@ -9,15 +9,13 @@
 #include <opencv2/core.hpp>
 #include <vector>
 
-<<<<<<< HEAD
-void Pipeline::execute(pinguim::vsss::game_info& gi, cv::InputArray currframe, Colors colors)
-=======
-void Pipeline::execute(pinguim::vsss::game_info& gi, cv::Mat& currframe, Colors colors)
->>>>>>> e74e739 (refator(input/vision): reorganize main func)
+cv::Mat Pipeline::execute(pinguim::vsss::game_info& gi, cv::Mat const& currframe, Colors colors)
 {
-    currframe = PreProcess::execute(currframe);
+    auto frame = PreProcess::execute(currframe);
 
-    objectsContours contours = FullSeg::execute(currframe, colors);
+    objectsContours contours = FullSeg::execute(frame, colors);
 
     Extraction::execute(gi, contours);
+
+    return frame;
 }
