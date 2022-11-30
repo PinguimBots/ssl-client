@@ -7,5 +7,5 @@
 
 namespace FullSeg
 {
-    objectsContours execute(cv::InputArray preProcessedImg, Colors colors);
+    objectsContours execute(cv::Mat preProcessedImg, Colors colors);
 }
