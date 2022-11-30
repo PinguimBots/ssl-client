@@ -16,6 +16,8 @@ namespace pinguim::geometry
         NumT x;
         NumT y;
 
+        constexpr auto operator[](const auto i) const -> NumT { return i == 0 ? x : y; }
+
         [[nodiscard]] auto operator+(const point& other) const -> point;
         [[nodiscard]] auto operator-(const point& other) const -> point;
         [[nodiscard]] auto operator*(const NumT& num) const -> point;
