@@ -10,7 +10,7 @@
 #include "pinguim/geometry.hpp"
 #include "pinguim/aliases.hpp"
 
-namespace pinguim::vsss
+namespace pinguim::vsss::inline gi
 {
     struct robot
     {
