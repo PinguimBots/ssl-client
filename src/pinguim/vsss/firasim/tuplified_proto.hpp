@@ -60,17 +60,17 @@ namespace fira_message {
                 else return frame.robots_yellow(pinguim::cvt::to<int> * i);
             };
 
-            if constexpr( pinguim::conf::team_size_fixed && pinguim::conf::fixed_team_size > 0 )
-            {
-                auto robots = std::array<Robot, pinguim::conf::fixed_team_size>{};
+            // if constexpr( pinguim::conf::team_size_fixed && pinguim::conf::fixed_team_size > 0 )
+            // {
+            //     auto robots = std::array<Robot, pinguim::conf::fixed_team_size>{};
 
-                for(std::size_t i = 0; i < robots.size(); ++i) {
-                    robots[i] = robot_getter(f, i);
-                }
-                return robots;
-            }
-            else
-            {
+            //     for(std::size_t i = 0; i < robots.size(); ++i) {
+            //         robots[i] = robot_getter(f, i);
+            //     }
+            //     return robots;
+            // }
+            // else
+            // {
                 const auto robot_count = [&]{
                     if constexpr(I == 0) return f.robots_blue_size();
                     else return f.robots_yellow_size();
@@ -82,7 +82,7 @@ namespace fira_message {
                     robot_vec.push_back(robot_getter(f, i));
                 }
                 return robot_vec;
-            }
+            // }
         }
         else if constexpr(I == 2) {
             return f.ball();
