@@ -56,14 +56,13 @@ namespace pinguim::cvt
         constexpr auto operator()(From&& from) const;
     };
 
-    // You can use the following like constants of functions.
+    // You can use the following like constants or functions.
     // E.g: `5.8f * cvt::to<double>` or `cvt::to<double>(5.8f)`.
 
     template <typename To>
     inline constexpr auto to = into< converters::sc<To> >{};
-
     template <typename To>
-    inline constexpr auto sc = into< converters::sc<To> >{}; // equivalent to cvt::to<To>.
+    inline constexpr auto sc = into< converters::sc<To> >{};
     template <typename To>
     inline constexpr auto dc = into< converters::dc<To> >{};
     template <typename To>
@@ -73,6 +72,11 @@ namespace pinguim::cvt
 
     inline constexpr auto to_expected  = into<converters::expected>{};
     inline constexpr auto toe          = into<converters::expected>{};
+
+    // Easy way to make your own converter using a function
+    // E.g:
+    //    `
+    constexpr auto custom(auto&& func);
 }
 
 // Implementations below.
@@ -123,6 +127,8 @@ namespace pinguim::cvt
     template <typename T, typename Converter>
     constexpr auto operator-(const into<Converter>& cvt, T&& val)
     { return cvt( s::forward<T>(val) ); }
+
+    constexpr auto custom(auto&& func) { return into< decltype(func) >{}; }
 }
 
 namespace pinguim::cvt::converters
@@ -171,11 +177,11 @@ namespace pinguim::cvt::converters
 
             template<typename ExpectedType>
             constexpr operator ExpectedType() const &
-            { return to<ExpectedType>(v); }
+            { return cvt::to<ExpectedType>(v); }
 
             template <typename ExpectedType>
             constexpr operator ExpectedType() &&
-            { return to<ExpectedType>(s::move(v)); }
+            { return cvt::to<ExpectedType>(s::move(v)); }
         };
 
         template <typename From>

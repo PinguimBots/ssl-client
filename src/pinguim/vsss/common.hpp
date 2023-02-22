@@ -4,7 +4,7 @@
 #include <utility>
 #include <array>
 
-namespace pinguim::vsss
+namespace pinguim::vsss::inline common
 {
     using point = std::complex<double>;
     // Ponto usado pelo wavefront planner (cordenada discreta).
