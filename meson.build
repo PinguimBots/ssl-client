@@ -85,6 +85,7 @@ sources = files(
     'src/pinguim/app/subsystems/logic/direct_control.cpp',
     'src/pinguim/app/subsystems/logic/strategy.cpp',
     'src/pinguim/app/subsystems/output/firasim.cpp',
+    'src/pinguim/app/subsystems/output/serial.cpp',
     'src/pinguim/app/subsystems/misc/imgui_debug.cpp',
 
     'src/pinguim/app/subsystems/input/vision/extraction.cpp',
