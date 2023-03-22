@@ -10,8 +10,6 @@
 
 #include <complex>
 
-#include <fmt/core.h>
-
 PINGUIM_APP_REGISTER_LOGIC_SUBSYSTEM(pinguim::app::subsystems::logic::strategy, "Strategy");
 
 constexpr auto to_cpx    = pinguim::cvt::custom([](auto v){ return std::complex<double>{v.x, v.y}; });
@@ -35,14 +33,6 @@ namespace pinguim::app::subsystems::logic
             { bds[0]  * to_cpx, bds[1]  * to_cpx,  bds[6] * to_cpx, bds[7] * to_cpx }
         };
 
-        fmt::print("left_bounds = [ ");
-        for(auto const& lp : bounds.left_goal_bounds) { fmt::print("{{{:.2f} {:.2f}}} ", lp.real(), lp.imag()); }
-        fmt::print("]\nright_bounds = [ ");
-        for(auto const& lp : bounds.right_goal_bounds) { fmt::print("{{{:.2f} {:.2f}}} ", lp.real(), lp.imag()); }
-        fmt::print("]\nfield_bounds = [ ");
-        for(auto const& lp : bounds.field_bounds) { fmt::print("{{{:.2f} {:.2f}}} ", lp.real(), lp.imag()); }
-        fmt::print("]\n\n");
-
         strat.setBounds(pinguim::vsss::field_geometry{
             { bds[10] * to_cpx, bds[11] * to_cpx,  bds[9] * to_cpx, bds[8] * to_cpx },
             { bds[2]  * to_cpx, bds[3]  * to_cpx,  bds[4] * to_cpx, bds[5] * to_cpx },
@@ -57,7 +47,6 @@ namespace pinguim::app::subsystems::logic
         lc.reserve(gi.allied_team.size());
 
         auto obstacles = std::vector< pinguim::vsss::point >{2};
-        fmt::print("[ball] {{{:.2f}, {:.2f}}}\n", gi.ball_info.location.x, gi.ball_info.location.y);
         for(auto const& _r : gi.allied_team)
         {
             for(auto const& _r2 : gi.allied_team) if(_r2.id != _r.id) obstacles.push_back(_r2.location * to_cpx);
@@ -67,13 +56,11 @@ namespace pinguim::app::subsystems::logic
             auto const [_left, _right] = pinguim::vsss::to_pair( pinguim::vsss::control::generate_vels(r, new_point, rotation) );
             auto const left  = pb::m::map(_left  * cvt::to<float>, -100.f, 100.f, -1.f, 1.f);
             auto const right = pb::m::map(_right * cvt::to<float>, -100.f, 100.f, -1.f, 1.f);
-            fmt::print("[{}] pos = {{{:.2f}, {:.2f}}} lr = {{{:.2f}, {:.2f}}}, rotation = {}\n", r.id, _r.location.x, _r.location.y, left, right, rotation);
             
             lc.push_back({gi.allied_team_id, r.id * cvt::toe, left + cvt::toe, right + cvt::toe});
 
             obstacles.clear();
         }
-        fmt::print("\n---\n\n");
 
         return false;
     }
