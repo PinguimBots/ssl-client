@@ -39,6 +39,8 @@ namespace pinguim::app::subsystems::input
         // Assumes video.isOpened(), and config is file_capture.
         auto read_frame_from_file_capture() -> u16;
 
+        auto warp_perspective() -> void;
+
         // Enum mostrado no dropdown
         enum class capture_type_enum {none, camera, file};
         capture_type_enum capture_type = capture_type_enum::none;
