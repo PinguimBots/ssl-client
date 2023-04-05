@@ -67,7 +67,7 @@ auto pinguim::app::subsystems::manager::draw_selector_ui(float delta_seconds) ->
 
     auto frametime_str = fmt::format("{:.2f} MS", cvt::to<double> * delta_seconds * 1000);
     ImGui::SetCursorPosX(ImGui::GetWindowSize().x - ImGui::CalcTextSize(frametime_str.c_str()).x -  ImGui::GetStyle().ItemSpacing.x);
-    ImGui::Text(frametime_str.c_str());
+    ImGui::Text("%s", frametime_str.c_str());
     ImGui::SetCursorPosX(0);
 
     if(!ImGui::BeginMenu("Subsystems")) { return; }

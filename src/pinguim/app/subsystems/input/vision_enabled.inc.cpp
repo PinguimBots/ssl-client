@@ -130,11 +130,59 @@ auto pinguim::app::subsystems::input::vision::fetch_file_frame(bool is_first_fra
 
 auto pinguim::app::subsystems::input::vision::fetch_camera_frame(bool is_first_frame) -> void
 {
+    namespace ImGui = ::ImGui;
+
     auto& cfg = std::get<camera_capture>(config);
 
     video.read(currframe);
 
-    pb::ImGui::Image({currframe});
+    /// TODO: refatorar código abaixo para uma função e aplicar no file input também.
+
+    // Vamos desenhar um botão invisível em cima da nossa imagem para interceptar cliques do mouse e
+    // pegar a ROI.
+    auto& io = ImGui::GetIO();
+    auto  canvas_p0 = ImGui::GetCursorScreenPos();
+    ImGui::InvisibleButton("roi", ImVec2{currframe.cols, currframe.rows}, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) // Se teve clique na imagem.
+    {
+        frame_roi[curr_roi_point] = {io.MousePos.x - canvas_p0.x, io.MousePos.y - canvas_p0.y};
+        curr_roi_point = (curr_roi_point + 1) % frame_roi.size();
+    }
+    ImGui::SetCursorScreenPos(canvas_p0); // Restaura para a posição antes do botão invisível p/ desenhar a imagem por cima.
+
+    auto cpy = currframe.clone();         // Não queremos sujar a imagem original com circulos.
+    auto point_count = 0;
+
+    for(const auto& p : frame_roi)
+    {
+        if(p.x == -1 && p.y == -1) break;
+
+        point_count += 1;
+        cv::circle(cpy, {p.x, p.y}, 3, {0, 0, 255}, 3);
+    }
+    pb::ImGui::Image({cpy});
+
+    if(point_count != 4) { warped_frame = currframe; return; } // Se < 4 pontos não fazer o warpPerspective.
+
+    auto const p0s = std::array<cv::Point2f, 4>{{
+        {frame_roi[0].x, frame_roi[0].y},
+        {frame_roi[1].x, frame_roi[1].y},
+        {frame_roi[2].x, frame_roi[2].y},
+        {frame_roi[3].x, frame_roi[3].y}
+    }};
+    auto const p1s = std::array<cv::Point2f, 4>{{
+        {0,        0},
+        {cpy.cols, 0},
+        {cpy.cols, cpy.rows},
+        {0,        cpy.rows}
+    }};
+
+    auto const M = cv::getPerspectiveTransform(p0s, p1s);
+    cv::warpPerspective(currframe, warped_frame, M, {cpy.cols, cpy.rows});
+
+    ImGui::Begin("Warped");
+    pb::ImGui::Image({warped_frame});
+    ImGui::End();
 }
 
 auto pinguim::app::subsystems::input::vision::config_file_capture(bool is_first_frame) -> void
@@ -158,7 +206,7 @@ auto pinguim::app::subsystems::input::vision::config_file_capture(bool is_first_
 
     if(newfile.empty()) { return; }
 
-    // Se foi selecionado um novo arquivo, vamos resetar a captura. 
+    // Se foi selecionado um novo arquivo, vamos resetar a captura.
 
     video.open(newfile);
 
@@ -232,7 +280,8 @@ auto pinguim::app::subsystems::input::vision::update_gameinfo([[maybe_unused]] g
         return false;
     }
 
-    auto processed = Pipeline::execute(gi, currframe, colors);
+    auto processed = Pipeline::execute(gi, warped_frame, colors);
+
     ImGui::Begin("Pipeline");
     pb::ImGui::Image({processed});
     ImGui::End();

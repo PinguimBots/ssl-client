@@ -3,6 +3,7 @@
 #include "pinguim/app/subsystems/input/vision/colors.hpp"
 #include "pinguim/app/subsystems/types.hpp"
 #include "pinguim/imgui/img.hpp"
+#include "pinguim/geometry.hpp"
 #include "pinguim/aliases.hpp"
 #include "pinguim/chrono.hpp"
 
@@ -11,6 +12,7 @@
 
 #include <variant>
 #include <string>
+#include <array>
 
 namespace pinguim::app::subsystems::input
 {
@@ -76,6 +78,10 @@ namespace pinguim::app::subsystems::input
         // A fonte dos frames, pode ser uma camera, arquivo, foto, etc.
         cv::VideoCapture video;
         cv::Mat currframe;
+
+        u8 curr_roi_point = 0;
+        std::array<geo::ipoint, 4> frame_roi = {{{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}}};
+        cv::Mat warped_frame;
 
         Colors colors = Colors();
     };

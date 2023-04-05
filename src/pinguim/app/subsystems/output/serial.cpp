@@ -40,10 +40,10 @@ namespace pinguim::app::subsystems::output
 
         for(auto const& cmd : c)
         {
-            i16 buf[3] = {
+            i16 buf[2] = {
                 pb::m::map(cmd.left_motor,  -1.f, 1.f, -255.f, 255.f) * cvt::to<i16>,
                 pb::m::map(cmd.right_motor, -1.f, 1.f, -255.f, 255.f) * cvt::to<i16>,
-                cmd.robot_id
+                //cmd.robot_id
             };
             asio::write( port, asio::buffer(buf, sizeof(buf) * sizeof(i16)) );
         }
