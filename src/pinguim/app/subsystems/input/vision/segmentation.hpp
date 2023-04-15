@@ -7,5 +7,5 @@
 
 namespace FullSeg
 {
-    objectsContours execute(cv::Mat preProcessedImg, Colors colors);
+    objectsContours execute(cv::Mat preProcessedImg, pinguim::app::subsystems::input::vision_impl::Colors colors);
 }

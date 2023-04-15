@@ -54,11 +54,11 @@ namespace pinguim::vsss::inline gi
     struct game_info
     {
         list<robot> allied_team;
-        u8 allied_team_id;
+        u8          allied_team_id;
         list<robot> enemy_team;
-        field field_info;
-        ball ball_info;
-        u16 allied_goals;
-        u16 enemy_goals;
+        field       field_info;
+        ball        ball_info;
+        u16         allied_goals;
+        u16         enemy_goals;
     };
 }

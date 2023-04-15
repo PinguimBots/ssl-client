@@ -108,14 +108,14 @@ namespace
         
         for (int i = 0; i < enemyContours.size(); ++i) 
         {
-            auto& enemies = gi.enemy_team;
+            auto& enemy = gi.enemy_team[i];
 
-            for (int j = 0; j < enemies.size(); ++j) 
+            for (int j = 0; j < enemy.size(); ++j) 
             {
 
                 if (!alreadyUsed[j])
                 {
-                    auto currEnemyLocation = enemies[j].location;
+                    auto currEnemyLocation = enemy[j].location;
 
                     cv::Moments enemyMoments = cv::moments(enemyContours[i]);
                     double enemyArea = enemyMoments.m00;
@@ -135,7 +135,7 @@ namespace
                         // #pragma omp critical
                         alreadyUsed[j] = 1;
 
-                        enemies[j].location = {enemy_x, enemy_y}
+                        enemy[j].location = {enemy_x, enemy_y}
 
                         break;
                     }
@@ -143,11 +143,6 @@ namespace
                 }
 
             }
-
-            
-
-            enemy.location = {enemy_x, enemy_y};
-
             
         }
     }
@@ -164,6 +159,5 @@ void Extraction::execute(pinguim::vsss::game_info& gi, objectsContours c)
 
     // #pragma omp task
     extractEnemy(gi, c.enemyContours);
-    
 }
 

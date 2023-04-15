@@ -1,6 +1,6 @@
 #include "pinguim/vsss/common.hpp"
 
-namespace pinguim::vsss {
+namespace pinguim::vsss::inline common {
     auto to_pair(const pinguim::vsss::point& p) -> std::pair<double, double>
     {
         return {p.real(), p.imag()};

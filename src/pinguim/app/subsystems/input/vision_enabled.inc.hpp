@@ -3,6 +3,7 @@
 #include "pinguim/app/subsystems/input/vision/colors.hpp"
 #include "pinguim/app/subsystems/types.hpp"
 #include "pinguim/imgui/img.hpp"
+#include "pinguim/geometry.hpp"
 #include "pinguim/aliases.hpp"
 #include "pinguim/chrono.hpp"
 
@@ -11,6 +12,7 @@
 
 #include <variant>
 #include <string>
+#include <array>
 
 namespace pinguim::app::subsystems::input
 {
@@ -36,6 +38,8 @@ namespace pinguim::app::subsystems::input
         //
         // Assumes video.isOpened(), and config is file_capture.
         auto read_frame_from_file_capture() -> u16;
+
+        auto warp_perspective() -> void;
 
         // Enum mostrado no dropdown
         enum class capture_type_enum {none, camera, file};
@@ -77,6 +81,12 @@ namespace pinguim::app::subsystems::input
         cv::VideoCapture video;
         cv::Mat currframe;
 
-        Colors colors = Colors();
+        u8 curr_roi_point = 0;
+        std::array<geo::ipoint, 4> frame_roi = {{{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}}};
+        cv::Mat warped_frame;
+
+        vision_impl::Colors colors;
+
+        vision_impl::Color* colorpicker_target = nullptr;
     };
 }

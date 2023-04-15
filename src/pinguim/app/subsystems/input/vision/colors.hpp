@@ -1,43 +1,32 @@
 #pragma once
 
-#include <opencv2/core.hpp>
-#include <opencv2/opencv.hpp>
-#include <opencv2/imgcodecs.hpp>
+#include <opencv2/core/types.hpp> // For cv::Scalar.
+#include <vector>
 
-class Colors
+namespace pinguim::app::subsystems::input::vision_impl
 {
-public:
-    Colors();
+    struct Color
+    {
+        constexpr Color(float _a = 0, float _b = 0, float _c = 0) : r{_a}, g{_b}, b{_c} {}
 
-    //Getters
-    cv::Scalar getAllyMin();
-    cv::Scalar getAllyMax();
+        union
+        {
+            float raw[3];
+            struct { float r, g, b; };
+        };
 
-    cv::Scalar getRobotColorMin(int robot_id);
-    cv::Scalar getRobotColorMax(int robot_id);
+        operator cv::Scalar() { return { raw[0], raw[1], raw[2] }; }
+    };
 
-    cv::Scalar getEnemyMin();
-    cv::Scalar getEnemyMax();
-
-    cv::Scalar getBallMin();
-    cv::Scalar getBallMax();
-
-    //Setters
-    void setAllyMin(cv::Scalar hsv);
-    void setAllyMax(cv::Scalar hsv);
-
-    void setRobotColorMin(cv::Scalar hsv, int robot_id);
-    void setRobotColorMax(cv::Scalar hsv, int robot_id);
-
-    void setEnemyMin(cv::Scalar hsv);
-    void setEnemyMax(cv::Scalar hsv);
-
-    void setBallMin(cv::Scalar hsv);
-    void setBallMax(cv::Scalar hsv);
-
-private:
-    cv::Scalar allyHSVMin, allyHSVMax;
-    cv::Scalar enemyHSVMin, enemyHSVMax;
-    cv::Scalar ballHSVMin, ballHSVMax;
-    std::vector<cv::Scalar> robotMin, robotMax;
-};
+    struct Colors
+    {
+        Color allyHSVMin  = {0,   0,   0};
+        Color allyHSVMax  = {179.f/255, 255.f/255, 255.f/255};
+        Color enemyHSVMin = {0,   0,   0};
+        Color enemyHSVMax = {179.f/255, 255.f/255, 255.f/255};
+        Color ballHSVMin  = {0,   147, 0};
+        Color ballHSVMax  = {23.f/255,  255.f/255, 255.f/255};
+        std::vector<Color> robotHSVMin = { {0,         0,         0},         {0,         0,         0},         {0,         0,         0} };
+        std::vector<Color> robotHSVMax = { {179.f/255, 255.f/255, 255.f/255}, {179.f/255, 255.f/255, 255.f/255}, (179.f/255, 255.f/255, 255.f/255) };
+    };
+}

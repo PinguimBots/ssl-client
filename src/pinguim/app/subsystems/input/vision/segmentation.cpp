@@ -17,14 +17,14 @@ namespace
     const int MIN_OBJECT_AREA = 700;
     const int MAX_OBJECT_AREA = 900;
 
-    void segmentTeam(cv::Mat preProcessedImg, std::vector<std::vector<cv::Point>> *teamContours, Colors colors)
+    void segmentTeam(cv::Mat preProcessedImg, std::vector<std::vector<cv::Point>> *teamContours, pinguim::app::subsystems::input::vision_impl::Colors colors)
     {
         std::vector<std::vector<cv::Point>> tempContours;
         cv::Mat teamThreshold;
         cv::Scalar teamMin, teamMax;
 
-        teamMin = colors.getAllyMin();
-        teamMax = colors.getAllyMax();
+        teamMin = colors.allyHSVMin;
+        teamMax = colors.allyHSVMax;
 
         cv::inRange(preProcessedImg, teamMin, teamMax, teamThreshold);
 
@@ -46,7 +46,7 @@ namespace
         }
     }
 
-    void segmentPlayers(cv::Mat preProcessedImg, std::vector<std::vector<std::vector<cv::Point>>> *allPlayersContours, Colors colors)
+    void segmentPlayers(cv::Mat preProcessedImg, std::vector<std::vector<std::vector<cv::Point>>> *allPlayersContours, pinguim::app::subsystems::input::vision_impl::Colors colors)
     {
         // #pragma omp parallel for
         for (int i = 0; i < 3; ++i)
@@ -55,8 +55,8 @@ namespace
             cv::Mat thresholdPlayer;
             std::vector<std::vector<cv::Point>> playersContours, playerContours;
 
-            playerColorMin = colors.getRobotColorMin(i);
-            playerColorMax = colors.getRobotColorMax(i);
+            playerColorMin = colors.robotHSVMin[i];
+            playerColorMax = colors.robotHSVMax[i];
 
             cv::inRange(preProcessedImg, playerColorMin, playerColorMax, thresholdPlayer);
 
@@ -85,14 +85,14 @@ namespace
         }
     }
 
-    void segmentBall(cv::Mat preProcessedImg, std::vector<cv::Point> *ballContour, Colors colors)
+    void segmentBall(cv::Mat preProcessedImg, std::vector<cv::Point> *ballContour, pinguim::app::subsystems::input::vision_impl::Colors colors)
     {
         std::vector<std::vector<cv::Point>> contours;
         cv::Mat ballThreshold;
         cv::Scalar ballMin, ballMax;
 
-        ballMin = colors.getBallMin();
-        ballMax = colors.getBallMax();
+        ballMin = colors.ballHSVMin;
+        ballMax = colors.ballHSVMax;
 
         cv::inRange(preProcessedImg, ballMin, ballMax, ballThreshold);
 
@@ -116,14 +116,14 @@ namespace
         }
     }
 
-    void segmentEnemy(cv::Mat preProcessedImg, std::vector<std::vector<cv::Point>> *enemyContours, Colors colors)
+    void segmentEnemy(cv::Mat preProcessedImg, std::vector<std::vector<cv::Point>> *enemyContours, pinguim::app::subsystems::input::vision_impl::Colors colors)
     {
         std::vector<std::vector<cv::Point>> tempContours;
         cv::Mat enemyThreshold;
         cv::Scalar enemyMin, enemyMax;
 
-        enemyMin = colors.getEnemyMin();
-        enemyMax = colors.getEnemyMax();
+        enemyMin = colors.enemyHSVMin;
+        enemyMax = colors.enemyHSVMax;
 
         cv::inRange(preProcessedImg, enemyMin, enemyMax, enemyThreshold);
 
@@ -147,7 +147,7 @@ namespace
 
 }
 
-objectsContours FullSeg::execute(cv::Mat preProcessedImg, Colors colors)
+objectsContours FullSeg::execute(cv::Mat preProcessedImg, pinguim::app::subsystems::input::vision_impl::Colors colors)
 {
     std::vector<std::vector<std::vector<cv::Point>>> allPlayersContours(3, std::vector<std::vector<cv::Point>>());
     std::vector<std::vector<cv::Point>> teamContours, enemyContours;

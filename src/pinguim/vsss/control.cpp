@@ -12,7 +12,7 @@
 
 constexpr auto sign(auto v) { return v >= 0 ? 1 : -1; }
 
-auto pinguim::vsss::control::rotate(pinguim::vsss::robot robot, double angle) -> pinguim::vsss::point
+auto pinguim::vsss::control::rotate(pinguim::vsss::common::robot robot, double angle) -> pinguim::vsss::common::point
 {
     auto angle_error = robot.orientation - angle;
     [[maybe_unused]] const double kap = 1.0, kad = 0.2, velmax = 1.0, velmin = -1.0;
@@ -22,7 +22,7 @@ auto pinguim::vsss::control::rotate(pinguim::vsss::robot robot, double angle) ->
 }
 
 
-auto pinguim::vsss::control::generate_vels(pinguim::vsss::robot robot, pinguim::vsss::point target_pos, int rotation) -> pinguim::vsss::point
+auto pinguim::vsss::control::generate_vels(pinguim::vsss::common::robot robot, pinguim::vsss::common::point target_pos, int rotation) -> pinguim::vsss::common::point
 {
     const auto velmax = 100.0, velmin = -100.0; //kap = 1.0, kad = 0.2
 

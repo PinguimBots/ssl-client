@@ -18,6 +18,7 @@
 #include <ImGuiFileDialog.h>
 
 #include <opencv2/videoio.hpp> // For cv::VideoCaptureProperties.
+#include <opencv2/imgproc.hpp> // For warpPerspective and Co.
 
 #include <GL/glew.h>
 
@@ -58,7 +59,9 @@ auto pinguim::app::subsystems::input::vision::config_camera_capture(bool is_firs
     if(is_first_frame)
     {
         config = camera_capture{0};
-        video.open(cvt::to<i32> * std::get<camera_capture>(config).index);
+        video.open(cvt::to<i32> * std::get<camera_capture>(config).index, cv::CAP_V4L2);
+        video.set(cv::CAP_PROP_FRAME_WIDTH,  640); // Hardcoded for now.
+        video.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
     }
     auto& cfg = std::get<camera_capture>(config);
 
@@ -67,7 +70,9 @@ auto pinguim::app::subsystems::input::vision::config_camera_capture(bool is_firs
     if(value_changed)
     {
         cfg.index = val_int >= 0 ? cvt::to<u32> * val_int : 0;
-        video.open(cvt::to<i32> * std::get<camera_capture>(config).index);
+        video.open(cvt::to<i32> * std::get<camera_capture>(config).index, cv::CAP_V4L2);
+        video.set(cv::CAP_PROP_FRAME_WIDTH,  640);
+        video.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
     }
 }
 
@@ -115,7 +120,7 @@ auto pinguim::app::subsystems::input::vision::fetch_file_frame(bool is_first_fra
 
     read_frame_from_file_capture();
 
-    pb::ImGui::Image({currframe.clone()});
+    warp_perspective();
 
     // Video timeline.
     ImGui::SetNextItemWidth(cvt::to<float> * video.get(cv::CAP_PROP_FRAME_WIDTH));
@@ -130,11 +135,23 @@ auto pinguim::app::subsystems::input::vision::fetch_file_frame(bool is_first_fra
 
 auto pinguim::app::subsystems::input::vision::fetch_camera_frame(bool is_first_frame) -> void
 {
+    namespace ImGui = ::ImGui;
+
     auto& cfg = std::get<camera_capture>(config);
 
     video.read(currframe);
 
-    pb::ImGui::Image({currframe});
+    warp_perspective();
+
+    ImGui::Begin("Raw Camera Properties");
+    for(auto const& [index, enum_name] : renum::reflect< cv::VideoCaptureProperties, 0, 128>::value_iterator{})
+    {
+        auto val = video.get(index);
+        ImGui::Text(fmt::format("{}: {}", index, enum_name, video.get(index)).c_str());
+        ImGui::SameLine();
+        if( ImGui::InputDouble(fmt::format("##videoprop{}", index).c_str(), &val, 0.0, 0.0, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) { video.set(index, val); }
+    }
+    ImGui::End();
 }
 
 auto pinguim::app::subsystems::input::vision::config_file_capture(bool is_first_frame) -> void
@@ -158,7 +175,7 @@ auto pinguim::app::subsystems::input::vision::config_file_capture(bool is_first_
 
     if(newfile.empty()) { return; }
 
-    // Se foi selecionado um novo arquivo, vamos resetar a captura. 
+    // Se foi selecionado um novo arquivo, vamos resetar a captura.
 
     video.open(newfile);
 
@@ -192,9 +209,80 @@ auto pinguim::app::subsystems::input::vision::config_file_capture(bool is_first_
 
 pinguim::app::subsystems::input::vision::vision() : video{} {}
 
+auto pinguim::app::subsystems::input::vision::warp_perspective() -> void
+{
+    namespace ImGui = ::ImGui;
+
+    if(currframe.channels() <= 1)
+    {
+        fmt::print("BAD FRAME: can't run warp_perspective, channels = {}\n", currframe.channels());
+        return;
+    }
+
+    // Vamos desenhar um botão invisível em cima da nossa imagem para interceptar cliques do mouse e
+    // pegar a ROI.
+    auto& io = ImGui::GetIO();
+    auto  canvas_p0 = ImGui::GetCursorScreenPos();
+    ImGui::InvisibleButton("roi", ImVec2{currframe.cols, currframe.rows}, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) // Se teve clique na imagem.
+    {
+        auto img_x = io.MousePos.x - canvas_p0.x;
+        auto img_y = io.MousePos.y - canvas_p0.y;
+
+        if(colorpicker_target == nullptr)
+        {
+            frame_roi[curr_roi_point] = {img_x, img_y};
+            curr_roi_point = (curr_roi_point + 1) % frame_roi.size();
+        }
+        else
+        {
+            auto color_vec = currframe.at<cv::Vec3b>(img_x * cvt::to<int>, img_y * cvt::to<int>);
+            *colorpicker_target = {color_vec[0] * cvt::to<float> / 255, color_vec[1] * cvt::to<float> / 255, color_vec[2] * cvt::to<float> /255};
+            colorpicker_target = nullptr;
+        }
+    }
+    ImGui::SetCursorScreenPos(canvas_p0); // Restaura para a posição antes do botão invisível p/ desenhar a imagem por cima.
+
+    auto cpy = currframe.clone();         // Não queremos sujar a imagem original com circulos.
+    auto point_count = 0;
+
+    for(const auto& p : frame_roi)
+    {
+        if(p.x == -1 && p.y == -1) break;
+
+        point_count += 1;
+        cv::circle(cpy, {p.x, p.y}, 3, {0, 0, 255}, 3);
+    }
+    pb::ImGui::Image({cpy});
+
+    if(point_count != 4) { warped_frame = currframe; return; } // Se < 4 pontos não fazer o warpPerspective.
+
+    auto const p0s = std::array<cv::Point2f, 4>{{
+        {frame_roi[0].x, frame_roi[0].y},
+        {frame_roi[1].x, frame_roi[1].y},
+        {frame_roi[2].x, frame_roi[2].y},
+        {frame_roi[3].x, frame_roi[3].y}
+    }};
+    auto const p1s = std::array<cv::Point2f, 4>{{
+        {0,        0},
+        {cpy.cols, 0},
+        {cpy.cols, cpy.rows},
+        {0,        cpy.rows}
+    }};
+
+    auto const M = cv::getPerspectiveTransform(p0s, p1s);
+    cv::warpPerspective(currframe, warped_frame, M, {cpy.cols, cpy.rows});
+}
+
 auto pinguim::app::subsystems::input::vision::update_gameinfo([[maybe_unused]] game_info& gi, [[maybe_unused]] float delta_seconds) -> bool
 {
     namespace ImGui = ::ImGui;
+
+    // Fill the teams with zeroed robots if the size differs.
+    gi.allied_team.reserve(3);
+    pb::emplace_fill_capacity(gi.allied_team);
+    gi.enemy_team.reserve(3);
+    pb::emplace_fill_capacity(gi.enemy_team);
 
     auto kenney = pb::imgui::fonts::kenney(18);
 
@@ -225,17 +313,47 @@ auto pinguim::app::subsystems::input::vision::update_gameinfo([[maybe_unused]] g
         case capture_type_enum::none:   return false;
     }
 
-    // currframe: cv::Mat
+    ImGui::ColorEdit3("allyhsvmin", colors.allyHSVMin.raw);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##allyhsvmin")) { colorpicker_target = &(colors.allyHSVMin); }
+
+    ImGui::ColorEdit3("allyhsvmax", colors.allyHSVMax.raw);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##allyhsvmax")) { colorpicker_target = &(colors.allyHSVMax); }
+
+    ImGui::ColorEdit3("enemyhsvmin", colors.enemyHSVMin.raw);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##enemyhsvmin")) { colorpicker_target = &(colors.enemyHSVMin); }
+
+    ImGui::ColorEdit3("enemyhsvmax", colors.enemyHSVMax.raw);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##enemyhsvmax")) { colorpicker_target = &(colors.enemyHSVMax); }
+
+    ImGui::ColorEdit3("ballhsvmin", colors.ballHSVMin.raw);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##ballhsvmin")) { colorpicker_target = &(colors.ballHSVMin); }
+
+    ImGui::ColorEdit3("ballhsvmax", colors.ballHSVMax.raw);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##ballhsvmax")) { colorpicker_target = &(colors.ballHSVMax); }
+
+    for(auto i = 0; i < gi.allied_team.size(); ++i)
+    {
+        ImGui::ColorEdit3(fmt::format("robot[{}]hsvmin", i).c_str(), colors.robotHSVMin[i].raw);
+        ImGui::SameLine();
+        if(ImGui::Button(fmt::format("ColorPicker##robot{}hsvmin", i).c_str())) { colorpicker_target = &(colors.robotHSVMin[i]); }
+        ImGui::ColorEdit3(fmt::format("robot[{}]hsvmax", i).c_str(), colors.robotHSVMax[i].raw);
+        ImGui::SameLine();
+        if(ImGui::Button(fmt::format("ColorPicker##robot{}hsvmax", i).c_str())) { colorpicker_target = &(colors.robotHSVMax[i]); }
+    }
+
     if(currframe.channels() <= 1)
     {
         fmt::print("BAD FRAME: can't run pipeline, channels = {}, is_first_frame = {}\n", currframe.channels(), is_first_frame);
         return false;
     }
 
-    auto processed = Pipeline::execute(gi, currframe, colors);
-    ImGui::Begin("Pipeline");
-    pb::ImGui::Image({processed});
-    ImGui::End();
+    auto processed = Pipeline::execute(gi, warped_frame, colors);
 
     return true;
 }
