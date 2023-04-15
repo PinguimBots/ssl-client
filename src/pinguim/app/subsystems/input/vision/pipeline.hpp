@@ -7,5 +7,5 @@
 
 namespace Pipeline
 {
-    cv::Mat execute(pinguim::vsss::game_info &gi, cv::Mat const& currframe, Colors colors);
+    cv::Mat execute(pinguim::vsss::game_info &gi, cv::Mat const& currframe, pinguim::app::subsystems::input::vision_impl::Colors colors);
 }

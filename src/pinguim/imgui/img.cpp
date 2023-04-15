@@ -10,9 +10,6 @@
 
 #include <utility> // For std::swap.
 
-// To easily interop between imgui types and our detail:: placeholders.
-#define IM_VEC2_CLASS_EXTRA ImVec2(const pinguim::ImGui::detail::V2& v) : x{v.x}, y{v.y} {}
-#define IM_VEC4_CLASS_EXTRA ImVec4(const pinguim::ImGui::detail::V4& v) : x{v.x}, y{v.y}, z{v.z}, w{v.w} {}
 #include <imgui.h>
 #include <imgui_internal.h> // For hooking.
 
@@ -20,10 +17,10 @@
 
 auto pinguim::ImGui::Image(
     const pinguim::imgui::img& img,
-    const detail::V2& uv0,
-    const detail::V2& uv1,
-    const detail::V4& tint_col,
-    const detail::V4& border_col
+    const ImVec2& uv0,
+    const ImVec2& uv1,
+    const ImVec4& tint_col,
+    const ImVec4& border_col
 ) -> void
 {
     ::ImGui::Image(
@@ -38,10 +35,10 @@ auto pinguim::ImGui::Image(
 
 auto pinguim::ImGui::Image(
     pinguim::imgui::img&& img,
-    const detail::V2& uv0,
-    const detail::V2& uv1,
-    const detail::V4& tint_col,
-    const detail::V4& border_col
+    const ImVec2& uv0,
+    const ImVec2& uv1,
+    const ImVec4& tint_col,
+    const ImVec4& border_col
 ) -> void
 {
     auto hook     = ImGuiContextHook();
@@ -66,12 +63,12 @@ auto pinguim::ImGui::Image(
 
 #if defined(PINGUIM_CONF_OPENCV_SUPPORT)
 namespace {
-    
+
 }
 pinguim::imgui::img::img(cv::Mat const& mat, unsigned int gl_format)
     : texture{}
 {
-    auto type = GL_UNSIGNED_BYTE; // Missing: GL_HALF_FLOAT, GL_FLOAT, GL_UNSIGNED_BYTE_3_3_2, GL_UNSIGNED_BYTE_2_3_3_REV, GL_UNSIGNED_SHORT_5_6_5, GL_UNSIGNED_SHORT_5_6_5_REV, GL_UNSIGNED_SHORT_4_4_4_4, GL_UNSIGNED_SHORT_4_4_4_4_REV, GL_UNSIGNED_SHORT_5_5_5_1, GL_UNSIGNED_SHORT_1_5_5_5_REV, GL_UNSIGNED_INT_8_8_8_8, GL_UNSIGNED_INT_8_8_8_8_REV, GL_UNSIGNED_INT_10_10_10_2, and GL_UNSIGNED_INT_2_10_10_10_REV. 
+    auto type = GL_UNSIGNED_BYTE; // Missing: GL_HALF_FLOAT, GL_FLOAT, GL_UNSIGNED_BYTE_3_3_2, GL_UNSIGNED_BYTE_2_3_3_REV, GL_UNSIGNED_SHORT_5_6_5, GL_UNSIGNED_SHORT_5_6_5_REV, GL_UNSIGNED_SHORT_4_4_4_4, GL_UNSIGNED_SHORT_4_4_4_4_REV, GL_UNSIGNED_SHORT_5_5_5_1, GL_UNSIGNED_SHORT_1_5_5_5_REV, GL_UNSIGNED_INT_8_8_8_8, GL_UNSIGNED_INT_8_8_8_8_REV, GL_UNSIGNED_INT_10_10_10_2, and GL_UNSIGNED_INT_2_10_10_10_REV.
 
     switch(mat.type())
     {
@@ -79,25 +76,25 @@ pinguim::imgui::img::img(cv::Mat const& mat, unsigned int gl_format)
         // redundant: case CV_8UC2: break;
         // redundant: case CV_8UC3: break;
         // redundant: case CV_8UC4: break;
-        case CV_8SC1: [[fallthrough]]
-        case CV_8SC2: [[fallthrough]]
-        case CV_8SC3: [[fallthrough]]
+        case CV_8SC1: [[fallthrough]];
+        case CV_8SC2: [[fallthrough]];
+        case CV_8SC3: [[fallthrough]];
         case CV_8SC4: type = GL_BYTE; break;
-        case CV_16UC1: [[fallthrough]]
-        case CV_16UC2: [[fallthrough]]
-        case CV_16UC3: [[fallthrough]]
+        case CV_16UC1: [[fallthrough]];
+        case CV_16UC2: [[fallthrough]];
+        case CV_16UC3: [[fallthrough]];
         case CV_16UC4: type = GL_UNSIGNED_SHORT; break;
-        case CV_16SC1: [[fallthrough]]
-        case CV_16SC2: [[fallthrough]]
-        case CV_16SC3: [[fallthrough]]
+        case CV_16SC1: [[fallthrough]];
+        case CV_16SC2: [[fallthrough]];
+        case CV_16SC3: [[fallthrough]];
         case CV_16SC4: type = GL_SHORT; break;
         // doesnt_exist: case CV_32UC1: [[fallthrough]]
         // doesnt_exist: case CV_32UC2: [[fallthrough]]
         // doesnt_exist: case CV_32UC3: [[fallthrough]]
         // doesnt_exist: case CV_32UC4: type = GL_UNSIGNED_INT; break;
-        case CV_32SC1: [[fallthrough]]
-        case CV_32SC2: [[fallthrough]]
-        case CV_32SC3: [[fallthrough]]
+        case CV_32SC1: [[fallthrough]];
+        case CV_32SC2: [[fallthrough]];
+        case CV_32SC3: [[fallthrough]];
         case CV_32SC4: type = GL_INT; break;
         // case CV_32FC2: break;
         // case CV_32FC3: break;

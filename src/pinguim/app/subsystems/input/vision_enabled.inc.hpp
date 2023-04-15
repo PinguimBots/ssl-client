@@ -85,6 +85,8 @@ namespace pinguim::app::subsystems::input
         std::array<geo::ipoint, 4> frame_roi = {{{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}}};
         cv::Mat warped_frame;
 
-        Colors colors = Colors();
+        vision_impl::Colors colors;
+
+        vision_impl::Color* colorpicker_target = nullptr;
     };
 }

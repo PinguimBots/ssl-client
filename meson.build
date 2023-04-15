@@ -91,7 +91,6 @@ sources = files(
     'src/pinguim/app/subsystems/input/vision/extraction.cpp',
     'src/pinguim/app/subsystems/input/vision/pipeline.cpp',
     'src/pinguim/app/subsystems/input/vision/segmentation.cpp',
-    'src/pinguim/app/subsystems/input/vision/colors.cpp',
 
     'src/pinguim/imgui/widgets/toggle_button.cpp',
     'src/pinguim/imgui/widgets/group_panel.cpp',

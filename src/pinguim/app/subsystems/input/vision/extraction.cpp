@@ -105,7 +105,6 @@ namespace
     {
         // #pragma omp parallel for
         for (int i = 0; i < enemyContours.size(); ++i) {
-
             auto& enemy = gi.enemy_team[i];
 
             cv::Moments enemyMoments = cv::moments(enemyContours[i]);
@@ -130,6 +129,5 @@ void Extraction::execute(pinguim::vsss::game_info& gi, objectsContours c)
 
     // #pragma omp task
     extractEnemy(gi, c.enemyContours);
-    
 }
 
