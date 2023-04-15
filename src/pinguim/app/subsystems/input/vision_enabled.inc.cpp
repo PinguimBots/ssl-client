@@ -177,7 +177,7 @@ auto pinguim::app::subsystems::input::vision::config_file_capture(bool is_first_
 
     // Se foi selecionado um novo arquivo, vamos resetar a captura.
 
-    video.open(newfile, cv::CAP_V4L2);
+    video.open(newfile);
 
     // Arquivo não existe.
     if(!video.isOpened()) { return; }

@@ -70,11 +70,9 @@ auto pinguim::app::subsystems::manager::draw_selector_ui(float delta_seconds) ->
     ImGui::Text("%s", frametime_str.c_str());
     ImGui::SetCursorPosX(0);
 
-    if(!ImGui::BeginMenu("Subsystems")) { return; }
-
     for(auto r : registrar::instance())
     {
-        auto const submenu_name = [&]{ switch(r.type) {
+        auto const menu_name = [&]{ switch(r.type) {
             case registrar::type_enum::input:  return "Input";
             case registrar::type_enum::logic:  return "Logic";
             case registrar::type_enum::output: return "Output";
@@ -82,7 +80,7 @@ auto pinguim::app::subsystems::manager::draw_selector_ui(float delta_seconds) ->
             default: return "Unknown";
         }}();
 
-        if(!ImGui::BeginMenu(submenu_name)) { continue; }
+        if(!ImGui::BeginMenu(menu_name)) { continue; }
 
         if(r.type == registrar::type_enum::input)
         { INPUT_ITEM(r.name, r.id, r.maker); }
@@ -128,8 +126,6 @@ auto pinguim::app::subsystems::manager::draw_selector_ui(float delta_seconds) ->
 
         ImGui::EndMenu();
     }
-
-    ImGui::EndMenu();
 
     #undef OUTPUT_ITEM
     #undef LOGIC_ITEM
