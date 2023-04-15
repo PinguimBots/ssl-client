@@ -104,17 +104,51 @@ namespace
     void extractEnemy(pinguim::vsss::game_info& gi, std::vector<std::vector<cv::Point>> enemyContours)
     {
         // #pragma omp parallel for
-        for (int i = 0; i < enemyContours.size(); ++i) {
+        std::vector<int> alreadyUsed = std::vector<int>(gi.enemy_team.size(), 0);
+        
+        for (int i = 0; i < enemyContours.size(); ++i) 
+        {
+            auto& enemies = gi.enemy_team;
 
-            auto& enemy = gi.enemy_team[i];
+            for (int j = 0; j < enemies.size(); ++j) 
+            {
 
-            cv::Moments enemyMoments = cv::moments(enemyContours[i]);
-            double enemyArea = enemyMoments.m00;
+                if (!alreadyUsed[j])
+                {
+                    auto currEnemyLocation = enemies[j].location;
 
-            int enemy_x = static_cast<int>(enemyMoments.m10 / enemyArea);
-            int enemy_y = static_cast<int>(enemyMoments.m01 / enemyArea);
+                    cv::Moments enemyMoments = cv::moments(enemyContours[i]);
+                    double enemyArea = enemyMoments.m00;
+
+                    int enemy_x = static_cast<int>(enemyMoments.m10 / enemyArea);
+                    int enemy_y = static_cast<int>(enemyMoments.m01 / enemyArea);
+
+                    double xDif, yDif, dist;
+
+                    xDif = enemy_x - currEnemyLocation.location.x;
+                    yDif = enemy_y - currEnemyLocation.location.y;
+
+                    dist = std::sqrt(std::pow(xDif, 2.0) + std::pow(yDif, 2.0));
+
+                    if (dist > 11.0 && dist < 16.0)
+                    {
+                        // #pragma omp critical
+                        alreadyUsed[j] = 1;
+
+                        enemies[j].location = {enemy_x, enemy_y}
+
+                        break;
+                    }
+
+                }
+
+            }
+
+            
 
             enemy.location = {enemy_x, enemy_y};
+
+            
         }
     }
 }
