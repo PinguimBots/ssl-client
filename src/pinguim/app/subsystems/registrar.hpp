@@ -38,7 +38,7 @@ namespace pinguim::app::subsystems
         registrar();
         ~registrar();
 
-        // Registering invalidates de iterators.
+        // Registering invalidates the iterators below.
         auto register_input_subsystem(input_subsystem_maker, const char*) -> subsystem_id_t;
         auto register_logic_subsystem(logic_subsystem_maker, const char*) -> subsystem_id_t;
         auto register_output_subsystem(output_subsystem_maker, const char*) -> subsystem_id_t;

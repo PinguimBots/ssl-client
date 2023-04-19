@@ -3,6 +3,7 @@
 #include "pinguim/app/subsystems/registrar.hpp"
 
 #include "pinguim/app/subsystems/input/vision/pipeline.hpp"
+#include "pinguim/app/subsystems/misc/profiler.hpp"
 
 #include "pinguim/imgui/fonts/kenney_game_icons.hpp"
 #include "pinguim/imgui/fonts/loader.hpp"
@@ -270,12 +271,15 @@ auto pinguim::app::subsystems::input::vision::warp_perspective() -> void
         {0,        cpy.rows}
     }};
 
+    PINGUIM_PROFILE("input::vision::warp");
     auto const M = cv::getPerspectiveTransform(p0s, p1s);
     cv::warpPerspective(currframe, warped_frame, M, {cpy.cols, cpy.rows});
 }
 
 auto pinguim::app::subsystems::input::vision::update_gameinfo([[maybe_unused]] game_info& gi, [[maybe_unused]] float delta_seconds) -> bool
 {
+    PINGUIM_PROFILE("input::vision::update_gameinfo");
+
     namespace ImGui = ::ImGui;
 
     // Fill the teams with zeroed robots if the size differs.
@@ -353,6 +357,7 @@ auto pinguim::app::subsystems::input::vision::update_gameinfo([[maybe_unused]] g
         return false;
     }
 
+    PINGUIM_PROFILE("input::vision::pipeline");
     auto processed = Pipeline::execute(gi, warped_frame, colors);
 
     return true;

@@ -151,3 +151,21 @@ auto pinguim::app::subsystems::manager::transmit(float delta_seconds) -> bool
     if(pimpl->output) return pimpl->output->transmit(pimpl->c, delta_seconds);
     return false;
 }
+
+auto pinguim::app::subsystems::manager::instance() -> manager&
+{
+    static manager m;
+    return m;
+}
+
+auto pinguim::app::subsystems::manager::get_subsystem_instance(registrar::subsystem_id_t id) -> void*
+{
+    if(id == pimpl->instantiated_input_id) return pimpl->input.get();
+    else if(id == pimpl->instantiated_logic_id) return pimpl->logic.get();
+    else if(id == pimpl->instantiated_output_id) return pimpl->output.get();
+
+    for(auto const& subsystem : pimpl->misc_subsystems)
+        if(id == subsystem.id) return subsystem.instance.get();
+
+    return nullptr;
+}
