@@ -42,7 +42,7 @@ auto pinguim::imgui::plumber::operator=(plumber&& other) -> plumber&
 }
 
 // TODO: return info about what errored out (nonstd::expected<plumber, error_type>)
-auto pinguim::imgui::make_plumber(const char* windowname) -> plumber*
+auto pinguim::imgui::make_plumber(const char* windowname, bool vsync_enabled) -> plumber*
 {
     static bool is_initialized = false;
 
@@ -71,7 +71,7 @@ auto pinguim::imgui::make_plumber(const char* windowname) -> plumber*
     if(mario.sdl_glcontext == nullptr) {return nullptr;}
 
     if(SDL_GL_MakeCurrent(mario.sdl_window, mario.sdl_glcontext) != 0) {return nullptr;}
-    SDL_GL_SetSwapInterval(1); // Enable vsync
+    SDL_GL_SetSwapInterval(vsync_enabled);
 
     if(glewInit() != GLEW_OK) {return nullptr;}
 

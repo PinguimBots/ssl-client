@@ -13,6 +13,9 @@ namespace pinguim::app::subsystems
         auto run_logic(float delta_seconds) -> bool;
         auto transmit(float delta_seconds) -> bool;
 
+        static manager& instance();
+        auto get_subsystem_instance(unsigned long long id) -> void*;
+
     private:
         struct impl;
         impl* pimpl;

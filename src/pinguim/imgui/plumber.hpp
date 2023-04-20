@@ -44,5 +44,5 @@ namespace pinguim::imgui
     };
 
     // After calling this, you own this pointer, make sure to delete it.
-    auto make_plumber(const char* windowname = "pinguimbots") -> plumber*;
+    auto make_plumber(const char* windowname = "pinguimbots", bool vsync_enabled = false) -> plumber*;
 }

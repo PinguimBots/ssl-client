@@ -87,6 +87,7 @@ sources = files(
     'src/pinguim/app/subsystems/output/firasim.cpp',
     'src/pinguim/app/subsystems/output/serial.cpp',
     'src/pinguim/app/subsystems/misc/imgui_debug.cpp',
+    'src/pinguim/app/subsystems/misc/profiler.cpp',
 
     'src/pinguim/app/subsystems/input/vision/extraction.cpp',
     'src/pinguim/app/subsystems/input/vision/pipeline.cpp',
