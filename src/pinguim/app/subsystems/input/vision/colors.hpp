@@ -15,7 +15,8 @@ namespace pinguim::app::subsystems::input::vision_impl
             struct { float r, g, b; };
         };
 
-        operator cv::Scalar() { return { raw[0], raw[1], raw[2] }; }
+        operator cv::Scalar() const { return { raw[0], raw[1], raw[2] }; }
+        auto to_cv_hsv()      const { return cv::Scalar(r * 180, g * 255, b * 255); }
     };
 
     struct Colors

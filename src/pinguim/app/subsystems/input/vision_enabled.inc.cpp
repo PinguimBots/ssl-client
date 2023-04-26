@@ -136,15 +136,26 @@ auto pinguim::app::subsystems::input::vision::fetch_file_frame(bool is_first_fra
 
 auto pinguim::app::subsystems::input::vision::fetch_camera_frame(bool is_first_frame) -> void
 {
+    PINGUIM_PROFILE("input::vision::fetch_camera_frame");
+
     namespace ImGui = ::ImGui;
 
     auto& cfg = std::get<camera_capture>(config);
 
-    video.read(currframe);
+    {
+        PINGUIM_PROFILE("input::vision::fetch_camera_frame::video.read()");
+        video.read(currframe);
+    }
 
-    warp_perspective();
+    {
+        PINGUIM_PROFILE("input::vision::fetch_camera_frame::warp_perspective()");
+        warp_perspective();
+    }
 
-    ImGui::Begin("Raw Camera Properties");
+    PINGUIM_PROFILE("input::vision::fetch_camera_frame::rest");
+    PINGUIM_DONT_FORGET( ImGui::End() );
+    if(!ImGui::Begin("Raw Camera Properties")) { return; }
+
     for(auto const& [index, enum_name] : renum::reflect< cv::VideoCaptureProperties, 0, 128>::value_iterator{})
     {
         auto val = video.get(index);
@@ -152,7 +163,6 @@ auto pinguim::app::subsystems::input::vision::fetch_camera_frame(bool is_first_f
         ImGui::SameLine();
         if( ImGui::InputDouble(fmt::format("##videoprop{}", index).c_str(), &val, 0.0, 0.0, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) { video.set(index, val); }
     }
-    ImGui::End();
 }
 
 auto pinguim::app::subsystems::input::vision::config_file_capture(bool is_first_frame) -> void
@@ -237,8 +247,10 @@ auto pinguim::app::subsystems::input::vision::warp_perspective() -> void
         }
         else
         {
-            auto color_vec = currframe.at<cv::Vec3b>(img_x * cvt::to<int>, img_y * cvt::to<int>);
-            *colorpicker_target = {color_vec[0] * cvt::to<float> / 255, color_vec[1] * cvt::to<float> / 255, color_vec[2] * cvt::to<float> /255};
+            auto hsvroi = currframe( cv::Rect(img_x * cvt::to<int>, img_y * cvt::to<int>, 1, 1) );
+            cv::cvtColor(hsvroi, hsvroi, cv::COLOR_BGR2HSV);
+            auto color_vec = hsvroi.at<cv::Vec3b>(0, 0);
+            *colorpicker_target = {color_vec[0] * cvt::to<float> / 180, color_vec[1] * cvt::to<float> / 255, color_vec[2] * cvt::to<float> / 255};
             colorpicker_target = nullptr;
         }
     }
@@ -317,36 +329,36 @@ auto pinguim::app::subsystems::input::vision::update_gameinfo([[maybe_unused]] g
         case capture_type_enum::none:   return false;
     }
 
-    ImGui::ColorEdit3("allyhsvmin", colors.allyHSVMin.raw);
+    ImGui::ColorEdit3("allyhsvmin", colors.allyHSVMin.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
     ImGui::SameLine();
     if(ImGui::Button("ColorPicker##allyhsvmin")) { colorpicker_target = &(colors.allyHSVMin); }
 
-    ImGui::ColorEdit3("allyhsvmax", colors.allyHSVMax.raw);
+    ImGui::ColorEdit3("allyhsvmax", colors.allyHSVMax.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
     ImGui::SameLine();
     if(ImGui::Button("ColorPicker##allyhsvmax")) { colorpicker_target = &(colors.allyHSVMax); }
 
-    ImGui::ColorEdit3("enemyhsvmin", colors.enemyHSVMin.raw);
+    ImGui::ColorEdit3("enemyhsvmin", colors.enemyHSVMin.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
     ImGui::SameLine();
     if(ImGui::Button("ColorPicker##enemyhsvmin")) { colorpicker_target = &(colors.enemyHSVMin); }
 
-    ImGui::ColorEdit3("enemyhsvmax", colors.enemyHSVMax.raw);
+    ImGui::ColorEdit3("enemyhsvmax", colors.enemyHSVMax.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
     ImGui::SameLine();
     if(ImGui::Button("ColorPicker##enemyhsvmax")) { colorpicker_target = &(colors.enemyHSVMax); }
 
-    ImGui::ColorEdit3("ballhsvmin", colors.ballHSVMin.raw);
+    ImGui::ColorEdit3("ballhsvmin", colors.ballHSVMin.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
     ImGui::SameLine();
     if(ImGui::Button("ColorPicker##ballhsvmin")) { colorpicker_target = &(colors.ballHSVMin); }
 
-    ImGui::ColorEdit3("ballhsvmax", colors.ballHSVMax.raw);
+    ImGui::ColorEdit3("ballhsvmax", colors.ballHSVMax.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
     ImGui::SameLine();
     if(ImGui::Button("ColorPicker##ballhsvmax")) { colorpicker_target = &(colors.ballHSVMax); }
 
     for(auto i = 0; i < gi.allied_team.size(); ++i)
     {
-        ImGui::ColorEdit3(fmt::format("robot[{}]hsvmin", i).c_str(), colors.robotHSVMin[i].raw);
+        ImGui::ColorEdit3(fmt::format("robot[{}]hsvmin", i).c_str(), colors.robotHSVMin[i].raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
         ImGui::SameLine();
         if(ImGui::Button(fmt::format("ColorPicker##robot{}hsvmin", i).c_str())) { colorpicker_target = &(colors.robotHSVMin[i]); }
-        ImGui::ColorEdit3(fmt::format("robot[{}]hsvmax", i).c_str(), colors.robotHSVMax[i].raw);
+        ImGui::ColorEdit3(fmt::format("robot[{}]hsvmax", i).c_str(), colors.robotHSVMax[i].raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
         ImGui::SameLine();
         if(ImGui::Button(fmt::format("ColorPicker##robot{}hsvmax", i).c_str())) { colorpicker_target = &(colors.robotHSVMax[i]); }
     }
