@@ -108,7 +108,7 @@ namespace
         
         for (int i = 0; i < enemyContours.size(); ++i) 
         {
-            auto& enemy = gi.enemy_team[i];
+            auto& enemy = gi.enemy_team;
 
             for (int j = 0; j < enemy.size(); ++j) 
             {
@@ -125,8 +125,8 @@ namespace
 
                     double xDif, yDif, dist;
 
-                    xDif = enemy_x - currEnemyLocation.location.x;
-                    yDif = enemy_y - currEnemyLocation.location.y;
+                    xDif = enemy_x - currEnemyLocation.x;
+                    yDif = enemy_y - currEnemyLocation.y;
 
                     dist = std::sqrt(std::pow(xDif, 2.0) + std::pow(yDif, 2.0));
 
@@ -135,7 +135,7 @@ namespace
                         // #pragma omp critical
                         alreadyUsed[j] = 1;
 
-                        enemy[j].location = {enemy_x, enemy_y}
+                        enemy[j].location = {enemy_x, enemy_y};
 
                         break;
                     }
