@@ -9,6 +9,7 @@
 #include "pinguim/imgui/fonts/loader.hpp"
 
 #include "pinguim/imgui/widgets/toggle_button.hpp"
+#include "pinguim/imgui/widgets/color_range.hpp"
 #include "pinguim/imgui/img.hpp"
 #include "pinguim/imgui/fmt.hpp"
 
@@ -329,40 +330,40 @@ auto pinguim::app::subsystems::input::vision::update_gameinfo([[maybe_unused]] g
         case capture_type_enum::none:   return false;
     }
 
-    ImGui::ColorEdit3("allyhsvmin", colors.allyHSVMin.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
-    ImGui::SameLine();
-    if(ImGui::Button("ColorPicker##allyhsvmin")) { colorpicker_target = &(colors.allyHSVMin); }
-
-    ImGui::ColorEdit3("allyhsvmax", colors.allyHSVMax.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
-    ImGui::SameLine();
-    if(ImGui::Button("ColorPicker##allyhsvmax")) { colorpicker_target = &(colors.allyHSVMax); }
-
-    ImGui::ColorEdit3("enemyhsvmin", colors.enemyHSVMin.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
-    ImGui::SameLine();
-    if(ImGui::Button("ColorPicker##enemyhsvmin")) { colorpicker_target = &(colors.enemyHSVMin); }
-
-    ImGui::ColorEdit3("enemyhsvmax", colors.enemyHSVMax.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
-    ImGui::SameLine();
-    if(ImGui::Button("ColorPicker##enemyhsvmax")) { colorpicker_target = &(colors.enemyHSVMax); }
-
-    ImGui::ColorEdit3("ballhsvmin", colors.ballHSVMin.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
-    ImGui::SameLine();
-    if(ImGui::Button("ColorPicker##ballhsvmin")) { colorpicker_target = &(colors.ballHSVMin); }
-
-    ImGui::ColorEdit3("ballhsvmax", colors.ballHSVMax.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
-    ImGui::SameLine();
-    if(ImGui::Button("ColorPicker##ballhsvmax")) { colorpicker_target = &(colors.ballHSVMax); }
-
+    colorpicker_target = pb::ImGui::ColorRangeEdit("Ally  HSV", colors.allyHSV,  colorpicker_target);
+    colorpicker_target = pb::ImGui::ColorRangeEdit("Enemy HSV", colors.enemyHSV, colorpicker_target);
+    colorpicker_target = pb::ImGui::ColorRangeEdit("Ball  HSV", colors.ballHSV,  colorpicker_target);
     for(auto i = 0; i < gi.allied_team.size(); ++i)
     {
-        ImGui::ColorEdit3(fmt::format("robot[{}]hsvmin", i).c_str(), colors.robotHSVMin[i].raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
-        ImGui::SameLine();
-        if(ImGui::Button(fmt::format("ColorPicker##robot{}hsvmin", i).c_str())) { colorpicker_target = &(colors.robotHSVMin[i]); }
-        ImGui::ColorEdit3(fmt::format("robot[{}]hsvmax", i).c_str(), colors.robotHSVMax[i].raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
-        ImGui::SameLine();
-        if(ImGui::Button(fmt::format("ColorPicker##robot{}hsvmax", i).c_str())) { colorpicker_target = &(colors.robotHSVMax[i]); }
+        colorpicker_target = pb::ImGui::ColorRangeEdit(fmt::format("Robot HSV [{}]", i).c_str(), colors.robotHSV[i], colorpicker_target);
     }
+#if 0
+    ImGui::ColorEdit3("allyhsvmin", colors.allyHSV.color1.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##allyhsvmin")) { colorpicker_target = &(colors.allyHSV.color1); }
 
+    ImGui::ColorEdit3("allyhsvmax", colors.allyHSV.color2.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##allyhsvmax")) { colorpicker_target = &(colors.allyHSV.color2); }
+
+    ImGui::ColorEdit3("enemyhsvmin", colors.enemyHSV.color1.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##enemyhsvmin")) { colorpicker_target = &(colors.enemyHSV.color1); }
+
+    ImGui::ColorEdit3("enemyhsvmax", colors.enemyHSV.color2.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##enemyhsvmax")) { colorpicker_target = &(colors.enemyHSV.color2); }
+
+    ImGui::ColorEdit3("ballhsvmin", colors.ballHSV.color1.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##ballhsvmin")) { colorpicker_target = &(colors.ballHSV.color1); }
+
+    ImGui::ColorEdit3("ballhsvmax", colors.ballHSV.color2.raw, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_InputHSV);
+    ImGui::SameLine();
+    if(ImGui::Button("ColorPicker##ballhsvmax")) { colorpicker_target = &(colors.ballHSV.color2); }
+
+
+#endif
     if(currframe.channels() <= 1)
     {
         fmt::print("BAD FRAME: can't run pipeline, channels = {}, is_first_frame = {}\n", currframe.channels(), is_first_frame);

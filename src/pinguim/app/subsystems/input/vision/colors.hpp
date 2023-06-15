@@ -19,15 +19,38 @@ namespace pinguim::app::subsystems::input::vision_impl
         auto to_cv_hsv()      const { return cv::Scalar(r * 180, g * 255, b * 255); }
     };
 
+    // Can represent center +- range or just 2 distinct colors.
+    struct ColorRange
+    {
+        union {
+            Color center;
+            Color color1;
+        };
+        union {
+            Color range;
+            Color color2;
+        };
+
+        bool is_centered = false; // = true  => final_color[0], final_color[1] = min(), max().
+                                  // = false => final_color[0], final_color[1] = color1, color2.
+        bool using_full_range = false; // = true  => final_color = center +- range / 2.
+                                       // = false => final_color = center +- range[0] / 2.
+
+        constexpr Color min() { return using_full_range ? Color{ center.r - range.r / 2, center.g - range.g / 2, center.b - range.b / 2 } : Color{ center.r - range.r / 2, center.g - range.r / 2, center.b - range.r / 2 }; }
+        constexpr Color max() { return using_full_range ? Color{ center.r + range.r / 2, center.g + range.g / 2, center.b + range.b / 2 } : Color{ center.r + range.r / 2, center.g + range.r / 2, center.b + range.r / 2 }; }
+        constexpr Color first()  { return is_centered ? min() : color1; }
+        constexpr Color second() { return is_centered ? max() : color2; }
+    };
+
     struct Colors
     {
-        Color allyHSVMin  = {0,   0,   0};
-        Color allyHSVMax  = {179.f/255, 255.f/255, 255.f/255};
-        Color enemyHSVMin = {0,   0,   0};
-        Color enemyHSVMax = {179.f/255, 255.f/255, 255.f/255};
-        Color ballHSVMin  = {0,   147, 0};
-        Color ballHSVMax  = {23.f/255,  255.f/255, 255.f/255};
-        std::vector<Color> robotHSVMin = { {0,         0,         0},         {0,         0,         0},         {0,         0,         0} };
-        std::vector<Color> robotHSVMax = { {179.f/255, 255.f/255, 255.f/255}, {179.f/255, 255.f/255, 255.f/255}, (179.f/255, 255.f/255, 255.f/255) };
+        ColorRange allyHSV  = {Color{0, 0,   0}, Color{179.f/255, 255.f/255, 255.f/255}};
+        ColorRange enemyHSV = {Color{0, 0,   0}, Color{179.f/255, 255.f/255, 255.f/255}};
+        ColorRange ballHSV  = {Color{0, 147, 0}, Color{23.f/255,  255.f/255, 255.f/255}};
+        std::vector<ColorRange> robotHSV = {
+            {Color{0, 0, 0}, Color{179.f/255, 255.f/255, 255.f/255}},
+            {Color{0, 0, 0}, Color{179.f/255, 255.f/255, 255.f/255}},
+            {Color{0, 0, 0}, Color{179.f/255, 255.f/255, 255.f/255}},
+        };
     };
 }

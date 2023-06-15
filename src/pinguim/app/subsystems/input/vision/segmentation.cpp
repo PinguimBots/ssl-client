@@ -23,8 +23,8 @@ namespace
         cv::Mat teamThreshold;
         cv::Scalar teamMin, teamMax;
 
-        teamMin = colors.allyHSVMin.to_cv_hsv();
-        teamMax = colors.allyHSVMax.to_cv_hsv();
+        teamMin = colors.allyHSV.first().to_cv_hsv();
+        teamMax = colors.allyHSV.second().to_cv_hsv();
 
         cv::inRange(preProcessedImg, teamMin, teamMax, teamThreshold);
 
@@ -55,8 +55,8 @@ namespace
             cv::Mat thresholdPlayer;
             std::vector<std::vector<cv::Point>> playersContours, playerContours;
 
-            playerColorMin = colors.robotHSVMin[i].to_cv_hsv();
-            playerColorMax = colors.robotHSVMax[i].to_cv_hsv();
+            playerColorMin = colors.robotHSV[i].first().to_cv_hsv();
+            playerColorMax = colors.robotHSV[i].second().to_cv_hsv();
 
             cv::inRange(preProcessedImg, playerColorMin, playerColorMax, thresholdPlayer);
 
@@ -91,8 +91,8 @@ namespace
         cv::Mat ballThreshold;
         cv::Scalar ballMin, ballMax;
 
-        ballMin = colors.ballHSVMin.to_cv_hsv();
-        ballMax = colors.ballHSVMax.to_cv_hsv();
+        ballMin = colors.ballHSV.first().to_cv_hsv();
+        ballMax = colors.ballHSV.second().to_cv_hsv();
 
         cv::inRange(preProcessedImg, ballMin, ballMax, ballThreshold);
 
@@ -122,8 +122,8 @@ namespace
         cv::Mat enemyThreshold;
         cv::Scalar enemyMin, enemyMax;
 
-        enemyMin = colors.enemyHSVMin.to_cv_hsv();
-        enemyMax = colors.enemyHSVMax.to_cv_hsv();
+        enemyMin = colors.enemyHSV.first().to_cv_hsv();
+        enemyMax = colors.enemyHSV.second().to_cv_hsv();
 
         cv::inRange(preProcessedImg, enemyMin, enemyMax, enemyThreshold);
 
