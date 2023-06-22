@@ -15,6 +15,7 @@
 
 #include "pinguim/dont_forget.hpp"
 #include "pinguim/renum.hpp"
+#include "pinguim/math.hpp"
 #include "pinguim/cvt.hpp"
 
 #include <ImGuiFileDialog.h>
@@ -78,7 +79,7 @@ auto pinguim::app::subsystems::input::vision::config_camera_capture(bool is_firs
     }
 }
 
-auto pinguim::app::subsystems::input::vision::fetch_file_frame(bool is_first_frame) -> void
+auto pinguim::app::subsystems::input::vision::fetch_file_frame(bool is_first_frame, game_info& gi) -> void
 {
     namespace ImGui = ::ImGui;
 
@@ -122,7 +123,7 @@ auto pinguim::app::subsystems::input::vision::fetch_file_frame(bool is_first_fra
 
     read_frame_from_file_capture();
 
-    warp_perspective();
+    warp_perspective(gi);
 
     // Video timeline.
     ImGui::SetNextItemWidth(cvt::to<float> * video.get(cv::CAP_PROP_FRAME_WIDTH));
@@ -135,7 +136,7 @@ auto pinguim::app::subsystems::input::vision::fetch_file_frame(bool is_first_fra
     )) { video.set(cv::CAP_PROP_POS_MSEC, cvt::to<double> * video_timeline * 1000); }
 }
 
-auto pinguim::app::subsystems::input::vision::fetch_camera_frame(bool is_first_frame) -> void
+auto pinguim::app::subsystems::input::vision::fetch_camera_frame(bool is_first_frame, game_info& gi) -> void
 {
     PINGUIM_PROFILE("input::vision::fetch_camera_frame");
 
@@ -150,7 +151,7 @@ auto pinguim::app::subsystems::input::vision::fetch_camera_frame(bool is_first_f
 
     {
         PINGUIM_PROFILE("input::vision::fetch_camera_frame::warp_perspective()");
-        warp_perspective();
+        warp_perspective(gi);
     }
 
     PINGUIM_PROFILE("input::vision::fetch_camera_frame::rest");
@@ -221,7 +222,7 @@ auto pinguim::app::subsystems::input::vision::config_file_capture(bool is_first_
 
 pinguim::app::subsystems::input::vision::vision() : video{} {}
 
-auto pinguim::app::subsystems::input::vision::warp_perspective() -> void
+auto pinguim::app::subsystems::input::vision::warp_perspective(game_info& gi) -> void
 {
     namespace ImGui = ::ImGui;
 
@@ -267,7 +268,10 @@ auto pinguim::app::subsystems::input::vision::warp_perspective() -> void
         point_count += 1;
         cv::circle(cpy, {p.x, p.y}, 3, {0, 0, 255}, 3);
     }
-    pb::ImGui::Image({cpy});
+
+    for(const auto& robot : gi.allied_team) cv::circle(cpy, {robot.location.x, robot.location.y}, 3, {255, 0, 0}, 3);
+
+    pb::ImGui::Image({cpy, GL_BGR, GL_RGB});
 
     if(point_count != 4) { warped_frame = currframe; return; } // Se < 4 pontos não fazer o warpPerspective.
 
@@ -325,8 +329,8 @@ auto pinguim::app::subsystems::input::vision::update_gameinfo([[maybe_unused]] g
 
     switch(capture_type)
     {
-        case capture_type_enum::file:   fetch_file_frame(is_first_frame); break;
-        case capture_type_enum::camera: fetch_camera_frame(is_first_frame); break;
+        case capture_type_enum::file:   fetch_file_frame(is_first_frame,   gi); break;
+        case capture_type_enum::camera: fetch_camera_frame(is_first_frame, gi); break;
         case capture_type_enum::none:   return false;
     }
 

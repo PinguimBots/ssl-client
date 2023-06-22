@@ -1,6 +1,7 @@
 #pragma once
 
 #include <opencv2/core/types.hpp> // For cv::Scalar.
+#include <algorithm> // For std::clamp.
 #include <vector>
 
 namespace pinguim::app::subsystems::input::vision_impl
@@ -36,8 +37,8 @@ namespace pinguim::app::subsystems::input::vision_impl
         bool using_full_range = false; // = true  => final_color = center +- range / 2.
                                        // = false => final_color = center +- range[0] / 2.
 
-        constexpr Color min() { return using_full_range ? Color{ center.r - range.r / 2, center.g - range.g / 2, center.b - range.b / 2 } : Color{ center.r - range.r / 2, center.g - range.r / 2, center.b - range.r / 2 }; }
-        constexpr Color max() { return using_full_range ? Color{ center.r + range.r / 2, center.g + range.g / 2, center.b + range.b / 2 } : Color{ center.r + range.r / 2, center.g + range.r / 2, center.b + range.r / 2 }; }
+        constexpr Color min() { return using_full_range ? Color{ std::clamp(center.r - range.r / 2, 0.f, 1.f), std::clamp(center.g - range.g / 2, 0.f, 1.f), std::clamp(center.b - range.b / 2, 0.f, 1.f) } : Color{ std::clamp(center.r - range.r / 2, 0.f, 1.f), std::clamp(center.g - range.r / 2, 0.f, 1.f), std::clamp(center.b - range.r / 2, 0.f, 1.f) }; }
+        constexpr Color max() { return using_full_range ? Color{ std::clamp(center.r + range.r / 2, 0.f, 1.f), std::clamp(center.g + range.g / 2, 0.f, 1.f), std::clamp(center.b + range.b / 2, 0.f, 1.f) } : Color{ std::clamp(center.r + range.r / 2, 0.f, 1.f), std::clamp(center.g + range.r / 2, 0.f, 1.f), std::clamp(center.b + range.r / 2, 0.f, 1.f) }; }
         constexpr Color first()  { return is_centered ? min() : color1; }
         constexpr Color second() { return is_centered ? max() : color2; }
     };

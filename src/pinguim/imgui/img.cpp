@@ -62,10 +62,8 @@ auto pinguim::ImGui::Image(
 }
 
 #if defined(PINGUIM_CONF_OPENCV_SUPPORT)
-namespace {
 
-}
-pinguim::imgui::img::img(cv::Mat const& mat, unsigned int gl_format)
+pinguim::imgui::img::img(cv::Mat const& mat, unsigned int gl_format, unsigned int gl_internalformat)
     : texture{}
 {
     auto type = GL_UNSIGNED_BYTE; // Missing: GL_HALF_FLOAT, GL_FLOAT, GL_UNSIGNED_BYTE_3_3_2, GL_UNSIGNED_BYTE_2_3_3_REV, GL_UNSIGNED_SHORT_5_6_5, GL_UNSIGNED_SHORT_5_6_5_REV, GL_UNSIGNED_SHORT_4_4_4_4, GL_UNSIGNED_SHORT_4_4_4_4_REV, GL_UNSIGNED_SHORT_5_5_5_1, GL_UNSIGNED_SHORT_1_5_5_5_REV, GL_UNSIGNED_INT_8_8_8_8, GL_UNSIGNED_INT_8_8_8_8_REV, GL_UNSIGNED_INT_10_10_10_2, and GL_UNSIGNED_INT_2_10_10_10_REV.
@@ -113,7 +111,7 @@ pinguim::imgui::img::img(cv::Mat const& mat, unsigned int gl_format)
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
-        GL_RGB,
+        gl_internalformat,
         mat.cols,
         mat.rows,
         0,
@@ -124,6 +122,7 @@ pinguim::imgui::img::img(cv::Mat const& mat, unsigned int gl_format)
     texture.cols = mat.cols;
     texture.rows = mat.rows;
 }
+
 #else
 pinguim::imgui::img::img(cv::Mat const&) : img{0, 0, 0} {}
 #endif

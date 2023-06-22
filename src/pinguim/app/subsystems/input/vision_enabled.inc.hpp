@@ -27,9 +27,9 @@ namespace pinguim::app::subsystems::input
         auto draw_capture_type_dropdown(bool& is_first_frame) -> void;
 
         auto config_camera_capture(bool) -> void;
-        auto fetch_camera_frame(bool)    -> void;
+        auto fetch_camera_frame(bool, game_info&) -> void;
         auto config_file_capture(bool)   -> void;
-        auto fetch_file_frame(bool)      -> void;
+        auto fetch_file_frame(bool, game_info&) -> void;
 
         // Uses settings from file_capture_config and
         // overrides currframe with the new frame.
@@ -39,7 +39,7 @@ namespace pinguim::app::subsystems::input
         // Assumes video.isOpened(), and config is file_capture.
         auto read_frame_from_file_capture() -> u16;
 
-        auto warp_perspective() -> void;
+        auto warp_perspective(game_info&) -> void;
 
         // Enum mostrado no dropdown
         enum class capture_type_enum {none, camera, file};

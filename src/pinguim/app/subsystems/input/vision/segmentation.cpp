@@ -6,19 +6,30 @@
 #include <iostream>
 #include <omp.h>
 
+#include "pinguim/imgui/img.hpp"
+#include <imgui.h>
+#include <GL/glew.h>
+
 namespace
 {
-    const int MIN_DIRECT_AREA = 70;
-    const int MAX_DIRECT_AREA = 450;
-
-    const int MIN_BALL_AREA = 200;
-    const int MAX_BALL_AREA = 500;
-
-    const int MIN_OBJECT_AREA = 700;
-    const int MAX_OBJECT_AREA = 900;
+    int MIN_DIRECT_AREA = 70;
+    int MAX_DIRECT_AREA = 450;
+    int MIN_BALL_AREA = 200;
+    int MAX_BALL_AREA = 500;
+    int MIN_OBJECT_AREA = 700;
+    int MAX_OBJECT_AREA = 900;
 
     void segmentTeam(cv::Mat preProcessedImg, std::vector<std::vector<cv::Point>> *teamContours, pinguim::app::subsystems::input::vision_impl::Colors colors)
     {
+        ImGui::Begin("Segmentation params");
+        ImGui::SliderInt("MIN_DIRECT_AREA", &MIN_DIRECT_AREA, 0, 1000);
+        ImGui::SliderInt("MAX_DIRECT_AREA", &MAX_DIRECT_AREA, 0, 1000);
+        ImGui::SliderInt("MIN_BALL_AREA",   &MIN_BALL_AREA,   0, 1000);
+        ImGui::SliderInt("MAX_BALL_AREA",   &MAX_BALL_AREA,   0, 1000);
+        ImGui::SliderInt("MIN_OBJECT_AREA", &MIN_OBJECT_AREA, 0, 1000);
+        ImGui::SliderInt("MAX_OBJECT_AREA", &MAX_OBJECT_AREA, 0, 1000);
+        ImGui::End();
+
         std::vector<std::vector<cv::Point>> tempContours;
         cv::Mat teamThreshold;
         cv::Scalar teamMin, teamMax;
@@ -27,8 +38,11 @@ namespace
         teamMax = colors.allyHSV.second().to_cv_hsv();
 
         cv::inRange(preProcessedImg, teamMin, teamMax, teamThreshold);
+        ImGui::Begin("Team threshold");
+        pb::ImGui::Image({teamThreshold, GL_LUMINANCE, GL_LUMINANCE});
+        ImGui::End();
 
-        cv::findContours(teamThreshold, *teamContours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+        cv::findContours(teamThreshold, tempContours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
         for (int i = 0; i < tempContours.size(); ++i)
         {
@@ -85,7 +99,7 @@ namespace
         }
     }
 
-    void segmentBall(cv::Mat preProcessedImg, std::vector<cv::Point> *ballContour, pinguim::app::subsystems::input::vision_impl::Colors colors)
+    void segmentBall(cv::Mat preProcessedImg, std::vector<std::vector<cv::Point>> *ballContour, pinguim::app::subsystems::input::vision_impl::Colors colors)
     {
         std::vector<std::vector<cv::Point>> contours;
         cv::Mat ballThreshold;
@@ -95,6 +109,9 @@ namespace
         ballMax = colors.ballHSV.second().to_cv_hsv();
 
         cv::inRange(preProcessedImg, ballMin, ballMax, ballThreshold);
+        ImGui::Begin("Ball threshold");
+        pb::ImGui::Image({ballThreshold, GL_LUMINANCE, GL_LUMINANCE});
+        ImGui::End();
 
         cv::findContours(ballThreshold, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
@@ -109,9 +126,7 @@ namespace
 
             if (ballArea >= MIN_BALL_AREA && ballArea <= MAX_BALL_AREA)
             {
-                *ballContour = contours[i];
-
-                break;
+                ballContour->push_back(contours[i]);
             }
         }
     }
@@ -126,6 +141,9 @@ namespace
         enemyMax = colors.enemyHSV.second().to_cv_hsv();
 
         cv::inRange(preProcessedImg, enemyMin, enemyMax, enemyThreshold);
+        ImGui::Begin("Enemy threshold");
+        pb::ImGui::Image({enemyThreshold, GL_LUMINANCE, GL_LUMINANCE});
+        ImGui::End();
 
         cv::findContours(enemyThreshold, tempContours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
@@ -151,7 +169,7 @@ objectsContours FullSeg::execute(cv::Mat preProcessedImg, pinguim::app::subsyste
 {
     std::vector<std::vector<std::vector<cv::Point>>> allPlayersContours(3, std::vector<std::vector<cv::Point>>());
     std::vector<std::vector<cv::Point>> teamContours, enemyContours;
-    std::vector<cv::Point> ballContour;
+    std::vector<std::vector<cv::Point>> ballContour;
 
     // #pragma omp task
     segmentBall(preProcessedImg, &ballContour, colors);

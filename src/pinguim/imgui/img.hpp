@@ -38,7 +38,7 @@ namespace pinguim::imgui
     {
         img() = default;
 
-        img(cv::Mat const&, unsigned int gl_format = 0x80E0 /* a.k.a GL_BGR */);
+        img(cv::Mat const&, unsigned int gl_format, unsigned int gl_internalformat);
         img(GLuint handle, int cols, int rows);
         img(img&&);
 

@@ -6,8 +6,17 @@
 #include <iostream>
 #include <opencv2/imgproc.hpp>
 
+#include "pinguim/math.hpp"
+
 namespace
 {
+    auto coord_to_pixel (pb::geometry::fpoint loc) -> pb::geometry::fpoint {
+        return {
+            pb::m::map(loc.x, 0.f, 640.f, -1.5f, 1.5f),
+            pb::m::map(loc.y, 0.f, 480.f, -1.5f, 1.5f),
+        };
+    }
+
     void extractPlayer(
         pinguim::vsss::game_info& gi,
         std::vector<std::vector<std::vector<cv::Point>>> rolesContour,
@@ -75,6 +84,7 @@ namespace
 
                             r.rotation = robotAngle;
                             r.location = {robot_x, robot_y};
+                            r.location = coord_to_pixel(r.location);
 
                             found = true;
 
@@ -88,9 +98,11 @@ namespace
         }
     }
 
-    void extractBall(pinguim::vsss::game_info& gi, std::vector<cv::Point> ballContour)
+    void extractBall(pinguim::vsss::game_info& gi, std::vector<std::vector<cv::Point>> ballContour)
     {
-        cv::Moments ballMoments = cv::moments(ballContour);
+        if(!ballContour.size()) return;
+
+        cv::Moments ballMoments = cv::moments(ballContour[0]);
         double ballArea = ballMoments.m00;
 
         auto& b = gi.ball_info;
@@ -99,18 +111,19 @@ namespace
         int ball_y = static_cast<int>(ballMoments.m01 / ballArea);
 
         b.location = {ball_x, ball_y};
+        b.location = coord_to_pixel(b.location);
     }
 
     void extractEnemy(pinguim::vsss::game_info& gi, std::vector<std::vector<cv::Point>> enemyContours)
     {
         // #pragma omp parallel for
         std::vector<int> alreadyUsed = std::vector<int>(gi.enemy_team.size(), 0);
-        
-        for (int i = 0; i < enemyContours.size(); ++i) 
+
+        for (int i = 0; i < enemyContours.size(); ++i)
         {
             auto& enemy = gi.enemy_team;
 
-            for (int j = 0; j < enemy.size(); ++j) 
+            for (int j = 0; j < enemy.size(); ++j)
             {
 
                 if (!alreadyUsed[j])
@@ -143,7 +156,7 @@ namespace
                 }
 
             }
-            
+
         }
     }
 }
